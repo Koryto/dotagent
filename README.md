@@ -43,6 +43,14 @@ Supporting namespaces:
 - Require review before calling work done.
 - Keep the human in control of architectural decisions and risky execution.
 
+## What This Is Not
+
+- not a wrapper for unrestricted autonomous coding
+- not a prompt pack for "vibe coding"
+- not a replacement for engineering judgment
+- not a guarantee of quality if the framework's gates are ignored
+- not a rigid standard every project must follow exactly
+
 ## Included Template
 
 ```text
@@ -93,11 +101,9 @@ It reads `project/learning_curve.md` to calibrate explanation depth and decide w
 
 ## Skills
 
-The template currently includes one skill:
-
-- `code-review` - mandatory self-review support for the standard workflow
-
 Skills are intentionally loaded on demand, not kept in hot context.
+
+The exact skill set is expected to evolve over time.
 
 ## Session Model
 
@@ -122,14 +128,4 @@ This lets the user resume from the current task or from a prior session that bui
 - This template is not enforced by code. It is a working contract between the user and the agent.
 - Projects are free to extend or shrink it.
 - If a team removes important files, the framework does not break mechanically. It just becomes less effective.
-
-## Status
-
-Current template coverage:
-
-- canonical data-layer structure
-- bootstrap/session model
-- standard workflow
-- learning workflow
-- code review skill
 
