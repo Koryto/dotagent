@@ -56,6 +56,7 @@ Supporting namespaces:
 ```text
 .agent/
 |-- BOOTSTRAP.md
+|-- ONBOARD.md
 |-- project/
 |   |-- PROJECT.md
 |   |-- learning_curve.md
@@ -110,6 +111,7 @@ The exact skill set is expected to evolve over time.
 - `state/session_state.md` tracks whether the current session is idle or in progress.
 - `state/session_log.md` is append-only historical session context.
 - `BOOTSTRAP.md` is the single session entrypoint.
+- `ONBOARD.md` is the one-time setup entrypoint for projects that have not initialized the framework yet.
 
 This lets the user resume from the current task or from a prior session that built useful context in a subsystem.
 
@@ -128,4 +130,4 @@ This lets the user resume from the current task or from a prior session that bui
 - This template is not enforced by code. It is a working contract between the user and the agent.
 - Projects are free to extend or shrink it.
 - If a team removes important files, the framework does not break mechanically. It just becomes less effective.
-
+- `ONBOARD.md` should ensure `.agent/` is added to `.gitignore` during first-time setup.
