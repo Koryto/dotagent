@@ -130,4 +130,29 @@ This lets the user resume from the current task or from a prior session that bui
 - This template is not enforced by code. It is a working contract between the user and the agent.
 - Projects are free to extend or shrink it.
 - If a team removes important files, the framework does not break mechanically. It just becomes less effective.
-- `ONBOARD.md` should ensure `.agent/` is added to `.gitignore` during first-time setup.
+
+## Future Phases
+
+### Phase 1: Shared Engineering Operating System
+
+Transition from solo disciplined use to a partially shared engineering operating system.
+
+Likely work in this phase:
+
+- move toward a model where only local execution state stays unshared
+- keep `state/` and `tasks/` local by default
+- evaluate sharing `project/`, `specs/`, `systems/`, `workflows/`, and `skills/`
+- tighten `ONBOARD.md` with explicit install and update commands
+- add assistant-specific command adapters for flows like onboarding, bootstrap, and review while keeping the framework itself agent-agnostic
+
+### Phase 2: Agent Concurrency
+
+Extend the framework from a single-core session model to a multi-process model for large projects with multiple unrelated tasks in flight.
+
+Likely work in this phase:
+
+- define a task pool the framework can expose to a manager agent
+- define the information the manager needs to allocate work to worker agents
+- create isolated workspaces or work branches per worker to avoid collisions
+- establish merge, review, and conflict-handling rules between concurrent workers
+- keep the concurrency model subordinate to the same memory, review, and verification standards as the single-agent flow
