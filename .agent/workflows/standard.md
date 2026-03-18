@@ -75,15 +75,9 @@ Gate: verification passes, or the user accepts the remaining risk.
 
 Goal: close the task cleanly.
 
-1. Update `systems/` if implemented reality changed significantly.
-2. If project-level decisions were made, record them in `project/project_decision_log.md`.
-3. Do not promote anything into `project/` unless the user explicitly wants a project-level invariant recorded.
-4. Write `tasks/{task_name}_pr_summary.md`.
-5. Update `project/project_progress.md` if needed.
-6. If the session is ending, update `state/session_log.md`:
-   - include the session ID when the agent knows it
-   - otherwise ask the user for the session ID
-7. Update `state/session_state.md` to `IDLE` or leave handoff instructions.
+1. Load the `closeout` skill on demand.
+2. Execute the closeout process.
+3. Release the skill from active context after summary.
 
 ## Rules
 
