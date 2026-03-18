@@ -67,6 +67,8 @@ Supporting namespaces:
 |   `-- session_log.md
 |-- skills/
 |   |-- README.md
+|   |-- closeout/
+|   |   `-- SKILL.md
 |   `-- code-review/
 |       `-- SKILL.md
 |-- workflows/
@@ -133,7 +135,18 @@ This lets the user resume from the current task or from a prior session that bui
 
 ## Future Phases
 
-### Phase 1: Shared Engineering Operating System
+### Phase 1: Playbooks Introduction
+
+Introduce playbooks as optional multi-file packages for complex operational procedures that sit above individual skills.
+
+Likely work in this phase:
+
+- define the playbook package model
+- define the boundary between skills and playbooks
+- define how playbooks attach to the core framework without bloating it
+- merge `extreme-cr-rig` into the framework as the first serious playbook package (https://github.com/Koryto/extreme-cr-rig)
+
+### Phase 2: Shared Engineering Operating System
 
 Transition from solo disciplined use to a partially shared engineering operating system.
 
@@ -142,10 +155,9 @@ Likely work in this phase:
 - move toward a model where only local execution state stays unshared
 - keep `state/` and `tasks/` local by default
 - evaluate sharing `project/`, `specs/`, `systems/`, `workflows/`, and `skills/`
-- tighten `ONBOARD.md` with explicit install and update commands
 - add assistant-specific command adapters for flows like onboarding, bootstrap, and review while keeping the framework itself agent-agnostic
 
-### Phase 2: Agent Concurrency
+### Phase 3: Agent Concurrency
 
 Extend the framework from a single-core session model to a multi-process model for large projects with multiple unrelated tasks in flight.
 
