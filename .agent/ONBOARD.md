@@ -22,6 +22,7 @@ The first setup should stay user-led.
 - path: `.agent/`
 
 This source should be used for initial scaffold installation and future framework updates.
+Future updates should always be explicit and should not silently overwrite local project content.
 
 ## Onboarding Rules
 
@@ -39,3 +40,13 @@ This source should be used for initial scaffold installation and future framewor
 ## After Onboarding
 
 Once the template exists and the user has populated the initial project files, future sessions should start from `.agent/BOOTSTRAP.md`.
+
+## Success Checklist
+
+Onboarding is complete when:
+
+- `.agent/` exists in the target project
+- `.agent/` is ignored by git
+- the user has been asked to seed `project/PROJECT.md`
+- the user has been asked to seed `state/session_state.md`
+- future work is expected to start from `.agent/BOOTSTRAP.md`
