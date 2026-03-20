@@ -146,35 +146,17 @@ This lets the user resume from the current task or from a prior session that bui
 
 ## Roadmap
 
-### Phase 1: Playbooks Introduction
-
-Status: essentially complete.
-
-Delivered in this phase:
-
-- introduced `playbooks/` as an experimental namespace
-- defined the boundary between skills and playbooks
-- attached playbooks to the core framework as cold-loaded optional packages
-- merged `the-extreme-cr-rig` as the first serious playbook package (https://github.com/Koryto/extreme-cr-rig)
-
-### Phase 2: Shared Engineering Operating System
-
-Current focus.
+### Phase 1: Shared Engineering Operating System
 
 Transition from solo disciplined use to a partially shared engineering operating system.
 
-First task in this phase:
-
-- introduce a CLI/operator layer that solves procedural pain across framework onboarding and playbook execution without replacing the filesystem artifact model
-
-Likely work after that:
-
+- add a CLI/operator layer that solves procedural pain across framework onboarding and playbook execution
 - move toward a model where only local execution state stays unshared
 - keep `state/` and `tasks/` local by default
 - evaluate sharing `project/`, `specs/`, `systems/`, `workflows/`, `skills/`, and eventually selected playbooks
 - add assistant-specific command adapters while keeping the framework itself agent-agnostic
 
-### Phase 3: Agent Concurrency
+### Phase 2: Agent Concurrency
 
 Extend the framework from a single-core session model to a multi-process model for large projects with multiple unrelated tasks in flight.
 
