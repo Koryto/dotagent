@@ -144,29 +144,35 @@ This lets the user resume from the current task or from a prior session that bui
 - Projects are free to extend or shrink it.
 - If a team removes important files, the framework does not break mechanically. It just becomes less effective.
 
-## Future Phases
+## Roadmap
 
 ### Phase 1: Playbooks Introduction
 
-Introduce playbooks as optional multi-file packages for complex operational procedures that sit above individual skills.
+Status: essentially complete.
 
-Likely work in this phase:
+Delivered in this phase:
 
-- define the playbook package model
-- define the boundary between skills and playbooks
-- define how playbooks attach to the core framework without bloating it
-- merge `extreme-cr-rig` into the framework as the first serious playbook package (https://github.com/Koryto/extreme-cr-rig)
+- introduced `playbooks/` as an experimental namespace
+- defined the boundary between skills and playbooks
+- attached playbooks to the core framework as cold-loaded optional packages
+- merged `the-extreme-cr-rig` as the first serious playbook package (https://github.com/Koryto/extreme-cr-rig)
 
 ### Phase 2: Shared Engineering Operating System
 
+Current focus.
+
 Transition from solo disciplined use to a partially shared engineering operating system.
 
-Likely work in this phase:
+First task in this phase:
+
+- introduce a CLI/operator layer that solves procedural pain across framework onboarding and playbook execution without replacing the filesystem artifact model
+
+Likely work after that:
 
 - move toward a model where only local execution state stays unshared
 - keep `state/` and `tasks/` local by default
-- evaluate sharing `project/`, `specs/`, `systems/`, `workflows/`, and `skills/`
-- add assistant-specific command adapters for flows like onboarding, bootstrap, and review while keeping the framework itself agent-agnostic
+- evaluate sharing `project/`, `specs/`, `systems/`, `workflows/`, `skills/`, and eventually selected playbooks
+- add assistant-specific command adapters while keeping the framework itself agent-agnostic
 
 ### Phase 3: Agent Concurrency
 
