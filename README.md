@@ -34,6 +34,7 @@ Supporting namespaces:
 - `state/` - current session state and session history
 - `workflows/` - gated execution workflows
 - `skills/` - on-demand procedural guidance
+- `playbooks/` - experimental operational packages for complex reusable procedures
 
 ## Philosophy
 
@@ -71,6 +72,8 @@ Supporting namespaces:
 |   |   `-- SKILL.md
 |   `-- code-review/
 |       `-- SKILL.md
+|-- playbooks/
+|   `-- README.md
 |-- workflows/
 |   |-- standard.md
 |   `-- learning.md
@@ -108,6 +111,14 @@ Skills are intentionally loaded on demand, not kept in hot context.
 
 The exact skill set is expected to evolve over time.
 
+## Playbooks
+
+`playbooks/` is an experimental namespace for optional multi-file operational packages.
+
+Playbooks are intended for procedures that are too large, stateful, or role-dependent to fit cleanly into a single skill.
+
+The namespace is under active development. See [.agent/playbooks/README.md](C:\Users\Mykor\Projects\dotagent\.agent\playbooks\README.md) for the current vision and conventions.
+
 ## Session Model
 
 - `state/session_state.md` tracks whether the current session is idle or in progress.
@@ -133,31 +144,19 @@ This lets the user resume from the current task or from a prior session that bui
 - Projects are free to extend or shrink it.
 - If a team removes important files, the framework does not break mechanically. It just becomes less effective.
 
-## Future Phases
+## Roadmap
 
-### Phase 1: Playbooks Introduction
-
-Introduce playbooks as optional multi-file packages for complex operational procedures that sit above individual skills.
-
-Likely work in this phase:
-
-- define the playbook package model
-- define the boundary between skills and playbooks
-- define how playbooks attach to the core framework without bloating it
-- merge `extreme-cr-rig` into the framework as the first serious playbook package (https://github.com/Koryto/extreme-cr-rig)
-
-### Phase 2: Shared Engineering Operating System
+### Phase 1: Shared Engineering Operating System
 
 Transition from solo disciplined use to a partially shared engineering operating system.
 
-Likely work in this phase:
-
+- add a CLI/operator layer that solves procedural pain across framework onboarding and playbook execution
 - move toward a model where only local execution state stays unshared
 - keep `state/` and `tasks/` local by default
-- evaluate sharing `project/`, `specs/`, `systems/`, `workflows/`, and `skills/`
-- add assistant-specific command adapters for flows like onboarding, bootstrap, and review while keeping the framework itself agent-agnostic
+- evaluate sharing `project/`, `specs/`, `systems/`, `workflows/`, `skills/`, and eventually selected playbooks
+- add assistant-specific command adapters while keeping the framework itself agent-agnostic
 
-### Phase 3: Agent Concurrency
+### Phase 2: Agent Concurrency
 
 Extend the framework from a single-core session model to a multi-process model for large projects with multiple unrelated tasks in flight.
 
