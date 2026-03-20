@@ -34,6 +34,7 @@ Supporting namespaces:
 - `state/` - current session state and session history
 - `workflows/` - gated execution workflows
 - `skills/` - on-demand procedural guidance
+- `playbooks/` - experimental operational packages for complex reusable procedures
 
 ## Philosophy
 
@@ -71,6 +72,8 @@ Supporting namespaces:
 |   |   `-- SKILL.md
 |   `-- code-review/
 |       `-- SKILL.md
+|-- playbooks/
+|   `-- README.md
 |-- workflows/
 |   |-- standard.md
 |   `-- learning.md
@@ -107,6 +110,14 @@ It reads `project/learning_curve.md` to calibrate explanation depth and decide w
 Skills are intentionally loaded on demand, not kept in hot context.
 
 The exact skill set is expected to evolve over time.
+
+## Playbooks
+
+`playbooks/` is an experimental namespace for optional multi-file operational packages.
+
+Playbooks are intended for procedures that are too large, stateful, or role-dependent to fit cleanly into a single skill.
+
+The namespace is under active development. See [.agent/playbooks/README.md](C:\Users\Mykor\Projects\dotagent\.agent\playbooks\README.md) for the current vision and conventions.
 
 ## Session Model
 
