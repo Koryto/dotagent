@@ -22,11 +22,12 @@ Load files in this exact order. Do not load files outside this manifest unless t
 ### COLD - load on demand only
 5. `specs/` - intended design and architecture, only load files relevant to the current task
 6. `systems/` - implemented reality, only load files relevant to the current task
-7. `project/learning_curve.md` - only when `workflow == learning`
-8. `project/project_decision_log.md` - only when a historical project-level decision matters
-9. `state/session_log.md` - only when prior session history is needed
-10. `tasks/` - only when resuming or when prior task artifacts are relevant
-11. `skills/` - only when a workflow or task explicitly needs a skill
+7. `playbooks/` - only when the current task explicitly needs a playbook
+8. `project/learning_curve.md` - only when `workflow == learning`
+9. `project/project_decision_log.md` - only when a historical project-level decision matters
+10. `state/session_log.md` - only when prior session history is needed
+11. `tasks/` - only when resuming or when prior task artifacts are relevant
+12. `skills/` - only when a workflow or task explicitly needs a skill
 
 ---
 
@@ -60,6 +61,9 @@ Load files in this exact order. Do not load files outside this manifest unless t
 |   `-- session_log.md
 |-- skills/
 |   `-- <skill_name>/SKILL.md
+|-- playbooks/
+|   `-- <playbook_name>/
+|       `-- PLAYBOOK.md
 |-- workflows/
 |   |-- standard.md
 |   `-- learning.md
@@ -81,6 +85,7 @@ Load files in this exact order. Do not load files outside this manifest unless t
 - `systems/` holds implemented reality. Update it after task completion when a significant implemented system changed.
 - `tasks/` holds task-local artifacts such as plans, reviews, verification notes, and summaries.
 - `skills/` holds on-demand procedural guidance. Do not hot-load skills unless the task or workflow needs them.
+- `playbooks/` holds optional multi-file operational packages. Do not load a playbook unless the current task explicitly needs it.
 
 ---
 
