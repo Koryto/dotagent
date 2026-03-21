@@ -34,7 +34,7 @@ export async function runCli(input: RunCliInput): Promise<number> {
     const projectState = detectProjectState(projectRoot);
 
     const context: CliContext = {
-      cwd: input.cwd,
+      invocationCwd: input.cwd,
       projectRoot,
       packageRoot,
       bundledAgentRoot,

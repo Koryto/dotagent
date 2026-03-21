@@ -26,6 +26,12 @@ export class ManifestCorruptionError extends DotagentError {
   }
 }
 
+export class BundledAssetsError extends DotagentError {
+  public constructor(message: string) {
+    super(message, 5);
+  }
+}
+
 export function toExitCode(error: DotagentError): number {
   return error.exitCode;
 }

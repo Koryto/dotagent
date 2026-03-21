@@ -50,7 +50,7 @@ export type ParsedCommand =
 export type CliCommand = Exclude<ParsedCommand, HelpCommand>;
 
 export interface CliContext {
-  cwd: string;
+  invocationCwd: string;
   projectRoot: string;
   packageRoot: string;
   bundledAgentRoot: string;
