@@ -5,3 +5,4 @@ cli-task/
 node_modules/
 dist/
 .test-dist/
+.ecrr/
