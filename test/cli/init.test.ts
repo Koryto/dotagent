@@ -70,7 +70,7 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.match(stdout.buffer, /Initialization complete/);
 });
 
-test("dotagent init installs the copilot adapter under .github/copilot", async () => {
+test("dotagent init installs the copilot adapter under .github", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-copilot-"));
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
@@ -85,15 +85,14 @@ test("dotagent init installs the copilot adapter under .github/copilot", async (
 
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
-  assert.equal(existsSync(path.join(root, ".github", "copilot", "INDEX.md")), true);
-  assert.equal(existsSync(path.join(root, ".github", "INDEX.md")), false);
+  assert.equal(existsSync(path.join(root, ".github", "INDEX.md")), true);
 
   const manifest = loadManifest(root);
   assert.ok(manifest);
   assert.deepEqual(manifest.installedAdapters, [
     {
       runtime: "copilot",
-      path: ".github/copilot/INDEX.md"
+      path: ".github/INDEX.md"
     }
   ]);
   assert.match(stdout.buffer, /Initialization complete/);

@@ -13,7 +13,7 @@ export const RUNTIME_ADAPTERS: readonly RuntimeAdapterDescriptor[] = [
   { runtime: "codex", directoryName: ".codex" },
   { runtime: "claude", directoryName: ".claude" },
   { runtime: "opencode", directoryName: ".opencode" },
-  { runtime: "copilot", directoryName: ".github/copilot" }
+  { runtime: "copilot", directoryName: ".github" }
 ];
 
 export function parseRuntimeSelection(values: string[]): SupportedRuntime[] {
