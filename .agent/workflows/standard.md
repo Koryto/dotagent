@@ -24,7 +24,7 @@ Goal: clarify scope and produce an implementation plan.
 4. Include:
    - scope
    - affected files or systems
-   - implementation steps (include subagent dividable work when applicable)
+   - implementation steps - include subagent dividable work when applicable
    - risks
    - verification approach
 
