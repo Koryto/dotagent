@@ -71,6 +71,12 @@ export function collectFilePaths(rootDirectory: string): string[] {
   return results.sort((left, right) => left.localeCompare(right));
 }
 
+export function collectDirectoryPaths(rootDirectory: string): string[] {
+  const results: string[] = [];
+  walkDirectories(rootDirectory, results);
+  return results.sort((left, right) => left.localeCompare(right));
+}
+
 export function toRelativeManifestPath(projectRoot: string, targetPath: string): string {
   return path.relative(projectRoot, targetPath).split(path.sep).join("/");
 }
@@ -86,5 +92,17 @@ function walk(directory: string, results: string[]): void {
     if (entry.isFile() || statSync(absolutePath).isFile()) {
       results.push(absolutePath);
     }
+  }
+}
+
+function walkDirectories(directory: string, results: string[]): void {
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    const absolutePath = path.join(directory, entry.name);
+    results.push(absolutePath);
+    walkDirectories(absolutePath, results);
   }
 }

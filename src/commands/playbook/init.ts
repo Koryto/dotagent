@@ -43,6 +43,7 @@ export async function handlePlaybookInit(command: PlaybookInitCommand, context: 
     [
       "",
       "Playbook initialization complete.",
+      `created_directories: ${result.createdDirectories.length}`,
       `created_files: ${result.writtenFiles.length}`,
       `preserved_divergent_files: ${result.skippedFiles.length}`
     ].join("\n")

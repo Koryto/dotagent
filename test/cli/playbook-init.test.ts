@@ -44,6 +44,7 @@ test("dotagent playbook init dry-run reports filesystem scaffolding without writ
 
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /template_directories: create=3, adopt=0/);
   assert.match(stdout.buffer, /transport: filesystem/);
   assert.match(stdout.buffer, /task: default_ability_alignment/);
   assert.equal(existsSync(path.join(root, ".ecrr")), false);
@@ -82,6 +83,14 @@ test("dotagent playbook init scaffolds the first filesystem round and ignores ru
     true
   );
   assert.equal(
+    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "reviewers")),
+    true
+  );
+  assert.equal(
+    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "verification")),
+    true
+  );
+  assert.equal(
     existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "reviewers", "reviewer_template.md")),
     false
   );
@@ -91,6 +100,7 @@ test("dotagent playbook init scaffolds the first filesystem round and ignores ru
   );
   assert.match(readFileSync(path.join(root, ".gitignore"), "utf8"), /\.ecrr\//);
   assert.match(stdout.buffer, /Playbook initialization complete/);
+  assert.match(stdout.buffer, /created_directories: 3/);
 });
 
 test("dotagent playbook init preserves divergent round files on rerun", async () => {
@@ -157,6 +167,8 @@ test("dotagent playbook init --verbose reports individual template file actions"
 
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /template_directory_actions:/);
+  assert.match(stdout.buffer, /- create: \.ecrr\/default_ability_alignment\/round_001\/reviewers/);
   assert.match(stdout.buffer, /template_file_actions:/);
   assert.match(stdout.buffer, /- create: \.ecrr\/default_ability_alignment\/round_001\/00_round_context\.md/);
 });

@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { appendUtf8File, collectFilePaths, ensureParentDirectory, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, writeBinaryFile, writeUtf8File } from "./files.js";
+import { appendUtf8File, collectDirectoryPaths, collectFilePaths, ensureParentDirectory, fileExists, filesAreEqual, hashBuffer, readBinaryFile, readUtf8File, writeBinaryFile, writeUtf8File } from "./files.js";
 import { loadInstalledPlaybookContract } from "./playbooks.js";
 import type { CliContext } from "../models/command.js";
 import type { PlaybookContract, PlaybookTransportContract } from "../models/playbook.js";
@@ -8,6 +8,13 @@ import { CliUsageError, DotagentError } from "../utils/errors.js";
 
 type PlaybookPlanAction = "create" | "adopt" | "skip";
 type PlaybookGitignoreAction = "create" | "append" | "unchanged";
+type PlaybookDirectoryAction = "create" | "adopt";
+
+export interface PlaybookInitDirectoryPlan {
+  relativePath: string;
+  targetPath: string;
+  action: PlaybookDirectoryAction;
+}
 
 export interface PlaybookInitFilePlan {
   relativePath: string;
@@ -31,11 +38,13 @@ export interface PlaybookInitPlan {
   taskName: string;
   runtimeRoot: string;
   roundRoot: string;
+  directories: PlaybookInitDirectoryPlan[];
   files: PlaybookInitFilePlan[];
   gitignore: PlaybookGitignorePlan | null;
 }
 
 export interface PlaybookInitExecutionResult {
+  createdDirectories: PlaybookInitDirectoryPlan[];
   writtenFiles: PlaybookInitFilePlan[];
   skippedFiles: PlaybookInitFilePlan[];
   gitignore: PlaybookGitignorePlan | null;
@@ -82,6 +91,7 @@ export function planPlaybookInit(
     : path.join(context.projectRoot, transport.runtimeRoot);
   const roundDirectory = transport.initialRound ?? "round_001";
   const roundRoot = path.join(runtimeRoot, roundDirectory);
+  const directories = planTemplateDirectories(context.projectRoot, templateRoot, roundRoot);
   const files = planTemplateFiles(context.projectRoot, templateRoot, roundRoot);
   const gitignore = planPlaybookGitignore(context.projectRoot, transport.gitignoreEntry);
 
@@ -92,14 +102,20 @@ export function planPlaybookInit(
     taskName,
     runtimeRoot,
     roundRoot,
+    directories,
     files,
     gitignore
   };
 }
 
 export function applyPlaybookInitPlan(plan: PlaybookInitPlan): PlaybookInitExecutionResult {
+  const createdDirectories = plan.directories.filter((entry) => entry.action === "create");
   const writtenFiles = plan.files.filter((entry) => entry.action === "create");
   const skippedFiles = plan.files.filter((entry) => entry.action === "skip");
+
+  for (const directoryPlan of createdDirectories) {
+    ensureParentDirectory(path.join(directoryPlan.targetPath, ".keep"));
+  }
 
   for (const filePlan of writtenFiles) {
     ensureParentDirectory(filePlan.targetPath);
@@ -114,6 +130,7 @@ export function applyPlaybookInitPlan(plan: PlaybookInitPlan): PlaybookInitExecu
   }
 
   return {
+    createdDirectories,
     writtenFiles,
     skippedFiles,
     gitignore: plan.gitignore
@@ -121,6 +138,10 @@ export function applyPlaybookInitPlan(plan: PlaybookInitPlan): PlaybookInitExecu
 }
 
 export function renderPlaybookInitPlan(plan: PlaybookInitPlan, verbose = false): string {
+  const directoryCounts = {
+    create: plan.directories.filter((entry) => entry.action === "create").length,
+    adopt: plan.directories.filter((entry) => entry.action === "adopt").length
+  };
   const counts = {
     create: plan.files.filter((entry) => entry.action === "create").length,
     adopt: plan.files.filter((entry) => entry.action === "adopt").length,
@@ -136,11 +157,21 @@ export function renderPlaybookInitPlan(plan: PlaybookInitPlan, verbose = false):
     `task: ${plan.taskName}`,
     `runtime_root: ${toProjectRelativePath(plan.projectRoot, plan.runtimeRoot)}`,
     `round_root: ${toProjectRelativePath(plan.projectRoot, plan.roundRoot)}`,
+    `template_directories: create=${directoryCounts.create}, adopt=${directoryCounts.adopt}`,
     `template_files: create=${counts.create}, adopt=${counts.adopt}, skip=${counts.skip}`,
     `gitignore: ${plan.gitignore ? plan.gitignore.action : "unchanged"}`
   ];
 
   if (verbose) {
+    lines.push("template_directory_actions:");
+    if (plan.directories.length === 0) {
+      lines.push("- (none)");
+    } else {
+      for (const directory of plan.directories) {
+        lines.push(`- ${directory.action}: ${directory.relativePath}`);
+      }
+    }
+
     lines.push("template_file_actions:");
     if (plan.files.length === 0) {
       lines.push("- (none)");
@@ -152,6 +183,27 @@ export function renderPlaybookInitPlan(plan: PlaybookInitPlan, verbose = false):
   }
 
   return lines.join("\n");
+}
+
+function planTemplateDirectories(
+  projectRoot: string,
+  templateRoot: string,
+  roundRoot: string
+): PlaybookInitDirectoryPlan[] {
+  if (!fileExists(templateRoot)) {
+    throw new DotagentError(`Playbook template directory is missing: ${templateRoot}`);
+  }
+
+  return collectDirectoryPaths(templateRoot).map((sourceDirectory) => {
+    const relativeFromTemplate = path.relative(templateRoot, sourceDirectory);
+    const targetPath = path.join(roundRoot, relativeFromTemplate);
+
+    return {
+      relativePath: toProjectRelativePath(projectRoot, targetPath),
+      targetPath,
+      action: fileExists(targetPath) ? "adopt" : "create"
+    };
+  });
 }
 
 function planTemplateFiles(projectRoot: string, templateRoot: string, roundRoot: string): PlaybookInitFilePlan[] {
