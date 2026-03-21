@@ -103,3 +103,53 @@ test("dotagent doctor reports traversal-capable playbook contracts", async () =>
   assert.match(stdout.buffer, /issues: 1|issues: 2|issues: 3/);
   assert.match(stdout.buffer, /runtimeRoot must not contain path traversal|runtimeRoot must be relative/i);
 });
+
+test("dotagent doctor reports playbook contract name mismatches", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-doctor-contract-name-mismatch-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  writeFileSync(
+    path.join(root, ".agent", "playbooks", "the-extreme-cr-rig", "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "other-playbook",
+        version: "0.1.0",
+        defaultTransport: "filesystem",
+        transports: {
+          filesystem: {
+            runtimeRoot: ".ecrr",
+            templateDir: "filesystem/round_template",
+            taskScoped: true,
+            initialRound: "round_001",
+            gitignoreEntry: ".ecrr/"
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["doctor", "--cwd", root],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 1);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /name mismatch/i);
+});

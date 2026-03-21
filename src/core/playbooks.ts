@@ -2,7 +2,7 @@ import { existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
 import type { BundledPlaybook, PlaybookContract } from "../models/playbook.js";
-import { readUtf8File } from "./files.js";
+import { assertNonSymlinkedPathWithinRoot, readUtf8File } from "./files.js";
 import { normalizeRelativeSubpath } from "./paths.js";
 import { BundledAssetsError, DotagentError, PlaybookContractError } from "../utils/errors.js";
 
@@ -16,7 +16,9 @@ export function listInstalledPlaybooks(dotagentRoot: string): BundledPlaybook[] 
 
 export function loadInstalledPlaybookContract(projectRoot: string, playbookName: string): PlaybookContract {
   const normalizedPlaybookName = normalizePlaybookIdentifier(playbookName, "Playbook name");
-  const contractPath = path.join(projectRoot, ".agent", "playbooks", normalizedPlaybookName, "playbook.json");
+  const playbooksRoot = path.join(projectRoot, ".agent", "playbooks");
+  const playbookRoot = assertInstalledPlaybookRoot(projectRoot, normalizedPlaybookName);
+  const contractPath = path.join(playbookRoot, "playbook.json");
 
   if (!existsSync(contractPath)) {
     throw new PlaybookContractError(`Playbook contract is missing: ${contractPath}`);
@@ -24,7 +26,13 @@ export function loadInstalledPlaybookContract(projectRoot: string, playbookName:
 
   try {
     const parsed = JSON.parse(readUtf8File(contractPath)) as unknown;
-    return validatePlaybookContract(parsed, contractPath);
+    const contract = validatePlaybookContract(parsed, contractPath);
+    if (contract.name !== normalizedPlaybookName) {
+      throw new PlaybookContractError(
+        `Playbook contract name mismatch. Expected ${normalizedPlaybookName}, found ${contract.name}: ${contractPath}`
+      );
+    }
+    return contract;
   } catch (error) {
     if (error instanceof PlaybookContractError) {
       throw error;
@@ -135,10 +143,7 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
       contractPath
     );
 
-    if (
-      transportRecord.gitignoreEntry !== undefined &&
-      typeof transportRecord.gitignoreEntry !== "string"
-    ) {
+    if (transportRecord.gitignoreEntry !== undefined && typeof transportRecord.gitignoreEntry !== "string") {
       throw new PlaybookContractError(
         `Playbook transport ${transportName} gitignoreEntry must be a string when present: ${contractPath}`
       );
@@ -158,6 +163,13 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
 
     transportRecord.runtimeRoot = runtimeRoot;
     transportRecord.templateDir = templateDir;
+    if (typeof transportRecord.gitignoreEntry === "string") {
+      transportRecord.gitignoreEntry = normalizeGitignoreEntry(
+        transportRecord.gitignoreEntry,
+        `Playbook transport ${transportName} gitignoreEntry`,
+        contractPath
+      );
+    }
     let initialRound: string | undefined;
     if (typeof transportRecord.initialRound === "string") {
       initialRound = normalizeContractPath(
@@ -181,6 +193,25 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
     defaultTransport: record.defaultTransport,
     transports: transports as PlaybookContract["transports"]
   };
+}
+
+function assertInstalledPlaybookRoot(projectRoot: string, playbookName: string): string {
+  const playbooksRoot = path.join(projectRoot, ".agent", "playbooks");
+  const playbookRoot = path.join(playbooksRoot, playbookName);
+
+  try {
+    return assertNonSymlinkedPathWithinRoot(
+      playbooksRoot,
+      playbookRoot,
+      `Installed playbook root for ${playbookName}`
+    );
+  } catch (error) {
+    if (error instanceof DotagentError) {
+      throw new PlaybookContractError(error.message);
+    }
+
+    throw error;
+  }
 }
 
 export function normalizePlaybookIdentifier(value: string, label: string, contractPath?: string): string {
@@ -207,4 +238,17 @@ function normalizeContractPath(value: unknown, label: string, contractPath: stri
 
     throw error;
   }
+}
+
+function normalizeGitignoreEntry(value: string, label: string, contractPath: string): string {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) {
+    throw new PlaybookContractError(`${label} must be a non-empty single-line string: ${contractPath}`);
+  }
+
+  if (trimmed.includes("\r") || trimmed.includes("\n")) {
+    throw new PlaybookContractError(`${label} must not contain line breaks: ${contractPath}`);
+  }
+
+  return trimmed;
 }

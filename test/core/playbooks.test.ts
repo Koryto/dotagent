@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -92,4 +92,66 @@ test("loadInstalledPlaybookContract rejects traversal-capable contract names", (
   );
 
   assert.throws(() => loadInstalledPlaybookContract(root, "the-test-playbook"), PlaybookContractError);
+});
+
+test("loadInstalledPlaybookContract rejects multiline gitignore entries", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-gitignore-"));
+  const playbookRoot = path.join(root, ".agent", "playbooks", "the-test-playbook");
+  mkdirSync(playbookRoot, { recursive: true });
+  writeFileSync(path.join(playbookRoot, "PLAYBOOK.md"), "# Test\n", "utf8");
+  writeFileSync(
+    path.join(playbookRoot, "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "the-test-playbook",
+        version: "0.1.0",
+        defaultTransport: "filesystem",
+        transports: {
+          filesystem: {
+            runtimeRoot: ".ecrr",
+            templateDir: "filesystem/round_template",
+            gitignoreEntry: ".ecrr/\nsecret-dir/"
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  assert.throws(() => loadInstalledPlaybookContract(root, "the-test-playbook"), PlaybookContractError);
+});
+
+test("loadInstalledPlaybookContract rejects symlinked installed playbook roots", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-symlink-root-"));
+  const playbooksRoot = path.join(root, ".agent", "playbooks");
+  const outside = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-symlink-target-"));
+  mkdirSync(playbooksRoot, { recursive: true });
+  writeFileSync(path.join(outside, "PLAYBOOK.md"), "# Test\n", "utf8");
+  writeFileSync(
+    path.join(outside, "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "the-test-playbook",
+        version: "0.1.0",
+        defaultTransport: "filesystem",
+        transports: {
+          filesystem: {
+            runtimeRoot: ".ecrr",
+            templateDir: "filesystem/round_template"
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  symlinkSync(outside, path.join(playbooksRoot, "the-test-playbook"), "junction");
+
+  assert.throws(() => loadInstalledPlaybookContract(root, "the-test-playbook"), PlaybookContractError);
+
+  rmSync(path.join(playbooksRoot, "the-test-playbook"), { recursive: true, force: true });
 });

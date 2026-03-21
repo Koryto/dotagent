@@ -100,6 +100,38 @@ export function safeRemoveFileIfExists(projectRoot: string, filePath: string, la
   }
 }
 
+export function assertNonSymlinkedPathWithinRoot(rootPath: string, targetPath: string, label: string): string {
+  const resolvedTarget = assertPathWithinRoot(rootPath, targetPath, label);
+  const resolvedRoot = path.resolve(rootPath);
+
+  if (existsSync(resolvedRoot) && lstatSync(resolvedRoot).isSymbolicLink()) {
+    throw new DotagentError(`${label} uses a symlinked root: ${resolvedRoot}`);
+  }
+
+  const relative = path.relative(resolvedRoot, resolvedTarget);
+  if (relative.length === 0) {
+    return resolvedTarget;
+  }
+
+  let current = resolvedRoot;
+  for (const segment of relative.split(path.sep)) {
+    if (segment.length === 0) {
+      continue;
+    }
+
+    current = path.join(current, segment);
+    if (!existsSync(current)) {
+      break;
+    }
+
+    if (lstatSync(current).isSymbolicLink()) {
+      throw new DotagentError(`${label} uses a symlinked path component: ${current}`);
+    }
+  }
+
+  return resolvedTarget;
+}
+
 export function filesAreEqual(leftPath: string, rightPath: string): boolean {
   try {
     return readBinaryFile(leftPath).equals(readBinaryFile(rightPath));
@@ -165,33 +197,7 @@ function walkDirectories(directory: string, results: string[], label: string): v
 }
 
 function assertSafeProjectTarget(projectRoot: string, targetPath: string, label: string): void {
-  const resolvedTarget = assertPathWithinRoot(projectRoot, targetPath, label);
-  const resolvedRoot = path.resolve(projectRoot);
-
-  if (existsSync(resolvedRoot) && lstatSync(resolvedRoot).isSymbolicLink()) {
-    throw new DotagentError(`${label} uses a symlinked project root: ${resolvedRoot}`);
-  }
-
-  const relative = path.relative(resolvedRoot, resolvedTarget);
-  if (relative.length === 0) {
-    return;
-  }
-
-  let current = resolvedRoot;
-  for (const segment of relative.split(path.sep)) {
-    if (segment.length === 0) {
-      continue;
-    }
-
-    current = path.join(current, segment);
-    if (!existsSync(current)) {
-      break;
-    }
-
-    if (lstatSync(current).isSymbolicLink()) {
-      throw new DotagentError(`${label} uses a symlinked path component: ${current}`);
-    }
-  }
+  assertNonSymlinkedPathWithinRoot(projectRoot, targetPath, label);
 }
 
 function assertNonSymlinkedSourcePath(targetPath: string, label: string): void {
