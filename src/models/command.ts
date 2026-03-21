@@ -5,6 +5,8 @@ import type { Readable, Writable } from "node:stream";
 export interface CommandFlags {
   cwd?: string;
   runtimes?: string[];
+  task?: string;
+  transport?: string;
   dryRun: boolean;
   yes: boolean;
   help: boolean;

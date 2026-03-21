@@ -1,13 +1,41 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 
-import type { BundledPlaybook } from "../models/playbook.js";
-import { BundledAssetsError } from "../utils/errors.js";
+import type { BundledPlaybook, PlaybookContract } from "../models/playbook.js";
+import { readUtf8File } from "./files.js";
+import { BundledAssetsError, DotagentError, PlaybookContractError } from "../utils/errors.js";
 
 export function listBundledPlaybooks(bundledAgentRoot: string): BundledPlaybook[] {
-  const playbooksRoot = path.join(bundledAgentRoot, "playbooks");
+  return listPlaybooksInAgentRoot(bundledAgentRoot, "Bundled");
+}
+
+export function listInstalledPlaybooks(dotagentRoot: string): BundledPlaybook[] {
+  return listPlaybooksInAgentRoot(dotagentRoot, "Installed");
+}
+
+export function loadInstalledPlaybookContract(projectRoot: string, playbookName: string): PlaybookContract {
+  const contractPath = path.join(projectRoot, ".agent", "playbooks", playbookName, "playbook.json");
+
+  if (!existsSync(contractPath)) {
+    throw new PlaybookContractError(`Playbook contract is missing: ${contractPath}`);
+  }
+
+  try {
+    const parsed = JSON.parse(readUtf8File(contractPath)) as unknown;
+    return validatePlaybookContract(parsed, contractPath);
+  } catch (error) {
+    if (error instanceof PlaybookContractError) {
+      throw error;
+    }
+
+    throw new PlaybookContractError(`Playbook contract is unreadable or invalid JSON: ${contractPath}`);
+  }
+}
+
+function listPlaybooksInAgentRoot(agentRoot: string, label: string): BundledPlaybook[] {
+  const playbooksRoot = path.join(agentRoot, "playbooks");
   if (!existsSync(playbooksRoot)) {
-    throw new BundledAssetsError(`Bundled playbooks directory is missing: ${playbooksRoot}`);
+    throw new BundledAssetsError(`${label} playbooks directory is missing: ${playbooksRoot}`);
   }
 
   try {
@@ -23,14 +51,14 @@ export function listBundledPlaybooks(bundledAgentRoot: string): BundledPlaybook[
 
       try {
         if (!statSync(playbookPath).isFile()) {
-          throw new BundledAssetsError(`Bundled playbook path is not a file: ${playbookPath}`);
+          throw new BundledAssetsError(`${label} playbook path is not a file: ${playbookPath}`);
         }
       } catch (error) {
         if (error instanceof BundledAssetsError) {
           throw error;
         }
 
-        throw new BundledAssetsError(`Bundled playbook is missing PLAYBOOK.md: ${playbookPath}`);
+        throw new BundledAssetsError(`${label} playbook is missing PLAYBOOK.md: ${playbookPath}`);
       }
 
       playbooks.push({
@@ -46,6 +74,81 @@ export function listBundledPlaybooks(bundledAgentRoot: string): BundledPlaybook[
       throw error;
     }
 
-    throw new BundledAssetsError(`Bundled playbooks are unreadable: ${playbooksRoot}`);
+    throw new BundledAssetsError(`${label} playbooks are unreadable: ${playbooksRoot}`);
   }
+}
+
+function validatePlaybookContract(candidate: unknown, contractPath: string): PlaybookContract {
+  if (typeof candidate !== "object" || candidate === null) {
+    throw new PlaybookContractError(`Playbook contract has an invalid top-level shape: ${contractPath}`);
+  }
+
+  const record = candidate as Record<string, unknown>;
+  if (typeof record.name !== "string" || record.name.length === 0) {
+    throw new PlaybookContractError(`Playbook contract name must be a non-empty string: ${contractPath}`);
+  }
+
+  if (typeof record.version !== "string" || record.version.length === 0) {
+    throw new PlaybookContractError(`Playbook contract version must be a non-empty string: ${contractPath}`);
+  }
+
+  if (typeof record.defaultTransport !== "string" || record.defaultTransport.length === 0) {
+    throw new PlaybookContractError(`Playbook contract defaultTransport must be a non-empty string: ${contractPath}`);
+  }
+
+  if (typeof record.transports !== "object" || record.transports === null) {
+    throw new PlaybookContractError(`Playbook contract transports must be an object: ${contractPath}`);
+  }
+
+  const transports = record.transports as Record<string, unknown>;
+  for (const [transportName, transportValue] of Object.entries(transports)) {
+    if (typeof transportValue !== "object" || transportValue === null) {
+      throw new PlaybookContractError(`Playbook transport ${transportName} must be an object: ${contractPath}`);
+    }
+
+    const transportRecord = transportValue as Record<string, unknown>;
+    if (typeof transportRecord.runtimeRoot !== "string" || transportRecord.runtimeRoot.length === 0) {
+      throw new PlaybookContractError(
+        `Playbook transport ${transportName} runtimeRoot must be a non-empty string: ${contractPath}`
+      );
+    }
+
+    if (typeof transportRecord.templateDir !== "string" || transportRecord.templateDir.length === 0) {
+      throw new PlaybookContractError(
+        `Playbook transport ${transportName} templateDir must be a non-empty string: ${contractPath}`
+      );
+    }
+
+    if (
+      transportRecord.gitignoreEntry !== undefined &&
+      typeof transportRecord.gitignoreEntry !== "string"
+    ) {
+      throw new PlaybookContractError(
+        `Playbook transport ${transportName} gitignoreEntry must be a string when present: ${contractPath}`
+      );
+    }
+
+    if (transportRecord.taskScoped !== undefined && typeof transportRecord.taskScoped !== "boolean") {
+      throw new PlaybookContractError(
+        `Playbook transport ${transportName} taskScoped must be a boolean when present: ${contractPath}`
+      );
+    }
+
+    if (transportRecord.initialRound !== undefined && typeof transportRecord.initialRound !== "string") {
+      throw new PlaybookContractError(
+        `Playbook transport ${transportName} initialRound must be a string when present: ${contractPath}`
+      );
+    }
+  }
+
+  if (!(record.defaultTransport in transports)) {
+    throw new PlaybookContractError(`Playbook contract defaultTransport is not defined in transports: ${contractPath}`);
+  }
+
+  return {
+    name: record.name,
+    version: record.version,
+    defaultTransport: record.defaultTransport,
+    transports: transports as PlaybookContract["transports"]
+  };
 }

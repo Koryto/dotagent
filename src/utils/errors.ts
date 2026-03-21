@@ -32,6 +32,12 @@ export class BundledAssetsError extends DotagentError {
   }
 }
 
+export class PlaybookContractError extends DotagentError {
+  public constructor(message: string) {
+    super(message, 6);
+  }
+}
+
 export function toExitCode(error: DotagentError): number {
   return error.exitCode;
 }

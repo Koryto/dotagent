@@ -140,6 +140,44 @@ function parseArgv(argv: string[]): ParsedCommand {
       continue;
     }
 
+    if (token === "--task") {
+      const nextValue = argv[index + 1];
+      if (!nextValue) {
+        throw new CliUsageError("Missing value for --task.");
+      }
+      flags.task = nextValue;
+      index += 1;
+      continue;
+    }
+
+    if (token.startsWith("--task=")) {
+      const [, value] = token.split("=", 2);
+      if (!value) {
+        throw new CliUsageError("Missing value for --task.");
+      }
+      flags.task = value;
+      continue;
+    }
+
+    if (token === "--transport") {
+      const nextValue = argv[index + 1];
+      if (!nextValue) {
+        throw new CliUsageError("Missing value for --transport.");
+      }
+      flags.transport = nextValue;
+      index += 1;
+      continue;
+    }
+
+    if (token.startsWith("--transport=")) {
+      const [, value] = token.split("=", 2);
+      if (!value) {
+        throw new CliUsageError("Missing value for --transport.");
+      }
+      flags.transport = value;
+      continue;
+    }
+
     positionals.push(token);
   }
 
@@ -205,7 +243,7 @@ function renderHelp(): string {
     "  dotagent update [--cwd <path>] [--dry-run] [--yes]",
     "  dotagent doctor [--cwd <path>]",
     "  dotagent playbook list [--cwd <path>]",
-    "  dotagent playbook init <name> [--cwd <path>] [--dry-run] [--yes]"
+    "  dotagent playbook init <name> [--cwd <path>] [--task <name>] [--transport <name>] [--dry-run] [--yes]"
   ].join("\n");
 }
 
