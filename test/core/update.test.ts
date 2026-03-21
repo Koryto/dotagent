@@ -9,6 +9,7 @@ import { planUpdate, applyUpdatePlan } from "../../src/core/update.js";
 import { hashUtf8 } from "../../src/core/files.js";
 import { createInitialManifest, loadManifest, saveManifest } from "../../src/core/manifest.js";
 import type { CliContext } from "../../src/models/command.js";
+import { BundledAssetsError } from "../../src/utils/errors.js";
 
 class MemoryWritable extends Writable {
   public buffer = "";
@@ -136,6 +137,46 @@ test("planUpdate does not report stale removals for managed files that are alrea
 
   const plan = planUpdate(context);
   assert.equal(plan.files.some((entry) => entry.relativePath === ".agent/workflows/already-gone.md"), false);
+});
+
+test("planUpdate throws a bundled-assets error when a managed namespace is missing", () => {
+  const projectRoot = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-missing-namespace-project-"));
+  const packageRoot = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-missing-namespace-package-"));
+  const bundledAgentRoot = path.join(packageRoot, ".agent");
+
+  mkdirSync(path.join(bundledAgentRoot, "skills"), { recursive: true });
+  mkdirSync(path.join(bundledAgentRoot, "playbooks"), { recursive: true });
+  writeFileSync(path.join(packageRoot, "package.json"), JSON.stringify({ name: "@dotagent/cli", version: "0.1.0" }), "utf8");
+
+  saveManifest(projectRoot, createInitialManifest("@dotagent/cli@0.0.0", []));
+
+  const context: CliContext = {
+    invocationCwd: projectRoot,
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    projectRoot,
+    packageRoot,
+    bundledAgentRoot,
+    projectState: {
+      hasFramework: true,
+      hasManifest: true,
+      hasGitRoot: false,
+      dotagentRoot: path.join(projectRoot, ".agent")
+    },
+    flags: {
+      dryRun: false,
+      verbose: false,
+      yes: true,
+      help: false
+    },
+    logger: {
+      info(): void {},
+      warn(): void {},
+      error(): void {}
+    }
+  };
+
+  assert.throws(() => planUpdate(context), BundledAssetsError);
 });
 
 function readableExists(targetPath: string): boolean {

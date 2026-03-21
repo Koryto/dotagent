@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Readable, Writable } from "node:stream";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -141,6 +141,94 @@ test("dotagent playbook init preserves divergent round files on rerun", async ()
   assert.equal(stderr.buffer, "");
   assert.equal(readFileSync(contextPath, "utf8"), "local round context\n");
   assert.match(stdout.buffer, /Preserved divergent files: 1|preserved_divergent_files: 1/);
+});
+
+test("dotagent playbook init recreates missing empty template directories on rerun", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-init-dir-repair-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  exitCode = await runCli({
+    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  const reviewersPath = path.join(root, ".ecrr", "default_ability_alignment", "round_001", "reviewers");
+  rmSync(reviewersPath, { recursive: true, force: true });
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.equal(existsSync(reviewersPath), true);
+  assert.match(stdout.buffer, /created_directories: 1/);
+});
+
+test("dotagent playbook init rejects traversal-capable installed playbook contracts", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-init-invalid-contract-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  writeFileSync(
+    path.join(root, ".agent", "playbooks", "the-extreme-cr-rig", "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "the-extreme-cr-rig",
+        version: "0.1.0",
+        defaultTransport: "filesystem",
+        transports: {
+          filesystem: {
+            runtimeRoot: "../outside",
+            templateDir: "filesystem/round_template",
+            taskScoped: true,
+            initialRound: "round_001"
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 6);
+  assert.match(stderr.buffer, /must not contain path traversal|must be relative/i);
 });
 
 test("dotagent playbook init --verbose reports individual template file actions", async () => {

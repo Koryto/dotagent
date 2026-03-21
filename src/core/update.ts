@@ -1,12 +1,13 @@
+import { statSync } from "node:fs";
 import path from "node:path";
 
-import { collectFilePaths, fileExists, hashBuffer, readBinaryFile, removeFileIfExists, toRelativeManifestPath, writeBinaryFile } from "./files.js";
+import { collectFilePaths, fileExists, hashBuffer, readBinaryFile, safeRemoveFileIfExists, safeWriteBinaryFile, toRelativeManifestPath } from "./files.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
 import { readFrameworkRef } from "./framework.js";
 import type { CliContext } from "../models/command.js";
 import type { DotagentManifest, FileOwnershipRecord } from "../models/manifest.js";
-import { DotagentError } from "../utils/errors.js";
+import { BundledAssetsError, DotagentError } from "../utils/errors.js";
 
 const UPDATE_NAMESPACES = ["workflows", "skills", "playbooks"] as const;
 
@@ -68,7 +69,7 @@ export function applyUpdatePlan(plan: UpdatePlan): UpdateExecutionResult {
 
   for (const filePlan of updatedFiles) {
     if (filePlan.action === "remove") {
-      removeFileIfExists(filePlan.targetPath);
+      safeRemoveFileIfExists(plan.projectRoot, filePlan.targetPath, `Managed file remove: ${filePlan.relativePath}`);
       continue;
     }
 
@@ -77,7 +78,12 @@ export function applyUpdatePlan(plan: UpdatePlan): UpdateExecutionResult {
     }
 
     const content = readBinaryFile(filePlan.sourcePath);
-    writeBinaryFile(filePlan.targetPath, content);
+    safeWriteBinaryFile(
+      plan.projectRoot,
+      filePlan.targetPath,
+      content,
+      `Managed file write: ${filePlan.relativePath}`
+    );
   }
 
   saveManifest(plan.projectRoot, plan.manifest);
@@ -133,6 +139,10 @@ function planManagedUpdates(
 
   for (const namespace of UPDATE_NAMESPACES) {
     const sourceRoot = path.join(bundledAgentRoot, namespace);
+    if (!fileExists(sourceRoot) || !statSync(sourceRoot).isDirectory()) {
+      throw new BundledAssetsError(`Bundled namespace is missing: ${sourceRoot}`);
+    }
+
     for (const sourcePath of collectFilePaths(sourceRoot)) {
       const relativeFromBundled = path.relative(bundledAgentRoot, sourcePath);
       const targetPath = path.join(projectRoot, ".agent", relativeFromBundled);

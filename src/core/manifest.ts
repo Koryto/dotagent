@@ -1,7 +1,8 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 
 import type { DotagentManifest } from "../models/manifest.js";
-import { resolveDotagentRoot, resolveManifestPath } from "./paths.js";
+import { normalizeRelativeSubpath, resolveDotagentRoot, resolveManifestPath } from "./paths.js";
+import { safeWriteUtf8File } from "./files.js";
 import { ManifestCorruptionError } from "../utils/errors.js";
 
 export function createInitialManifest(frameworkRef: string, bundledPlaybooks: string[]): DotagentManifest {
@@ -36,7 +37,12 @@ export function loadManifest(projectRoot: string): DotagentManifest | null {
 export function saveManifest(projectRoot: string, manifest: DotagentManifest): void {
   const dotagentRoot = resolveDotagentRoot(projectRoot);
   mkdirSync(dotagentRoot, { recursive: true });
-  writeFileSync(resolveManifestPath(projectRoot), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+  safeWriteUtf8File(
+    projectRoot,
+    resolveManifestPath(projectRoot),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+    "Manifest write"
+  );
 }
 
 function validateManifest(candidate: unknown, manifestPath: string): DotagentManifest {
@@ -89,7 +95,8 @@ function isInstalledAdapterArray(candidate: unknown): candidate is DotagentManif
         typeof entry === "object" &&
         entry !== null &&
         typeof entry.runtime === "string" &&
-        typeof entry.path === "string"
+        typeof entry.path === "string" &&
+        isSafeManifestPath(entry.path)
     )
   );
 }
@@ -102,8 +109,18 @@ function isOwnedFilesArray(candidate: unknown): candidate is DotagentManifest["o
         typeof entry === "object" &&
         entry !== null &&
         typeof entry.path === "string" &&
+        isSafeManifestPath(entry.path) &&
         (entry.owner === "framework" || entry.owner === "playbook" || entry.owner === "adapter") &&
         (entry.contentHash === undefined || typeof entry.contentHash === "string")
     )
   );
+}
+
+function isSafeManifestPath(candidate: string): boolean {
+  try {
+    normalizeRelativeSubpath(candidate, "Manifest path");
+    return true;
+  } catch {
+    return false;
+  }
 }

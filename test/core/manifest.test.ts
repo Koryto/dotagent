@@ -54,3 +54,32 @@ test("loadManifest throws when the manifest shape is invalid", () => {
 
   assert.throws(() => loadManifest(root), ManifestCorruptionError);
 });
+
+test("loadManifest throws when a manifest path contains traversal", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-manifest-invalid-path-"));
+  const dotagentRoot = path.join(root, ".agent");
+  mkdirSync(dotagentRoot);
+  writeFileSync(
+    path.join(dotagentRoot, ".dotagent-manifest.json"),
+    `${JSON.stringify(
+      {
+        manifestVersion: 1,
+        frameworkRef: "local-dev",
+        bundledPlaybooks: [],
+        installedAdapters: [],
+        ownedFiles: [
+          {
+            path: ".agent/workflows/../../../victim.txt",
+            owner: "framework",
+            contentHash: "deadbeef"
+          }
+        ]
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  assert.throws(() => loadManifest(root), ManifestCorruptionError);
+});

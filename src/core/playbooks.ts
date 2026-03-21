@@ -3,6 +3,7 @@ import path from "node:path";
 
 import type { BundledPlaybook, PlaybookContract } from "../models/playbook.js";
 import { readUtf8File } from "./files.js";
+import { normalizeRelativeSubpath } from "./paths.js";
 import { BundledAssetsError, DotagentError, PlaybookContractError } from "../utils/errors.js";
 
 export function listBundledPlaybooks(bundledAgentRoot: string): BundledPlaybook[] {
@@ -113,11 +114,23 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
       );
     }
 
+    const runtimeRoot = normalizeContractPath(
+      transportRecord.runtimeRoot,
+      `Playbook transport ${transportName} runtimeRoot`,
+      contractPath
+    );
+
     if (typeof transportRecord.templateDir !== "string" || transportRecord.templateDir.length === 0) {
       throw new PlaybookContractError(
         `Playbook transport ${transportName} templateDir must be a non-empty string: ${contractPath}`
       );
     }
+
+    const templateDir = normalizeContractPath(
+      transportRecord.templateDir,
+      `Playbook transport ${transportName} templateDir`,
+      contractPath
+    );
 
     if (
       transportRecord.gitignoreEntry !== undefined &&
@@ -139,6 +152,24 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
         `Playbook transport ${transportName} initialRound must be a string when present: ${contractPath}`
       );
     }
+
+    if (transportRecord.initialRound !== undefined) {
+      normalizeContractPath(
+        transportRecord.initialRound,
+        `Playbook transport ${transportName} initialRound`,
+        contractPath
+      );
+    }
+
+    transportRecord.runtimeRoot = runtimeRoot;
+    transportRecord.templateDir = templateDir;
+    if (typeof transportRecord.initialRound === "string") {
+      transportRecord.initialRound = normalizeContractPath(
+        transportRecord.initialRound,
+        `Playbook transport ${transportName} initialRound`,
+        contractPath
+      );
+    }
   }
 
   if (!(record.defaultTransport in transports)) {
@@ -147,8 +178,24 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
 
   return {
     name: record.name,
-    version: record.version,
-    defaultTransport: record.defaultTransport,
-    transports: transports as PlaybookContract["transports"]
+      version: record.version,
+      defaultTransport: record.defaultTransport,
+      transports: transports as PlaybookContract["transports"]
   };
+}
+
+function normalizeContractPath(value: unknown, label: string, contractPath: string): string {
+  if (typeof value !== "string") {
+    throw new PlaybookContractError(`${label} must be a non-empty string: ${contractPath}`);
+  }
+
+  try {
+    return normalizeRelativeSubpath(value, label);
+  } catch (error) {
+    if (error instanceof DotagentError) {
+      throw new PlaybookContractError(`${error.message}: ${contractPath}`);
+    }
+
+    throw error;
+  }
 }

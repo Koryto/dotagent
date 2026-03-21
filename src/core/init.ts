@@ -2,7 +2,7 @@ import path from "node:path";
 
 import type { SupportedRuntime } from "./adapters.js";
 import { getRuntimeDescriptor } from "./adapters.js";
-import { appendUtf8File, collectFilePaths, ensureParentDirectory, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, toRelativeManifestPath, writeBinaryFile, writeUtf8File } from "./files.js";
+import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
 import { renderAgentsBridge, renderRuntimeIndex } from "../runtime/templates.js";
@@ -88,19 +88,33 @@ export function applyInitPlan(plan: InitPlan): InitExecutionResult {
     }
 
     if (filePlan.sourcePath) {
-      ensureParentDirectory(filePlan.targetPath);
       const content = readBinaryFile(filePlan.sourcePath);
-      writeBinaryFile(filePlan.targetPath, content);
+      safeWriteBinaryFile(
+        plan.projectRoot,
+        filePlan.targetPath,
+        content,
+        `Framework file write: ${filePlan.relativePath}`
+      );
       continue;
     }
 
-    writeUtf8File(filePlan.targetPath, filePlan.content ?? "");
+    safeWriteUtf8File(
+      plan.projectRoot,
+      filePlan.targetPath,
+      filePlan.content ?? "",
+      `Generated file write: ${filePlan.relativePath}`
+    );
   }
 
   if (plan.gitignore.action === "create") {
-    writeUtf8File(plan.gitignore.targetPath, plan.gitignore.content ?? "");
+    safeWriteUtf8File(plan.projectRoot, plan.gitignore.targetPath, plan.gitignore.content ?? "", "Init gitignore write");
   } else if (plan.gitignore.action === "append") {
-    appendUtf8File(plan.gitignore.targetPath, plan.gitignore.appendContent ?? "");
+    safeAppendUtf8File(
+      plan.projectRoot,
+      plan.gitignore.targetPath,
+      plan.gitignore.appendContent ?? "",
+      "Init gitignore append"
+    );
   }
 
   saveManifest(plan.projectRoot, plan.manifest);
@@ -258,10 +272,14 @@ function buildManifest(
   adapterFiles: ManagedFilePlan[],
   runtimes: SupportedRuntime[]
 ): DotagentManifest {
-  const manifest = existingManifest ?? createInitialManifest(frameworkRef, bundledPlaybooks);
+  const manifest: DotagentManifest = {
+    ...(existingManifest ?? createInitialManifest(frameworkRef, bundledPlaybooks)),
+    frameworkRef,
+    bundledPlaybooks: [...bundledPlaybooks],
+    installedAdapters: [...(existingManifest?.installedAdapters ?? [])],
+    ownedFiles: [...(existingManifest?.ownedFiles ?? [])]
+  };
 
-  manifest.frameworkRef = frameworkRef;
-  manifest.bundledPlaybooks = [...bundledPlaybooks];
   manifest.ownedFiles = mergeOwnedFiles(manifest.ownedFiles, [...frameworkFiles, ...adapterFiles]);
   manifest.installedAdapters = mergeInstalledAdapters(projectRoot, manifest.installedAdapters, adapterFiles, runtimes);
 
@@ -299,8 +317,7 @@ function mergeInstalledAdapters(
     const descriptor = getRuntimeDescriptor(runtime);
     const targetPath = path.join(projectRoot, descriptor.directoryName, "INDEX.md");
     const plan = adapterPlans.find((entry) => entry.targetPath === targetPath);
-    if (!plan || plan.action === "skip") {
-      map.delete(runtime);
+    if (!plan) {
       continue;
     }
 

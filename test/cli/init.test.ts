@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Readable, Writable } from "node:stream";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -129,6 +129,65 @@ test("dotagent init preserves divergent managed files on safe rerun", async () =
   assert.ok(manifest);
   assert.equal(manifest.ownedFiles.some((entry) => entry.path === ".agent/BOOTSTRAP.md"), false);
   assert.match(stdout.buffer, /Initialization complete/);
+});
+
+test("dotagent init preserves installed adapter state when adapter files diverge", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-adapter-rerun-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+
+  assert.equal(exitCode, 0);
+
+  const adapterPath = path.join(root, ".codex", "INDEX.md");
+  writeFileSync(adapterPath, "local custom codex adapter\n", "utf8");
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.equal(readFileSync(adapterPath, "utf8"), "local custom codex adapter\n");
+
+  const manifest = loadManifest(root);
+  assert.ok(manifest);
+  assert.deepEqual(manifest.installedAdapters.map((entry) => entry.runtime), ["codex"]);
+});
+
+test("dotagent init rejects symlinked adapter destinations outside the project", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-symlink-"));
+  const outside = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-symlink-outside-"));
+  const symlinkTarget = path.join(outside, "codex");
+
+  mkdirSync(symlinkTarget, { recursive: true });
+  symlinkSync(symlinkTarget, path.join(root, ".codex"), "junction");
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  const exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 1);
+  assert.match(stderr.buffer, /symlinked path component/i);
+  assert.equal(existsSync(path.join(symlinkTarget, "INDEX.md")), false);
+  assert.equal(existsSync(path.join(root, ".agent", ".dotagent-manifest.json")), false);
 });
 
 test("dotagent init --verbose reports individual framework and adapter file actions", async () => {

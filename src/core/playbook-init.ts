@@ -1,6 +1,7 @@
 import path from "node:path";
 
-import { appendUtf8File, collectDirectoryPaths, collectFilePaths, ensureParentDirectory, fileExists, filesAreEqual, hashBuffer, readBinaryFile, readUtf8File, writeBinaryFile, writeUtf8File } from "./files.js";
+import { collectDirectoryPaths, collectFilePaths, ensureProjectDirectory, fileExists, filesAreEqual, hashBuffer, readBinaryFile, readUtf8File, safeAppendUtf8File, safeWriteBinaryFile, safeWriteUtf8File } from "./files.js";
+import { assertPathWithinRoot } from "./paths.js";
 import { loadInstalledPlaybookContract } from "./playbooks.js";
 import type { CliContext } from "../models/command.js";
 import type { PlaybookContract, PlaybookTransportContract } from "../models/playbook.js";
@@ -85,12 +86,24 @@ export function planPlaybookInit(
 
   const { transportName, transport } = resolvePlaybookTransport(context, contract);
   const playbookRoot = path.join(context.projectRoot, ".agent", "playbooks", playbookName);
-  const templateRoot = path.join(playbookRoot, transport.templateDir);
-  const runtimeRoot = transport.taskScoped
+  const templateRoot = assertPathWithinRoot(
+    playbookRoot,
+    path.join(playbookRoot, transport.templateDir),
+    `Playbook template root for ${playbookName}`
+  );
+  const runtimeRoot = assertPathWithinRoot(
+    context.projectRoot,
+    transport.taskScoped
     ? path.join(context.projectRoot, transport.runtimeRoot, taskName)
-    : path.join(context.projectRoot, transport.runtimeRoot);
+    : path.join(context.projectRoot, transport.runtimeRoot),
+    `Playbook runtime root for ${playbookName}`
+  );
   const roundDirectory = transport.initialRound ?? "round_001";
-  const roundRoot = path.join(runtimeRoot, roundDirectory);
+  const roundRoot = assertPathWithinRoot(
+    context.projectRoot,
+    path.join(runtimeRoot, roundDirectory),
+    `Playbook round root for ${playbookName}`
+  );
   const directories = planTemplateDirectories(context.projectRoot, templateRoot, roundRoot);
   const files = planTemplateFiles(context.projectRoot, templateRoot, roundRoot);
   const gitignore = planPlaybookGitignore(context.projectRoot, transport.gitignoreEntry);
@@ -114,19 +127,33 @@ export function applyPlaybookInitPlan(plan: PlaybookInitPlan): PlaybookInitExecu
   const skippedFiles = plan.files.filter((entry) => entry.action === "skip");
 
   for (const directoryPlan of createdDirectories) {
-    ensureParentDirectory(path.join(directoryPlan.targetPath, ".keep"));
+    ensureProjectDirectory(plan.projectRoot, directoryPlan.targetPath, `Playbook directory create: ${directoryPlan.relativePath}`);
   }
 
   for (const filePlan of writtenFiles) {
-    ensureParentDirectory(filePlan.targetPath);
     const content = readBinaryFile(filePlan.sourcePath);
-    writeBinaryFile(filePlan.targetPath, content);
+    safeWriteBinaryFile(
+      plan.projectRoot,
+      filePlan.targetPath,
+      content,
+      `Playbook file write: ${filePlan.relativePath}`
+    );
   }
 
   if (plan.gitignore?.action === "create") {
-    writeUtf8File(plan.gitignore.targetPath, plan.gitignore.content ?? "");
+    safeWriteUtf8File(
+      plan.projectRoot,
+      plan.gitignore.targetPath,
+      plan.gitignore.content ?? "",
+      "Playbook gitignore write"
+    );
   } else if (plan.gitignore?.action === "append") {
-    appendUtf8File(plan.gitignore.targetPath, plan.gitignore.appendContent ?? "");
+    safeAppendUtf8File(
+      plan.projectRoot,
+      plan.gitignore.targetPath,
+      plan.gitignore.appendContent ?? "",
+      "Playbook gitignore append"
+    );
   }
 
   return {

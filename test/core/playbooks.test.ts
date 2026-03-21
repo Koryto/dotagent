@@ -4,8 +4,8 @@ import { mkdtempSync, mkdirSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { listBundledPlaybooks } from "../../src/core/playbooks.js";
-import { BundledAssetsError } from "../../src/utils/errors.js";
+import { listBundledPlaybooks, loadInstalledPlaybookContract } from "../../src/core/playbooks.js";
+import { BundledAssetsError, PlaybookContractError } from "../../src/utils/errors.js";
 
 test("listBundledPlaybooks returns bundled playbooks with PLAYBOOK.md", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbooks-"));
@@ -30,4 +30,32 @@ test("listBundledPlaybooks throws when a bundled playbook is missing PLAYBOOK.md
   mkdirSync(path.join(root, "playbooks", "the-test-playbook"), { recursive: true });
 
   assert.throws(() => listBundledPlaybooks(root), BundledAssetsError);
+});
+
+test("loadInstalledPlaybookContract rejects traversal-capable transport paths", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-paths-"));
+  const playbookRoot = path.join(root, ".agent", "playbooks", "the-test-playbook");
+  mkdirSync(playbookRoot, { recursive: true });
+  writeFileSync(path.join(playbookRoot, "PLAYBOOK.md"), "# Test\n", "utf8");
+  writeFileSync(
+    path.join(playbookRoot, "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "the-test-playbook",
+        version: "0.1.0",
+        defaultTransport: "filesystem",
+        transports: {
+          filesystem: {
+            runtimeRoot: "../outside",
+            templateDir: "filesystem/round_template"
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  assert.throws(() => loadInstalledPlaybookContract(root, "the-test-playbook"), PlaybookContractError);
 });

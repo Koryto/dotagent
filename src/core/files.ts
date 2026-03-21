@@ -3,6 +3,7 @@ import {
 } from "node:crypto";
 import {
   existsSync,
+  lstatSync,
   mkdirSync,
   readFileSync,
   readdirSync,
@@ -11,6 +12,8 @@ import {
   writeFileSync
 } from "node:fs";
 import path from "node:path";
+import { assertPathWithinRoot } from "./paths.js";
+import { DotagentError } from "../utils/errors.js";
 
 export function ensureParentDirectory(filePath: string): void {
   mkdirSync(path.dirname(filePath), { recursive: true });
@@ -54,6 +57,42 @@ export function fileExists(filePath: string): boolean {
 export function removeFileIfExists(filePath: string): void {
   if (existsSync(filePath)) {
     unlinkSync(filePath);
+  }
+}
+
+export function ensureProjectDirectory(projectRoot: string, directoryPath: string, label: string): void {
+  assertSafeProjectTarget(projectRoot, directoryPath, label);
+  mkdirSync(directoryPath, { recursive: true });
+}
+
+export function safeWriteUtf8File(projectRoot: string, filePath: string, content: string, label: string): void {
+  assertSafeProjectTarget(projectRoot, filePath, label);
+  ensureParentDirectory(filePath);
+  writeFileSync(filePath, content, "utf8");
+}
+
+export function safeWriteBinaryFile(projectRoot: string, filePath: string, content: Buffer, label: string): void {
+  assertSafeProjectTarget(projectRoot, filePath, label);
+  ensureParentDirectory(filePath);
+  writeFileSync(filePath, content);
+}
+
+export function safeAppendUtf8File(projectRoot: string, filePath: string, content: string, label: string): void {
+  assertSafeProjectTarget(projectRoot, filePath, label);
+  ensureParentDirectory(filePath);
+  writeFileSync(filePath, content, { encoding: "utf8", flag: "a" });
+}
+
+export function safeRemoveFileIfExists(projectRoot: string, filePath: string, label: string): void {
+  assertSafeProjectTarget(projectRoot, filePath, label);
+
+  try {
+    unlinkSync(filePath);
+  } catch (error) {
+    const errno = error as NodeJS.ErrnoException;
+    if (errno.code !== "ENOENT") {
+      throw error;
+    }
   }
 }
 
@@ -104,5 +143,35 @@ function walkDirectories(directory: string, results: string[]): void {
     const absolutePath = path.join(directory, entry.name);
     results.push(absolutePath);
     walkDirectories(absolutePath, results);
+  }
+}
+
+function assertSafeProjectTarget(projectRoot: string, targetPath: string, label: string): void {
+  const resolvedTarget = assertPathWithinRoot(projectRoot, targetPath, label);
+  const resolvedRoot = path.resolve(projectRoot);
+
+  if (existsSync(resolvedRoot) && lstatSync(resolvedRoot).isSymbolicLink()) {
+    throw new DotagentError(`${label} uses a symlinked project root: ${resolvedRoot}`);
+  }
+
+  const relative = path.relative(resolvedRoot, resolvedTarget);
+  if (relative.length === 0) {
+    return;
+  }
+
+  let current = resolvedRoot;
+  for (const segment of relative.split(path.sep)) {
+    if (segment.length === 0) {
+      continue;
+    }
+
+    current = path.join(current, segment);
+    if (!existsSync(current)) {
+      break;
+    }
+
+    if (lstatSync(current).isSymbolicLink()) {
+      throw new DotagentError(`${label} uses a symlinked path component: ${current}`);
+    }
   }
 }
