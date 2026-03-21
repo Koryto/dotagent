@@ -6,6 +6,7 @@ import { handlePlaybookInit } from "./commands/playbook/init.js";
 import { handlePlaybookList } from "./commands/playbook/list.js";
 import { handleUpdate } from "./commands/update.js";
 import { detectProjectState, resolveProjectRoot } from "./core/project.js";
+import { normalizePlaybookIdentifier } from "./core/playbooks.js";
 import { resolveBundledAgentRoot, resolvePackageRoot } from "./core/paths.js";
 import type { CliCommand, CliContext, CommandFlags, ParsedCommand } from "./models/command.js";
 import { CliUsageError, DotagentError, NotImplementedCliError, toExitCode } from "./utils/errors.js";
@@ -217,7 +218,7 @@ function parseArgv(argv: string[]): ParsedCommand {
         return {
           kind: "playbook-init",
           flags,
-          name: maybeArg
+          name: normalizeCommandPlaybookName(maybeArg)
         };
       }
       throw new CliUsageError("Unknown playbook subcommand. Supported: list, init.");
@@ -264,6 +265,14 @@ function mergeRuntimes(existing: string[] | undefined, value: string): string[] 
     .filter((entry) => entry.length > 0);
 
   return [...(existing ?? []), ...parsed];
+}
+
+function normalizeCommandPlaybookName(value: string): string {
+  try {
+    return normalizePlaybookIdentifier(value, "Playbook name");
+  } catch {
+    throw new CliUsageError(`Invalid playbook name: ${value}.`);
+  }
 }
 
 function normalizeError(error: unknown): DotagentError {

@@ -59,3 +59,37 @@ test("loadInstalledPlaybookContract rejects traversal-capable transport paths", 
 
   assert.throws(() => loadInstalledPlaybookContract(root, "the-test-playbook"), PlaybookContractError);
 });
+
+test("loadInstalledPlaybookContract rejects traversal-capable playbook names", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-name-"));
+
+  assert.throws(() => loadInstalledPlaybookContract(root, "..\\outside"), PlaybookContractError);
+});
+
+test("loadInstalledPlaybookContract rejects traversal-capable contract names", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-invalid-name-"));
+  const playbookRoot = path.join(root, ".agent", "playbooks", "the-test-playbook");
+  mkdirSync(playbookRoot, { recursive: true });
+  writeFileSync(path.join(playbookRoot, "PLAYBOOK.md"), "# Test\n", "utf8");
+  writeFileSync(
+    path.join(playbookRoot, "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "../outside",
+        version: "0.1.0",
+        defaultTransport: "filesystem",
+        transports: {
+          filesystem: {
+            runtimeRoot: ".ecrr",
+            templateDir: "filesystem/round_template"
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  assert.throws(() => loadInstalledPlaybookContract(root, "the-test-playbook"), PlaybookContractError);
+});

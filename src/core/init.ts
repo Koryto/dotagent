@@ -152,7 +152,7 @@ export function renderInitPlan(plan: InitPlan, verbose = false): string {
 function planBundledFrameworkFiles(projectRoot: string, bundledAgentRoot: string): ManagedFilePlan[] {
   const results: ManagedFilePlan[] = [];
 
-  for (const sourcePath of collectFilePaths(bundledAgentRoot)) {
+  for (const sourcePath of collectFilePaths(bundledAgentRoot, `Bundled framework source: ${bundledAgentRoot}`)) {
     const relativeFromBundled = path.relative(bundledAgentRoot, sourcePath);
     const targetPath = path.join(projectRoot, ".agent", relativeFromBundled);
     const relativePath = toRelativeManifestPath(projectRoot, targetPath);

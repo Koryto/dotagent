@@ -7,7 +7,6 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
-  statSync,
   unlinkSync,
   writeFileSync
 } from "node:fs";
@@ -109,15 +108,15 @@ export function filesAreEqual(leftPath: string, rightPath: string): boolean {
   }
 }
 
-export function collectFilePaths(rootDirectory: string): string[] {
+export function collectFilePaths(rootDirectory: string, label = `Source file tree: ${rootDirectory}`): string[] {
   const results: string[] = [];
-  walk(rootDirectory, results);
+  walk(rootDirectory, results, label);
   return results.sort((left, right) => left.localeCompare(right));
 }
 
-export function collectDirectoryPaths(rootDirectory: string): string[] {
+export function collectDirectoryPaths(rootDirectory: string, label = `Source directory tree: ${rootDirectory}`): string[] {
   const results: string[] = [];
-  walkDirectories(rootDirectory, results);
+  walkDirectories(rootDirectory, results, label);
   return results.sort((left, right) => left.localeCompare(right));
 }
 
@@ -125,29 +124,43 @@ export function toRelativeManifestPath(projectRoot: string, targetPath: string):
   return path.relative(projectRoot, targetPath).split(path.sep).join("/");
 }
 
-function walk(directory: string, results: string[]): void {
+function walk(directory: string, results: string[], label: string): void {
+  assertNonSymlinkedSourcePath(directory, label);
+
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
     const absolutePath = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      walk(absolutePath, results);
+    const entryStats = lstatSync(absolutePath);
+    if (entryStats.isSymbolicLink()) {
+      throw new DotagentError(`${label} contains a symlinked path component: ${absolutePath}`);
+    }
+
+    if (entryStats.isDirectory()) {
+      walk(absolutePath, results, label);
       continue;
     }
 
-    if (entry.isFile() || statSync(absolutePath).isFile()) {
+    if (entryStats.isFile()) {
       results.push(absolutePath);
     }
   }
 }
 
-function walkDirectories(directory: string, results: string[]): void {
+function walkDirectories(directory: string, results: string[], label: string): void {
+  assertNonSymlinkedSourcePath(directory, label);
+
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
-    if (!entry.isDirectory()) {
+    const absolutePath = path.join(directory, entry.name);
+    const entryStats = lstatSync(absolutePath);
+    if (entryStats.isSymbolicLink()) {
+      throw new DotagentError(`${label} contains a symlinked path component: ${absolutePath}`);
+    }
+
+    if (!entryStats.isDirectory()) {
       continue;
     }
 
-    const absolutePath = path.join(directory, entry.name);
     results.push(absolutePath);
-    walkDirectories(absolutePath, results);
+    walkDirectories(absolutePath, results, label);
   }
 }
 
@@ -178,5 +191,11 @@ function assertSafeProjectTarget(projectRoot: string, targetPath: string, label:
     if (lstatSync(current).isSymbolicLink()) {
       throw new DotagentError(`${label} uses a symlinked path component: ${current}`);
     }
+  }
+}
+
+function assertNonSymlinkedSourcePath(targetPath: string, label: string): void {
+  if (lstatSync(targetPath).isSymbolicLink()) {
+    throw new DotagentError(`${label} uses a symlinked root: ${targetPath}`);
   }
 }

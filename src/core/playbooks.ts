@@ -15,7 +15,8 @@ export function listInstalledPlaybooks(dotagentRoot: string): BundledPlaybook[] 
 }
 
 export function loadInstalledPlaybookContract(projectRoot: string, playbookName: string): PlaybookContract {
-  const contractPath = path.join(projectRoot, ".agent", "playbooks", playbookName, "playbook.json");
+  const normalizedPlaybookName = normalizePlaybookIdentifier(playbookName, "Playbook name");
+  const contractPath = path.join(projectRoot, ".agent", "playbooks", normalizedPlaybookName, "playbook.json");
 
   if (!existsSync(contractPath)) {
     throw new PlaybookContractError(`Playbook contract is missing: ${contractPath}`);
@@ -89,6 +90,8 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
     throw new PlaybookContractError(`Playbook contract name must be a non-empty string: ${contractPath}`);
   }
 
+  const playbookName = normalizePlaybookIdentifier(record.name, "Playbook contract name", contractPath);
+
   if (typeof record.version !== "string" || record.version.length === 0) {
     throw new PlaybookContractError(`Playbook contract version must be a non-empty string: ${contractPath}`);
   }
@@ -153,22 +156,18 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
       );
     }
 
-    if (transportRecord.initialRound !== undefined) {
-      normalizeContractPath(
+    transportRecord.runtimeRoot = runtimeRoot;
+    transportRecord.templateDir = templateDir;
+    let initialRound: string | undefined;
+    if (typeof transportRecord.initialRound === "string") {
+      initialRound = normalizeContractPath(
         transportRecord.initialRound,
         `Playbook transport ${transportName} initialRound`,
         contractPath
       );
     }
-
-    transportRecord.runtimeRoot = runtimeRoot;
-    transportRecord.templateDir = templateDir;
-    if (typeof transportRecord.initialRound === "string") {
-      transportRecord.initialRound = normalizeContractPath(
-        transportRecord.initialRound,
-        `Playbook transport ${transportName} initialRound`,
-        contractPath
-      );
+    if (initialRound !== undefined) {
+      transportRecord.initialRound = initialRound;
     }
   }
 
@@ -177,11 +176,21 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
   }
 
   return {
-    name: record.name,
-      version: record.version,
-      defaultTransport: record.defaultTransport,
-      transports: transports as PlaybookContract["transports"]
+    name: playbookName,
+    version: record.version,
+    defaultTransport: record.defaultTransport,
+    transports: transports as PlaybookContract["transports"]
   };
+}
+
+export function normalizePlaybookIdentifier(value: string, label: string, contractPath?: string): string {
+  const trimmed = value.trim();
+  if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(trimmed)) {
+    const suffix = contractPath ? `: ${contractPath}` : "";
+    throw new PlaybookContractError(`${label} must be a non-empty identifier without separators or traversal: ${value}${suffix}`);
+  }
+
+  return trimmed;
 }
 
 function normalizeContractPath(value: unknown, label: string, contractPath: string): string {

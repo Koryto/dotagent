@@ -213,7 +213,7 @@ function planTemplateDirectories(
     throw new DotagentError(`Playbook template directory is missing: ${templateRoot}`);
   }
 
-  return collectDirectoryPaths(templateRoot).map((sourceDirectory) => {
+  return collectDirectoryPaths(templateRoot, `Playbook template root: ${templateRoot}`).map((sourceDirectory) => {
     const relativeFromTemplate = path.relative(templateRoot, sourceDirectory);
     const targetPath = path.join(roundRoot, relativeFromTemplate);
 
@@ -230,7 +230,7 @@ function planTemplateFiles(projectRoot: string, templateRoot: string, roundRoot:
     throw new DotagentError(`Playbook template directory is missing: ${templateRoot}`);
   }
 
-  return collectFilePaths(templateRoot)
+  return collectFilePaths(templateRoot, `Playbook template root: ${templateRoot}`)
     .filter((sourcePath) => shouldCopyTemplateFile(sourcePath))
     .map((sourcePath) => {
     const relativeFromTemplate = path.relative(templateRoot, sourcePath);

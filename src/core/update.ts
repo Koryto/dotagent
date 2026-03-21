@@ -143,7 +143,7 @@ function planManagedUpdates(
       throw new BundledAssetsError(`Bundled namespace is missing: ${sourceRoot}`);
     }
 
-    for (const sourcePath of collectFilePaths(sourceRoot)) {
+    for (const sourcePath of collectFilePaths(sourceRoot, `Managed namespace source: ${sourceRoot}`)) {
       const relativeFromBundled = path.relative(bundledAgentRoot, sourcePath);
       const targetPath = path.join(projectRoot, ".agent", relativeFromBundled);
       const relativePath = toRelativeManifestPath(projectRoot, targetPath);
