@@ -17,6 +17,11 @@ export function writeUtf8File(filePath: string, content: string): void {
   writeFileSync(filePath, content, "utf8");
 }
 
+export function writeBinaryFile(filePath: string, content: Buffer): void {
+  ensureParentDirectory(filePath);
+  writeFileSync(filePath, content);
+}
+
 export function appendUtf8File(filePath: string, content: string): void {
   ensureParentDirectory(filePath);
   writeFileSync(filePath, content, { encoding: "utf8", flag: "a" });

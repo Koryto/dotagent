@@ -2,7 +2,7 @@ import path from "node:path";
 
 import type { SupportedRuntime } from "./adapters.js";
 import { getRuntimeDescriptor } from "./adapters.js";
-import { collectFilePaths, fileExists, filesAreEqual, readUtf8File, toRelativeManifestPath, writeUtf8File, appendUtf8File, ensureParentDirectory } from "./files.js";
+import { appendUtf8File, collectFilePaths, ensureParentDirectory, fileExists, filesAreEqual, readBinaryFile, readUtf8File, toRelativeManifestPath, writeBinaryFile, writeUtf8File } from "./files.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
 import { renderAgentsBridge, renderRuntimeIndex } from "../runtime/templates.js";
@@ -88,8 +88,8 @@ export function applyInitPlan(plan: InitPlan): InitExecutionResult {
 
     if (filePlan.sourcePath) {
       ensureParentDirectory(filePlan.targetPath);
-      const content = readUtf8File(filePlan.sourcePath);
-      writeUtf8File(filePlan.targetPath, content);
+      const content = readBinaryFile(filePlan.sourcePath);
+      writeBinaryFile(filePlan.targetPath, content);
       continue;
     }
 

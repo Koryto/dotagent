@@ -11,7 +11,7 @@ export async function resolveInitRuntimes(context: CliContext): Promise<Supporte
   }
 
   if (context.flags.yes) {
-    throw new CliUsageError("`dotagent init --yes` requires `--runtimes` or `--runtime`.");
+    return [];
   }
 
   if (!canPrompt(context)) {

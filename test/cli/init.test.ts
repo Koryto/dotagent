@@ -70,6 +70,31 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.match(stdout.buffer, /Initialization complete/);
 });
 
+test("dotagent init supports framework-only initialization with --yes and no runtimes", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-framework-only-"));
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+
+  const exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.equal(existsSync(path.join(root, ".agent", "BOOTSTRAP.md")), true);
+  assert.equal(existsSync(path.join(root, "AGENTS.md")), false);
+  assert.equal(existsSync(path.join(root, ".codex")), false);
+
+  const manifest = loadManifest(root);
+  assert.ok(manifest);
+  assert.deepEqual(manifest.installedAdapters, []);
+  assert.match(stdout.buffer, /runtimes: \(none\)/);
+});
+
 test("dotagent init preserves divergent managed files on safe rerun", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-rerun-"));
 

@@ -18,7 +18,7 @@ export function renderRuntimeIndex(runtime: SupportedRuntime, bundledPlaybooks: 
     "- dotagent doctor",
     "- dotagent update",
     "- dotagent playbook list",
-    "- dotagent playbook init the-extreme-cr-rig",
+    "- dotagent playbook init <name>",
     "",
     "This file is a thin adapter. The framework source of truth remains under `.agent/`.",
     ""
