@@ -26,7 +26,7 @@ Goal: clarify scope and produce an implementation plan.
    - implementation steps
    - risks
    - verification approach
-5. If using parallel execution with sub-agents:
+5. For tasks where parallel execution is applicable (e.g., large independent workstreams):
    - Create ONE unified master plan (`tasks/{task_name}_ip.md`); DO NOT create separate plans for each sub-agent.
    - Inside the plan, divide the work into detailed batches/workstreams for each agent.
    - Explicitly define file/directory boundaries assigned to each agent's batch. Assure no two agents edit the same file.
@@ -38,7 +38,7 @@ Gate: user approves the plan.
 Goal: execute the approved plan.
 
 1. Follow the plan.
-2. If using parallel execution:
+2. For parallel execution:
    - Spawn sub-agents for each assigned batch from the unified plan.
    - Sub-agents must ONLY modify their assigned files. DO NOT let sub-agents modify out of scope or assume missing parts.
    - Sub-agents DO NOT coordinate or communicate with other agents mid-task.
@@ -55,7 +55,7 @@ Gate: implementation is ready for review (all sub-agents completed if parallel).
 
 Goal: perform mandatory self-review before presenting completion.
 
-1. If using parallel execution, dynamically merge streams ONE BY ONE. Validate and perform integration synthesis (normalize naming, align code styles).
+1. For parallel execution, dynamically merge streams ONE BY ONE. Validate and perform integration synthesis (normalize naming, align code styles).
 2. Load the `code-review` skill on demand.
 3. Review the changes.
 4. Write `tasks/{task_name}_review.md` for substantial tasks.
