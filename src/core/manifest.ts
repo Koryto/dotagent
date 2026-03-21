@@ -40,7 +40,7 @@ export function saveManifest(projectRoot: string, manifest: DotagentManifest): v
 }
 
 function validateManifest(candidate: unknown, manifestPath: string): DotagentManifest {
-  if (!isManifestRecord(candidate)) {
+  if (!isNonNullObject(candidate)) {
     throw new ManifestCorruptionError(`Manifest has an invalid top-level shape: ${manifestPath}`);
   }
 
@@ -64,10 +64,16 @@ function validateManifest(candidate: unknown, manifestPath: string): DotagentMan
     throw new ManifestCorruptionError(`Manifest ownedFiles has an invalid shape: ${manifestPath}`);
   }
 
-  return candidate;
+  return {
+    manifestVersion: candidate.manifestVersion,
+    frameworkRef: candidate.frameworkRef,
+    bundledPlaybooks: [...candidate.bundledPlaybooks],
+    installedAdapters: [...candidate.installedAdapters],
+    ownedFiles: [...candidate.ownedFiles]
+  };
 }
 
-function isManifestRecord(candidate: unknown): candidate is DotagentManifest {
+function isNonNullObject(candidate: unknown): candidate is Record<string, unknown> {
   return typeof candidate === "object" && candidate !== null;
 }
 

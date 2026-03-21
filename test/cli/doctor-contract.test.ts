@@ -48,7 +48,7 @@ test("dotagent doctor reports invalid installed playbook contracts", async () =>
     stderr
   });
 
-  assert.equal(exitCode, 0);
+  assert.equal(exitCode, 1);
   assert.equal(stderr.buffer, "");
   assert.match(stdout.buffer, /issues: 1|issues: 2|issues: 3/);
   assert.match(stdout.buffer, /Playbook contract is unreadable or invalid JSON/);

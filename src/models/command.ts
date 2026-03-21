@@ -8,6 +8,7 @@ export interface CommandFlags {
   task?: string;
   transport?: string;
   dryRun: boolean;
+  verbose: boolean;
   yes: boolean;
   help: boolean;
 }

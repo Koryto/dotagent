@@ -132,3 +132,31 @@ test("dotagent playbook init preserves divergent round files on rerun", async ()
   assert.equal(readFileSync(contextPath, "utf8"), "local round context\n");
   assert.match(stdout.buffer, /Preserved divergent files: 1|preserved_divergent_files: 1/);
 });
+
+test("dotagent playbook init --verbose reports individual template file actions", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-init-verbose-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--dry-run", "--verbose"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /template_file_actions:/);
+  assert.match(stdout.buffer, /- create: \.ecrr\/default_ability_alignment\/round_001\/00_round_context\.md/);
+});

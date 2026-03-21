@@ -63,6 +63,7 @@ test("planUpdate/applyUpdatePlan removes stale managed files that no longer exis
     },
     flags: {
       dryRun: false,
+      verbose: false,
       yes: true,
       help: false
     },
@@ -85,6 +86,56 @@ test("planUpdate/applyUpdatePlan removes stale managed files that no longer exis
   const updatedManifest = loadManifest(projectRoot);
   assert.ok(updatedManifest);
   assert.equal(updatedManifest.ownedFiles.some((entry) => entry.path === ".agent/workflows/obsolete.md"), false);
+});
+
+test("planUpdate does not report stale removals for managed files that are already missing on disk", () => {
+  const projectRoot = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-missing-target-project-"));
+  const packageRoot = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-missing-target-package-"));
+  const bundledAgentRoot = path.join(packageRoot, ".agent");
+
+  mkdirSync(path.join(bundledAgentRoot, "workflows"), { recursive: true });
+  mkdirSync(path.join(bundledAgentRoot, "skills"), { recursive: true });
+  mkdirSync(path.join(bundledAgentRoot, "playbooks"), { recursive: true });
+  writeFileSync(path.join(packageRoot, "package.json"), JSON.stringify({ name: "@dotagent/cli", version: "0.1.0" }), "utf8");
+
+  const manifest = createInitialManifest("@dotagent/cli@0.0.0", []);
+  manifest.ownedFiles = [
+    {
+      path: ".agent/workflows/already-gone.md",
+      owner: "framework",
+      contentHash: hashUtf8("old managed workflow\n")
+    }
+  ];
+  saveManifest(projectRoot, manifest);
+
+  const context: CliContext = {
+    invocationCwd: projectRoot,
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    projectRoot,
+    packageRoot,
+    bundledAgentRoot,
+    projectState: {
+      hasFramework: true,
+      hasManifest: true,
+      hasGitRoot: false,
+      dotagentRoot: path.join(projectRoot, ".agent")
+    },
+    flags: {
+      dryRun: false,
+      verbose: false,
+      yes: true,
+      help: false
+    },
+    logger: {
+      info(): void {},
+      warn(): void {},
+      error(): void {}
+    }
+  };
+
+  const plan = planUpdate(context);
+  assert.equal(plan.files.some((entry) => entry.relativePath === ".agent/workflows/already-gone.md"), false);
 });
 
 function readableExists(targetPath: string): boolean {

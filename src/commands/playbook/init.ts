@@ -13,7 +13,7 @@ export async function handlePlaybookInit(command: PlaybookInitCommand, context: 
   const { transport } = resolvePlaybookTransport(context, contract);
   const taskName = transport.taskScoped ? await resolvePlaybookTask(context, command.name) : "default";
   const plan = planPlaybookInit(context, command.name, taskName);
-  context.logger.info(renderPlaybookInitPlan(plan));
+  context.logger.info(renderPlaybookInitPlan(plan, context.flags.verbose));
 
   if (context.flags.dryRun) {
     return 0;

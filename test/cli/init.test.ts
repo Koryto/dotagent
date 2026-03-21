@@ -130,3 +130,24 @@ test("dotagent init preserves divergent managed files on safe rerun", async () =
   assert.equal(manifest.ownedFiles.some((entry) => entry.path === ".agent/BOOTSTRAP.md"), false);
   assert.match(stdout.buffer, /Initialization complete/);
 });
+
+test("dotagent init --verbose reports individual framework and adapter file actions", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-verbose-"));
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+
+  const exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--dry-run", "--verbose"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /framework_file_actions:/);
+  assert.match(stdout.buffer, /- create: \.agent\/BOOTSTRAP\.md/);
+  assert.match(stdout.buffer, /adapter_file_actions:/);
+  assert.match(stdout.buffer, /- create: \.codex\/INDEX\.md/);
+});

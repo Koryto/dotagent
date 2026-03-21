@@ -106,6 +106,10 @@ function validateTaskName(candidate: string): string {
     throw new CliUsageError("Task name must not be `.` or `..`.");
   }
 
+  if (normalized.includes("/") || normalized.includes("\\")) {
+    throw new CliUsageError("Task name must not contain path separators.");
+  }
+
   if (!/^[A-Za-z0-9][A-Za-z0-9._-]*$/.test(normalized)) {
     throw new CliUsageError(
       "Task name must start with an alphanumeric character and contain only letters, numbers, dots, underscores, or hyphens."

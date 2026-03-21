@@ -57,6 +57,7 @@ export async function runCli(input: RunCliInput): Promise<number> {
 function parseArgv(argv: string[]): ParsedCommand {
   const flags: CommandFlags = {
     dryRun: false,
+    verbose: false,
     yes: false,
     help: false
   };
@@ -70,6 +71,11 @@ function parseArgv(argv: string[]): ParsedCommand {
 
     if (token === "--dry-run") {
       flags.dryRun = true;
+      continue;
+    }
+
+    if (token === "--verbose") {
+      flags.verbose = true;
       continue;
     }
 
@@ -239,11 +245,11 @@ function renderHelp(): string {
     "dotagent",
     "",
     "Usage:",
-    "  dotagent init [--cwd <path>] [--runtimes <list>] [--dry-run] [--yes]",
-    "  dotagent update [--cwd <path>] [--dry-run] [--yes]",
+    "  dotagent init [--cwd <path>] [--runtimes <list>] [--dry-run] [--verbose] [--yes]",
+    "  dotagent update [--cwd <path>] [--dry-run] [--verbose] [--yes]",
     "  dotagent doctor [--cwd <path>]",
     "  dotagent playbook list [--cwd <path>]",
-    "  dotagent playbook init <name> [--cwd <path>] [--task <name>] [--transport <name>] [--dry-run] [--yes]"
+    "  dotagent playbook init <name> [--cwd <path>] [--task <name>] [--transport <name>] [--dry-run] [--verbose] [--yes]"
   ].join("\n");
 }
 

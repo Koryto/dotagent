@@ -8,7 +8,7 @@ export async function handleInit(context: CliContext): Promise<number> {
   const frameworkRef = readFrameworkRef(context.packageRoot);
   const plan = planInit(context, frameworkRef, runtimes);
 
-  context.logger.info(renderInitPlan(plan));
+  context.logger.info(renderInitPlan(plan, context.flags.verbose));
 
   if (context.flags.dryRun) {
     return 0;

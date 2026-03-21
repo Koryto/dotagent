@@ -120,14 +120,14 @@ export function applyPlaybookInitPlan(plan: PlaybookInitPlan): PlaybookInitExecu
   };
 }
 
-export function renderPlaybookInitPlan(plan: PlaybookInitPlan): string {
+export function renderPlaybookInitPlan(plan: PlaybookInitPlan, verbose = false): string {
   const counts = {
     create: plan.files.filter((entry) => entry.action === "create").length,
     adopt: plan.files.filter((entry) => entry.action === "adopt").length,
     skip: plan.files.filter((entry) => entry.action === "skip").length
   };
 
-  return [
+  const lines = [
     `dotagent playbook init ${plan.playbookName}`,
     "",
     `project_root: ${plan.projectRoot}`,
@@ -138,7 +138,20 @@ export function renderPlaybookInitPlan(plan: PlaybookInitPlan): string {
     `round_root: ${toProjectRelativePath(plan.projectRoot, plan.roundRoot)}`,
     `template_files: create=${counts.create}, adopt=${counts.adopt}, skip=${counts.skip}`,
     `gitignore: ${plan.gitignore ? plan.gitignore.action : "unchanged"}`
-  ].join("\n");
+  ];
+
+  if (verbose) {
+    lines.push("template_file_actions:");
+    if (plan.files.length === 0) {
+      lines.push("- (none)");
+    } else {
+      for (const file of plan.files) {
+        lines.push(`- ${file.action}: ${file.relativePath}`);
+      }
+    }
+  }
+
+  return lines.join("\n");
 }
 
 function planTemplateFiles(projectRoot: string, templateRoot: string, roundRoot: string): PlaybookInitFilePlan[] {

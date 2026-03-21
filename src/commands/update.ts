@@ -4,7 +4,7 @@ import { confirmProceed } from "../core/prompts.js";
 
 export async function handleUpdate(context: CliContext): Promise<number> {
   const plan = planUpdate(context);
-  context.logger.info(renderUpdatePlan(plan));
+  context.logger.info(renderUpdatePlan(plan, context.flags.verbose));
 
   const writableChanges = plan.files.filter(
     (entry) => entry.action === "create" || entry.action === "update" || entry.action === "remove"

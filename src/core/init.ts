@@ -113,8 +113,8 @@ export function applyInitPlan(plan: InitPlan): InitExecutionResult {
   };
 }
 
-export function renderInitPlan(plan: InitPlan): string {
-  return [
+export function renderInitPlan(plan: InitPlan, verbose = false): string {
+  const lines = [
     "dotagent init",
     "",
     `project_root: ${plan.projectRoot}`,
@@ -125,7 +125,14 @@ export function renderInitPlan(plan: InitPlan): string {
     summarizeManagedFiles("adapter_files", plan.adapterFiles),
     `gitignore: ${plan.gitignore.action}`,
     `manifest: write .agent/.dotagent-manifest.json`
-  ].join("\n");
+  ];
+
+  if (verbose) {
+    appendVerboseManagedFiles(lines, "framework_file_actions", plan.frameworkFiles);
+    appendVerboseManagedFiles(lines, "adapter_file_actions", plan.adapterFiles);
+  }
+
+  return lines.join("\n");
 }
 
 function planBundledFrameworkFiles(projectRoot: string, bundledAgentRoot: string): ManagedFilePlan[] {
@@ -270,12 +277,12 @@ function mergeOwnedFiles(existing: FileOwnershipRecord[], plans: ManagedFilePlan
       continue;
     }
 
-      map.set(plan.relativePath, {
-        path: plan.relativePath,
-        owner: plan.owner,
-        contentHash: plan.contentHash
-      });
-    }
+    map.set(plan.relativePath, {
+      path: plan.relativePath,
+      owner: plan.owner,
+      contentHash: plan.contentHash
+    });
+  }
 
   return [...map.values()].sort((left, right) => left.path.localeCompare(right.path));
 }
@@ -314,4 +321,17 @@ function summarizeManagedFiles(label: string, plans: ManagedFilePlan[]): string 
   };
 
   return `${label}: create=${counts.create}, adopt=${counts.adopt}, skip=${counts.skip}`;
+}
+
+function appendVerboseManagedFiles(lines: string[], label: string, plans: ManagedFilePlan[]): void {
+  lines.push(`${label}:`);
+
+  if (plans.length === 0) {
+    lines.push("- (none)");
+    return;
+  }
+
+  for (const plan of plans) {
+    lines.push(`- ${plan.action}: ${plan.relativePath}`);
+  }
 }

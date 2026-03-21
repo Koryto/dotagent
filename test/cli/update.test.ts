@@ -164,3 +164,42 @@ test("dotagent update preserves divergent local changes and keeps historical own
   assert.ok(ownershipRecord);
   assert.equal(typeof ownershipRecord.contentHash, "string");
 });
+
+test("dotagent update --verbose reports individual managed file actions", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-verbose-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  const workflowPath = path.join(root, ".agent", "workflows", "standard.md");
+  const oldContent = "outdated workflow\n";
+  writeFileSync(workflowPath, oldContent, "utf8");
+
+  const manifest = loadManifest(root);
+  assert.ok(manifest);
+  manifest.ownedFiles = manifest.ownedFiles.map((entry) =>
+    entry.path === ".agent/workflows/standard.md" ? { ...entry, contentHash: hashUtf8(oldContent) } : entry
+  );
+  saveManifest(root, manifest);
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["update", "--cwd", root, "--dry-run", "--verbose"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /managed_file_actions:/);
+  assert.match(stdout.buffer, /- update: \.agent\/workflows\/standard\.md/);
+});

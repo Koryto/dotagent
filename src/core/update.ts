@@ -88,7 +88,7 @@ export function applyUpdatePlan(plan: UpdatePlan): UpdateExecutionResult {
   };
 }
 
-export function renderUpdatePlan(plan: UpdatePlan): string {
+export function renderUpdatePlan(plan: UpdatePlan, verbose = false): string {
   const counts = {
     create: plan.files.filter((entry) => entry.action === "create").length,
     update: plan.files.filter((entry) => entry.action === "update").length,
@@ -97,7 +97,7 @@ export function renderUpdatePlan(plan: UpdatePlan): string {
     skip: plan.files.filter((entry) => entry.action === "skip").length
   };
 
-  return [
+  const lines = [
     "dotagent update",
     "",
     `project_root: ${plan.projectRoot}`,
@@ -106,7 +106,20 @@ export function renderUpdatePlan(plan: UpdatePlan): string {
     `managed_files: create=${counts.create}, update=${counts.update}, remove=${counts.remove}, adopt=${counts.adopt}, skip=${counts.skip}`,
     "namespaces: workflows, skills, playbooks",
     "manifest: write .agent/.dotagent-manifest.json"
-  ].join("\n");
+  ];
+
+  if (verbose) {
+    lines.push("managed_file_actions:");
+    if (plan.files.length === 0) {
+      lines.push("- (none)");
+    } else {
+      for (const file of plan.files) {
+        lines.push(`- ${file.action}: ${file.relativePath}`);
+      }
+    }
+  }
+
+  return lines.join("\n");
 }
 
 function planManagedUpdates(
@@ -192,13 +205,6 @@ function planManagedUpdates(
     const owner: UpdateOwner = existingRecord.owner;
 
     if (!targetExists) {
-      plans.push({
-        relativePath: existingRecord.path,
-        targetPath,
-        owner,
-        action: "remove",
-        contentHash: existingRecord.contentHash ?? ""
-      });
       continue;
     }
 
