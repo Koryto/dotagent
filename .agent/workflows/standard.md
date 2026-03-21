@@ -20,11 +20,11 @@ Goal: clarify scope and produce an implementation plan.
 3. Create the plan:
    - substantial tasks: `tasks/{task_name}_ip.md`
    - simple tasks: inline in chat
-   - parallel tasks: explicitly define file/directory boundaries assigned to each agent's batch (assure no two agents edit the same file)
+   - parallel tasks: prioritize using subagents when applicable due to explicit file/directory boundaries
 4. Include:
    - scope
    - affected files or systems
-   - implementation steps (divide work into detailed batches/workstreams for each agent)
+   - implementation steps (include subagent dividable work when applicable)
    - risks
    - verification approach
 
