@@ -40,7 +40,7 @@ Goal: execute the approved plan.
 4. Record meaningful deviations from plan.
 5. For large tasks, work in batches and report between them.
 
-Gate: implementation is ready for review (all sub-agents completed if parallel).
+Gate: implementation is ready for review.
 
 ### Phase 3: Review
 
