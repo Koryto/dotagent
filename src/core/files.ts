@@ -1,4 +1,7 @@
 import {
+  createHash,
+} from "node:crypto";
+import {
   existsSync,
   mkdirSync,
   readFileSync,
@@ -33,6 +36,14 @@ export function readUtf8File(filePath: string): string {
 
 export function readBinaryFile(filePath: string): Buffer {
   return readFileSync(filePath);
+}
+
+export function hashBuffer(content: Buffer): string {
+  return createHash("sha256").update(content).digest("hex");
+}
+
+export function hashUtf8(content: string): string {
+  return hashBuffer(Buffer.from(content, "utf8"));
 }
 
 export function fileExists(filePath: string): boolean {

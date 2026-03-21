@@ -2,7 +2,7 @@ import path from "node:path";
 
 import type { SupportedRuntime } from "./adapters.js";
 import { getRuntimeDescriptor } from "./adapters.js";
-import { appendUtf8File, collectFilePaths, ensureParentDirectory, fileExists, filesAreEqual, readBinaryFile, readUtf8File, toRelativeManifestPath, writeBinaryFile, writeUtf8File } from "./files.js";
+import { appendUtf8File, collectFilePaths, ensureParentDirectory, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, toRelativeManifestPath, writeBinaryFile, writeUtf8File } from "./files.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
 import { renderAgentsBridge, renderRuntimeIndex } from "../runtime/templates.js";
@@ -18,6 +18,7 @@ export interface ManagedFilePlan {
   targetPath: string;
   owner: ManagedOwner;
   action: PlanAction;
+  contentHash: string;
   sourcePath?: string;
   content?: string;
 }
@@ -142,6 +143,7 @@ function planBundledFrameworkFiles(projectRoot: string, bundledAgentRoot: string
         targetPath,
         owner,
         action: "create",
+        contentHash: hashBuffer(readBinaryFile(sourcePath)),
         sourcePath
       });
       continue;
@@ -152,6 +154,7 @@ function planBundledFrameworkFiles(projectRoot: string, bundledAgentRoot: string
       targetPath,
       owner,
       action: filesAreEqual(sourcePath, targetPath) ? "adopt" : "skip",
+      contentHash: hashBuffer(readBinaryFile(sourcePath)),
       sourcePath
     });
   }
@@ -194,6 +197,7 @@ function planGeneratedFile(
       targetPath,
       owner,
       action: "create",
+      contentHash: hashUtf8(content),
       content
     };
   }
@@ -204,6 +208,7 @@ function planGeneratedFile(
     targetPath,
     owner,
     action,
+    contentHash: hashUtf8(content),
     content
   };
 }
@@ -265,11 +270,12 @@ function mergeOwnedFiles(existing: FileOwnershipRecord[], plans: ManagedFilePlan
       continue;
     }
 
-    map.set(plan.relativePath, {
-      path: plan.relativePath,
-      owner: plan.owner
-    });
-  }
+      map.set(plan.relativePath, {
+        path: plan.relativePath,
+        owner: plan.owner,
+        contentHash: plan.contentHash
+      });
+    }
 
   return [...map.values()].sort((left, right) => left.path.localeCompare(right.path));
 }
