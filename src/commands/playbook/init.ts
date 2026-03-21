@@ -1,6 +1,6 @@
 import type { CliContext, PlaybookInitCommand } from "../../models/command.js";
 import { loadInstalledPlaybookContract } from "../../core/playbooks.js";
-import { applyPlaybookInitPlan, planPlaybookInit, renderPlaybookInitPlan, resolvePlaybookTransport } from "../../core/playbook-init.js";
+import { applyPlaybookInitPlan, planPlaybookInit, renderPlaybookInitPlan } from "../../core/playbook-init.js";
 import { confirmProceed, resolvePlaybookTask } from "../../core/prompts.js";
 import { DotagentError } from "../../utils/errors.js";
 
@@ -10,8 +10,7 @@ export async function handlePlaybookInit(command: PlaybookInitCommand, context: 
   }
 
   const contract = loadInstalledPlaybookContract(context.projectRoot, command.name);
-  const { transport } = resolvePlaybookTransport(context, contract);
-  const taskName = transport.taskScoped ? await resolvePlaybookTask(context, command.name) : "default";
+  const taskName = contract.taskScoped ? await resolvePlaybookTask(context, command.name) : "default";
   const plan = planPlaybookInit(context, contract, taskName);
   context.logger.info(renderPlaybookInitPlan(plan, context.flags.verbose));
 

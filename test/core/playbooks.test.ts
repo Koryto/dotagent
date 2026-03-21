@@ -32,7 +32,7 @@ test("listBundledPlaybooks throws when a bundled playbook is missing PLAYBOOK.md
   assert.throws(() => listBundledPlaybooks(root), BundledAssetsError);
 });
 
-test("loadInstalledPlaybookContract rejects traversal-capable transport paths", () => {
+test("loadInstalledPlaybookContract rejects traversal-capable runtime paths", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-paths-"));
   const playbookRoot = path.join(root, ".agent", "playbooks", "the-test-playbook");
   mkdirSync(playbookRoot, { recursive: true });
@@ -43,13 +43,8 @@ test("loadInstalledPlaybookContract rejects traversal-capable transport paths", 
       {
         name: "the-test-playbook",
         version: "0.1.0",
-        defaultTransport: "filesystem",
-        transports: {
-          filesystem: {
-            runtimeRoot: "../outside",
-            templateDir: "filesystem/round_template"
-          }
-        }
+        runtimeRoot: "../outside",
+        templateDir: "filesystem/round_template"
       },
       null,
       2
@@ -77,13 +72,8 @@ test("loadInstalledPlaybookContract rejects traversal-capable contract names", (
       {
         name: "../outside",
         version: "0.1.0",
-        defaultTransport: "filesystem",
-        transports: {
-          filesystem: {
-            runtimeRoot: ".ecrr",
-            templateDir: "filesystem/round_template"
-          }
-        }
+        runtimeRoot: ".ecrr",
+        templateDir: "filesystem/round_template"
       },
       null,
       2
@@ -105,14 +95,9 @@ test("loadInstalledPlaybookContract rejects multiline gitignore entries", () => 
       {
         name: "the-test-playbook",
         version: "0.1.0",
-        defaultTransport: "filesystem",
-        transports: {
-          filesystem: {
-            runtimeRoot: ".ecrr",
-            templateDir: "filesystem/round_template",
-            gitignoreEntry: ".ecrr/\nsecret-dir/"
-          }
-        }
+        runtimeRoot: ".ecrr",
+        templateDir: "filesystem/round_template",
+        gitignoreEntry: ".ecrr/\nsecret-dir/"
       },
       null,
       2
@@ -135,13 +120,8 @@ test("loadInstalledPlaybookContract rejects symlinked installed playbook roots",
       {
         name: "the-test-playbook",
         version: "0.1.0",
-        defaultTransport: "filesystem",
-        transports: {
-          filesystem: {
-            runtimeRoot: ".ecrr",
-            templateDir: "filesystem/round_template"
-          }
-        }
+        runtimeRoot: ".ecrr",
+        templateDir: "filesystem/round_template"
       },
       null,
       2
@@ -169,13 +149,8 @@ test("loadInstalledPlaybookContract rejects symlinked .agent ancestors", () => {
       {
         name: "the-test-playbook",
         version: "0.1.0",
-        defaultTransport: "filesystem",
-        transports: {
-          filesystem: {
-            runtimeRoot: ".ecrr",
-            templateDir: "filesystem/round_template"
-          }
-        }
+        runtimeRoot: ".ecrr",
+        templateDir: "filesystem/round_template"
       },
       null,
       2

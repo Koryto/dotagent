@@ -6,7 +6,6 @@ export interface CommandFlags {
   cwd?: string;
   runtimes?: string[];
   task?: string;
-  transport?: string;
   dryRun: boolean;
   verbose: boolean;
   yes: boolean;

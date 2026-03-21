@@ -4,17 +4,12 @@ export interface BundledPlaybook {
   playbookPath: string;
 }
 
-export interface PlaybookTransportContract {
+export interface PlaybookContract {
+  name: string;
+  version: string;
   runtimeRoot: string;
   templateDir: string;
   gitignoreEntry?: string;
   taskScoped?: boolean;
   initialRound?: string;
-}
-
-export interface PlaybookContract {
-  name: string;
-  version: string;
-  defaultTransport: string;
-  transports: Record<string, PlaybookTransportContract>;
 }

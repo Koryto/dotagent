@@ -166,25 +166,6 @@ function parseArgv(argv: string[]): ParsedCommand {
       continue;
     }
 
-    if (token === "--transport") {
-      const nextValue = argv[index + 1];
-      if (!nextValue) {
-        throw new CliUsageError("Missing value for --transport.");
-      }
-      flags.transport = nextValue;
-      index += 1;
-      continue;
-    }
-
-    if (token.startsWith("--transport=")) {
-      const value = token.slice(token.indexOf("=") + 1);
-      if (!value) {
-        throw new CliUsageError("Missing value for --transport.");
-      }
-      flags.transport = value;
-      continue;
-    }
-
     if (token.startsWith("--") || (token.startsWith("-") && token !== "-")) {
       throw new CliUsageError(`Unknown flag: ${token}.`);
     }
@@ -254,7 +235,7 @@ function renderHelp(): string {
     "  dotagent update [--cwd <path>] [--dry-run] [--verbose] [--yes]",
     "  dotagent doctor [--cwd <path>]",
     "  dotagent playbook list [--cwd <path>]",
-    "  dotagent playbook init <name> [--cwd <path>] [--task <name>] [--transport <name>] [--dry-run] [--verbose] [--yes]"
+    "  dotagent playbook init <name> [--cwd <path>] [--task <name>] [--dry-run] [--verbose] [--yes]"
   ].join("\n");
 }
 

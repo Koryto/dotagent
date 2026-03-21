@@ -45,7 +45,6 @@ test("dotagent playbook init dry-run reports filesystem scaffolding without writ
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.match(stdout.buffer, /template_directories: create=3, adopt=0/);
-  assert.match(stdout.buffer, /transport: filesystem/);
   assert.match(stdout.buffer, /task: default_ability_alignment/);
   assert.equal(existsSync(path.join(root, ".ecrr")), false);
 });
@@ -201,15 +200,10 @@ test("dotagent playbook init rejects traversal-capable installed playbook contra
       {
         name: "the-extreme-cr-rig",
         version: "0.1.0",
-        defaultTransport: "filesystem",
-        transports: {
-          filesystem: {
-            runtimeRoot: "../outside",
-            templateDir: "filesystem/round_template",
-            taskScoped: true,
-            initialRound: "round_001"
-          }
-        }
+        runtimeRoot: "../outside",
+        templateDir: "filesystem/round_template",
+        taskScoped: true,
+        initialRound: "round_001"
       },
       null,
       2
@@ -357,16 +351,11 @@ test("dotagent playbook init rejects symlinked installed playbook roots", async 
       {
         name: "the-extreme-cr-rig",
         version: "0.1.0",
-        defaultTransport: "filesystem",
-        transports: {
-          filesystem: {
-            runtimeRoot: ".ecrr",
-            templateDir: "filesystem/round_template",
-            taskScoped: true,
-            initialRound: "round_001",
-            gitignoreEntry: ".ecrr/"
-          }
-        }
+        runtimeRoot: ".ecrr",
+        templateDir: "filesystem/round_template",
+        taskScoped: true,
+        initialRound: "round_001",
+        gitignoreEntry: ".ecrr/"
       },
       null,
       2
@@ -417,16 +406,11 @@ test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
       {
         name: "the-extreme-cr-rig",
         version: "0.1.0",
-        defaultTransport: "filesystem",
-        transports: {
-          filesystem: {
-            runtimeRoot: ".ecrr",
-            templateDir: "filesystem/round_template",
-            taskScoped: true,
-            initialRound: "round_001",
-            gitignoreEntry: ".ecrr/"
-          }
-        }
+        runtimeRoot: ".ecrr",
+        templateDir: "filesystem/round_template",
+        taskScoped: true,
+        initialRound: "round_001",
+        gitignoreEntry: ".ecrr/"
       },
       null,
       2
