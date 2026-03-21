@@ -23,11 +23,10 @@ Load files in this exact order. Do not load files outside this manifest unless t
 5. `specs/` - intended design and architecture, only load files relevant to the current task
 6. `systems/` - implemented reality, only load files relevant to the current task
 7. `playbooks/` - only when the current task explicitly needs a playbook
-8. `project/learning_curve.md` - only when `workflow == learning`
-9. `project/project_decision_log.md` - only when a historical project-level decision matters
-10. `state/session_log.md` - only when prior session history is needed
-11. `tasks/` - only when resuming or when prior task artifacts are relevant
-12. `skills/` - only when a workflow or task explicitly needs a skill
+8. `project/project_decision_log.md` - only when a historical project-level decision matters
+9. `state/session_log.md` - only when prior session history is needed
+10. `tasks/` - only when resuming or when prior task artifacts are relevant
+11. `skills/` - only when a workflow or task explicitly needs a skill
 
 ---
 
@@ -39,10 +38,9 @@ Load files in this exact order. Do not load files outside this manifest unless t
 2. Read `project/PROJECT.md`
 3. Read `workflows/{workflow}.md`
 4. Read `project/project_progress.md`, then release it from active context
-5. If `workflow == learning`, read `project/learning_curve.md`
-6. If resuming, load the files listed in `session_state.resume_files`
-7. If resuming, load existing task artifacts in `tasks/` matching the active task name
-8. Announce ready state to the user
+5. If resuming, load the files listed in `session_state.resume_files`
+6. If resuming, load existing task artifacts in `tasks/` matching the active task name
+7. Announce ready state to the user
 
 ---
 
@@ -53,7 +51,6 @@ Load files in this exact order. Do not load files outside this manifest unless t
 |-- BOOTSTRAP.md
 |-- project/
 |   |-- PROJECT.md
-|   |-- learning_curve.md
 |   |-- project_progress.md
 |   `-- project_decision_log.md
 |-- state/
@@ -65,8 +62,7 @@ Load files in this exact order. Do not load files outside this manifest unless t
 |   `-- <playbook_name>/
 |       `-- PLAYBOOK.md
 |-- workflows/
-|   |-- standard.md
-|   `-- learning.md
+|   `-- standard.md
 |-- specs/
 |   |-- README.md
 |   `-- architecture/

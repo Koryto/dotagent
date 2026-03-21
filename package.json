@@ -1,0 +1,26 @@
+{
+  "name": "@dotagent/cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Production-grade operator CLI for dotagent",
+  "type": "module",
+  "bin": {
+    "dotagent": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    ".agent"
+  ],
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-dist/**/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}
