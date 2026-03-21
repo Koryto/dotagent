@@ -42,7 +42,7 @@ Goal: execute the approved plan.
    - Spawn sub-agents for each assigned batch from the unified plan.
    - Sub-agents must ONLY modify their assigned files. DO NOT let sub-agents modify out of scope or assume missing parts.
    - Sub-agents DO NOT coordinate or communicate with other agents mid-task.
-   - Sub-agents must maintain their state under the main agent's state/task.
+   - Instruct sub-agents to maintain their own state, notes, and individual reviews under `tasks/{task_name}_{workstream_name}/`.
    - If an agent detects a conflict, it must stop and report immediately.
 3. Validate changes while implementing.
 4. Record modified and created files.
