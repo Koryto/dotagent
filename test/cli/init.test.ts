@@ -70,6 +70,35 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.match(stdout.buffer, /Initialization complete/);
 });
 
+test("dotagent init installs the copilot adapter under .github/copilot", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-copilot-"));
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+
+  const exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "copilot", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.equal(existsSync(path.join(root, ".github", "copilot", "INDEX.md")), true);
+  assert.equal(existsSync(path.join(root, ".github", "INDEX.md")), false);
+
+  const manifest = loadManifest(root);
+  assert.ok(manifest);
+  assert.deepEqual(manifest.installedAdapters, [
+    {
+      runtime: "copilot",
+      path: ".github/copilot/INDEX.md"
+    }
+  ]);
+  assert.match(stdout.buffer, /Initialization complete/);
+});
+
 test("dotagent init supports framework-only initialization with --yes and no runtimes", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-framework-only-"));
   const stdout = new MemoryWritable();
