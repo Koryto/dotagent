@@ -127,8 +127,41 @@ test("dotagent init preserves divergent managed files on safe rerun", async () =
 
   const manifest = loadManifest(root);
   assert.ok(manifest);
-  assert.equal(manifest.ownedFiles.some((entry) => entry.path === ".agent/BOOTSTRAP.md"), false);
+  assert.equal(manifest.ownedFiles.some((entry) => entry.path === ".agent/BOOTSTRAP.md"), true);
   assert.match(stdout.buffer, /Initialization complete/);
+});
+
+test("dotagent init preserves last-known ownership for divergent managed files on rerun", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-preserve-ownership-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+
+  assert.equal(exitCode, 0);
+
+  const bootstrapPath = path.join(root, ".agent", "BOOTSTRAP.md");
+  writeFileSync(bootstrapPath, "custom local bootstrap\n", "utf8");
+
+  exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+
+  assert.equal(exitCode, 0);
+
+  const manifest = loadManifest(root);
+  assert.ok(manifest);
+  const ownershipRecord = manifest.ownedFiles.find((entry) => entry.path === ".agent/BOOTSTRAP.md");
+  assert.ok(ownershipRecord);
+  assert.equal(typeof ownershipRecord.contentHash, "string");
 });
 
 test("dotagent init preserves installed adapter state when adapter files diverge", async () => {

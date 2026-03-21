@@ -71,3 +71,37 @@ test("runCli reports an error for an unknown command", async () => {
   assert.match(stderr.buffer, /Unknown command/);
   assert.equal(stdout.buffer, "");
 });
+
+test("runCli preserves everything after the first equals sign in --cwd=value", async () => {
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+
+  const exitCode = await runCli({
+    argv: ["doctor", "--cwd=C:\\temp\\dir=name"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.match(stdout.buffer, /project_root: C:\\temp\\dir=name/);
+  assert.equal(stderr.buffer, "");
+});
+
+test("runCli reports an unknown flag explicitly", async () => {
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+
+  const exitCode = await runCli({
+    argv: ["init", "--force"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 2);
+  assert.match(stderr.buffer, /Unknown flag: --force/);
+  assert.equal(stdout.buffer, "");
+});

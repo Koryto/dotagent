@@ -100,7 +100,7 @@ function parseArgv(argv: string[]): ParsedCommand {
     }
 
     if (token.startsWith("--cwd=")) {
-      const [, value] = token.split("=", 2);
+      const value = token.slice(token.indexOf("=") + 1);
       if (!value) {
         throw new CliUsageError("Missing value for --cwd.");
       }
@@ -119,7 +119,7 @@ function parseArgv(argv: string[]): ParsedCommand {
     }
 
     if (token.startsWith("--runtimes=")) {
-      const [, value] = token.split("=", 2);
+      const value = token.slice(token.indexOf("=") + 1);
       if (!value) {
         throw new CliUsageError("Missing value for --runtimes.");
       }
@@ -138,7 +138,7 @@ function parseArgv(argv: string[]): ParsedCommand {
     }
 
     if (token.startsWith("--runtime=")) {
-      const [, value] = token.split("=", 2);
+      const value = token.slice(token.indexOf("=") + 1);
       if (!value) {
         throw new CliUsageError("Missing value for --runtime.");
       }
@@ -157,7 +157,7 @@ function parseArgv(argv: string[]): ParsedCommand {
     }
 
     if (token.startsWith("--task=")) {
-      const [, value] = token.split("=", 2);
+      const value = token.slice(token.indexOf("=") + 1);
       if (!value) {
         throw new CliUsageError("Missing value for --task.");
       }
@@ -176,12 +176,16 @@ function parseArgv(argv: string[]): ParsedCommand {
     }
 
     if (token.startsWith("--transport=")) {
-      const [, value] = token.split("=", 2);
+      const value = token.slice(token.indexOf("=") + 1);
       if (!value) {
         throw new CliUsageError("Missing value for --transport.");
       }
       flags.transport = value;
       continue;
+    }
+
+    if (token.startsWith("--") || (token.startsWith("-") && token !== "-")) {
+      throw new CliUsageError(`Unknown flag: ${token}.`);
     }
 
     positionals.push(token);

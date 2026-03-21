@@ -291,7 +291,6 @@ function mergeOwnedFiles(existing: FileOwnershipRecord[], plans: ManagedFilePlan
 
   for (const plan of plans) {
     if (plan.action === "skip") {
-      map.delete(plan.relativePath);
       continue;
     }
 

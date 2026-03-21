@@ -10,9 +10,14 @@ export async function handlePlaybookInit(command: PlaybookInitCommand, context: 
   }
 
   const contract = loadInstalledPlaybookContract(context.projectRoot, command.name);
+  if (contract.name !== command.name) {
+    throw new DotagentError(
+      `Playbook contract name mismatch. Expected ${command.name}, found ${contract.name}.`
+    );
+  }
   const { transport } = resolvePlaybookTransport(context, contract);
   const taskName = transport.taskScoped ? await resolvePlaybookTask(context, command.name) : "default";
-  const plan = planPlaybookInit(context, command.name, taskName);
+  const plan = planPlaybookInit(context, contract, taskName);
   context.logger.info(renderPlaybookInitPlan(plan, context.flags.verbose));
 
   if (context.flags.dryRun) {

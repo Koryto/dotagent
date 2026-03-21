@@ -55,8 +55,13 @@ export function fileExists(filePath: string): boolean {
 }
 
 export function removeFileIfExists(filePath: string): void {
-  if (existsSync(filePath)) {
+  try {
     unlinkSync(filePath);
+  } catch (error) {
+    const errno = error as NodeJS.ErrnoException;
+    if (errno.code !== "ENOENT") {
+      throw error;
+    }
   }
 }
 

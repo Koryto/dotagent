@@ -2,7 +2,6 @@ import path from "node:path";
 
 import { collectDirectoryPaths, collectFilePaths, ensureProjectDirectory, fileExists, filesAreEqual, hashBuffer, readBinaryFile, readUtf8File, safeAppendUtf8File, safeWriteBinaryFile, safeWriteUtf8File } from "./files.js";
 import { assertPathWithinRoot } from "./paths.js";
-import { loadInstalledPlaybookContract } from "./playbooks.js";
 import type { CliContext } from "../models/command.js";
 import type { PlaybookContract, PlaybookTransportContract } from "../models/playbook.js";
 import { CliUsageError, DotagentError } from "../utils/errors.js";
@@ -70,39 +69,32 @@ export function resolvePlaybookTransport(
 
 export function planPlaybookInit(
   context: CliContext,
-  playbookName: string,
+  contract: PlaybookContract,
   taskName: string
 ): PlaybookInitPlan {
   if (!context.projectState.hasFramework) {
     throw new DotagentError(`No .agent framework found in target project: ${context.projectRoot}`);
   }
 
-  const contract = loadInstalledPlaybookContract(context.projectRoot, playbookName);
-  if (contract.name !== playbookName) {
-    throw new DotagentError(
-      `Playbook contract name mismatch. Expected ${playbookName}, found ${contract.name}.`
-    );
-  }
-
   const { transportName, transport } = resolvePlaybookTransport(context, contract);
-  const playbookRoot = path.join(context.projectRoot, ".agent", "playbooks", playbookName);
+  const playbookRoot = path.join(context.projectRoot, ".agent", "playbooks", contract.name);
   const templateRoot = assertPathWithinRoot(
     playbookRoot,
     path.join(playbookRoot, transport.templateDir),
-    `Playbook template root for ${playbookName}`
+    `Playbook template root for ${contract.name}`
   );
   const runtimeRoot = assertPathWithinRoot(
     context.projectRoot,
     transport.taskScoped
     ? path.join(context.projectRoot, transport.runtimeRoot, taskName)
     : path.join(context.projectRoot, transport.runtimeRoot),
-    `Playbook runtime root for ${playbookName}`
+    `Playbook runtime root for ${contract.name}`
   );
   const roundDirectory = transport.initialRound ?? "round_001";
   const roundRoot = assertPathWithinRoot(
     context.projectRoot,
     path.join(runtimeRoot, roundDirectory),
-    `Playbook round root for ${playbookName}`
+    `Playbook round root for ${contract.name}`
   );
   const directories = planTemplateDirectories(context.projectRoot, templateRoot, roundRoot);
   const files = planTemplateFiles(context.projectRoot, templateRoot, roundRoot);
@@ -110,7 +102,7 @@ export function planPlaybookInit(
 
   return {
     projectRoot: context.projectRoot,
-    playbookName,
+    playbookName: contract.name,
     transport: transportName,
     taskName,
     runtimeRoot,
