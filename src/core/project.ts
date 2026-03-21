@@ -4,23 +4,8 @@ import path from "node:path";
 import { resolveDotagentRoot, resolveManifestPath } from "./paths.js";
 import type { ProjectState } from "../models/project.js";
 
-const PROJECT_ROOT_MARKERS = [".agent", ".git"];
-
 export function resolveProjectRoot(startDirectory: string): string {
-  let current = path.resolve(startDirectory);
-
-  while (true) {
-    if (containsProjectMarker(current)) {
-      return current;
-    }
-
-    const parent = path.dirname(current);
-    if (parent === current) {
-      return path.resolve(startDirectory);
-    }
-
-    current = parent;
-  }
+  return path.resolve(startDirectory);
 }
 
 export function detectProjectState(projectRoot: string): ProjectState {
@@ -30,8 +15,4 @@ export function detectProjectState(projectRoot: string): ProjectState {
     hasGitRoot: existsSync(path.join(projectRoot, ".git")),
     dotagentRoot: resolveDotagentRoot(projectRoot)
   };
-}
-
-function containsProjectMarker(directory: string): boolean {
-  return PROJECT_ROOT_MARKERS.some((marker) => existsSync(path.join(directory, marker)));
 }

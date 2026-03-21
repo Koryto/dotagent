@@ -9,7 +9,7 @@ export function resolvePackageRoot(moduleUrl: string): string {
   const candidateRoot = path.resolve(moduleDirectory, "..");
   const candidateName = path.basename(candidateRoot);
 
-  if (candidateName === "dist" || candidateName === ".test-dist") {
+  if (candidateName === ".test-dist") {
     return path.resolve(candidateRoot, "..");
   }
 
@@ -17,7 +17,7 @@ export function resolvePackageRoot(moduleUrl: string): string {
 }
 
 export function resolveBundledAgentRoot(packageRoot: string): string {
-  return path.resolve(packageRoot, "..", FRAMEWORK_DIRNAME);
+  return path.resolve(packageRoot, FRAMEWORK_DIRNAME);
 }
 
 export function resolveDotagentRoot(projectRoot: string): string {

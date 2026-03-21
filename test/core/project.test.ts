@@ -6,7 +6,7 @@ import path from "node:path";
 
 import { detectProjectState, resolveProjectRoot } from "../../src/core/project.js";
 
-test("resolveProjectRoot prefers the nearest project marker", () => {
+test("resolveProjectRoot uses the provided start directory as the project root", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-project-"));
   mkdirSync(path.join(root, ".git"));
   const nested = path.join(root, "src", "feature");
@@ -14,10 +14,10 @@ test("resolveProjectRoot prefers the nearest project marker", () => {
 
   const resolved = resolveProjectRoot(nested);
 
-  assert.equal(resolved, root);
+  assert.equal(resolved, nested);
 });
 
-test("resolveProjectRoot falls back to the start directory when no marker exists", () => {
+test("resolveProjectRoot keeps the provided directory even when no marker exists", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-no-marker-"));
   const nested = path.join(root, "subdir");
   mkdirSync(nested, { recursive: true });

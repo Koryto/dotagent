@@ -20,6 +20,12 @@ export class NotImplementedCliError extends DotagentError {
   }
 }
 
+export class ManifestCorruptionError extends DotagentError {
+  public constructor(message: string) {
+    super(message, 4);
+  }
+}
+
 export function toExitCode(error: DotagentError): number {
   return error.exitCode;
 }

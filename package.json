@@ -8,7 +8,8 @@
     "dotagent": "./dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    ".agent"
   ],
   "engines": {
     "node": ">=24.0.0"

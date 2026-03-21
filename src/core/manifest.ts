@@ -1,0 +1,102 @@
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+
+import type { DotagentManifest } from "../models/manifest.js";
+import { resolveDotagentRoot, resolveManifestPath } from "./paths.js";
+import { ManifestCorruptionError } from "../utils/errors.js";
+
+export function createInitialManifest(frameworkRef: string, bundledPlaybooks: string[]): DotagentManifest {
+  return {
+    manifestVersion: 1,
+    frameworkRef,
+    bundledPlaybooks: [...bundledPlaybooks],
+    installedAdapters: [],
+    ownedFiles: []
+  };
+}
+
+export function loadManifest(projectRoot: string): DotagentManifest | null {
+  const manifestPath = resolveManifestPath(projectRoot);
+  if (!existsSync(manifestPath)) {
+    return null;
+  }
+
+  try {
+    const raw = readFileSync(manifestPath, "utf8");
+    const parsed = JSON.parse(raw) as unknown;
+    return validateManifest(parsed, manifestPath);
+  } catch (error) {
+    if (error instanceof ManifestCorruptionError) {
+      throw error;
+    }
+
+    throw new ManifestCorruptionError(`Manifest is unreadable or invalid JSON: ${manifestPath}`);
+  }
+}
+
+export function saveManifest(projectRoot: string, manifest: DotagentManifest): void {
+  const dotagentRoot = resolveDotagentRoot(projectRoot);
+  mkdirSync(dotagentRoot, { recursive: true });
+  writeFileSync(resolveManifestPath(projectRoot), `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+}
+
+function validateManifest(candidate: unknown, manifestPath: string): DotagentManifest {
+  if (!isManifestRecord(candidate)) {
+    throw new ManifestCorruptionError(`Manifest has an invalid top-level shape: ${manifestPath}`);
+  }
+
+  if (candidate.manifestVersion !== 1) {
+    throw new ManifestCorruptionError(`Manifest version is unsupported: ${manifestPath}`);
+  }
+
+  if (typeof candidate.frameworkRef !== "string") {
+    throw new ManifestCorruptionError(`Manifest frameworkRef must be a string: ${manifestPath}`);
+  }
+
+  if (!isStringArray(candidate.bundledPlaybooks)) {
+    throw new ManifestCorruptionError(`Manifest bundledPlaybooks must be a string array: ${manifestPath}`);
+  }
+
+  if (!isInstalledAdapterArray(candidate.installedAdapters)) {
+    throw new ManifestCorruptionError(`Manifest installedAdapters has an invalid shape: ${manifestPath}`);
+  }
+
+  if (!isOwnedFilesArray(candidate.ownedFiles)) {
+    throw new ManifestCorruptionError(`Manifest ownedFiles has an invalid shape: ${manifestPath}`);
+  }
+
+  return candidate;
+}
+
+function isManifestRecord(candidate: unknown): candidate is DotagentManifest {
+  return typeof candidate === "object" && candidate !== null;
+}
+
+function isStringArray(candidate: unknown): candidate is string[] {
+  return Array.isArray(candidate) && candidate.every((entry) => typeof entry === "string");
+}
+
+function isInstalledAdapterArray(candidate: unknown): candidate is DotagentManifest["installedAdapters"] {
+  return (
+    Array.isArray(candidate) &&
+    candidate.every(
+      (entry) =>
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof entry.runtime === "string" &&
+        typeof entry.path === "string"
+    )
+  );
+}
+
+function isOwnedFilesArray(candidate: unknown): candidate is DotagentManifest["ownedFiles"] {
+  return (
+    Array.isArray(candidate) &&
+    candidate.every(
+      (entry) =>
+        typeof entry === "object" &&
+        entry !== null &&
+        typeof entry.path === "string" &&
+        (entry.owner === "framework" || entry.owner === "playbook")
+    )
+  );
+}

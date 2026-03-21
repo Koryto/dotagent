@@ -2,6 +2,6 @@
 .DS_Store
 Thumbs.db
 cli-task/
-cli/node_modules/
-cli/dist/
-cli/.test-dist/
+node_modules/
+dist/
+.test-dist/
