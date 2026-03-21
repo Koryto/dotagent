@@ -1,7 +1,3 @@
----
-description: 
----
-
 # Standard Workflow
 <!-- WORKFLOW_VERSION: 1.2 | STATUS: draft | TYPE: implementation -->
 
