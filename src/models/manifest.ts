@@ -5,7 +5,7 @@ export interface InstalledAdapterRecord {
 
 export interface FileOwnershipRecord {
   path: string;
-  owner: "framework" | "playbook";
+  owner: "framework" | "playbook" | "adapter";
 }
 
 export interface DotagentManifest {

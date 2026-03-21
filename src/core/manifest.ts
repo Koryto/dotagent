@@ -96,7 +96,7 @@ function isOwnedFilesArray(candidate: unknown): candidate is DotagentManifest["o
         typeof entry === "object" &&
         entry !== null &&
         typeof entry.path === "string" &&
-        (entry.owner === "framework" || entry.owner === "playbook")
+        (entry.owner === "framework" || entry.owner === "playbook" || entry.owner === "adapter")
     )
   );
 }

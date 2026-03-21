@@ -1,4 +1,4 @@
-import type { Writable } from "node:stream";
+import type { Readable, Writable } from "node:stream";
 
 import { handleDoctor } from "./commands/doctor.js";
 import { handleInit } from "./commands/init.js";
@@ -14,6 +14,7 @@ import { createLogger } from "./utils/logger.js";
 export interface RunCliInput {
   argv: string[];
   cwd: string;
+  stdin: Readable;
   stdout: Writable;
   stderr: Writable;
 }
@@ -35,6 +36,8 @@ export async function runCli(input: RunCliInput): Promise<number> {
 
     const context: CliContext = {
       invocationCwd: input.cwd,
+      stdin: input.stdin,
+      stdout: input.stdout,
       projectRoot,
       packageRoot,
       bundledAgentRoot,
@@ -99,6 +102,44 @@ function parseArgv(argv: string[]): ParsedCommand {
       continue;
     }
 
+    if (token === "--runtimes") {
+      const nextValue = argv[index + 1];
+      if (!nextValue) {
+        throw new CliUsageError("Missing value for --runtimes.");
+      }
+      flags.runtimes = mergeRuntimes(flags.runtimes, nextValue);
+      index += 1;
+      continue;
+    }
+
+    if (token.startsWith("--runtimes=")) {
+      const [, value] = token.split("=", 2);
+      if (!value) {
+        throw new CliUsageError("Missing value for --runtimes.");
+      }
+      flags.runtimes = mergeRuntimes(flags.runtimes, value);
+      continue;
+    }
+
+    if (token === "--runtime") {
+      const nextValue = argv[index + 1];
+      if (!nextValue) {
+        throw new CliUsageError("Missing value for --runtime.");
+      }
+      flags.runtimes = mergeRuntimes(flags.runtimes, nextValue);
+      index += 1;
+      continue;
+    }
+
+    if (token.startsWith("--runtime=")) {
+      const [, value] = token.split("=", 2);
+      if (!value) {
+        throw new CliUsageError("Missing value for --runtime.");
+      }
+      flags.runtimes = mergeRuntimes(flags.runtimes, value);
+      continue;
+    }
+
     positionals.push(token);
   }
 
@@ -160,12 +201,21 @@ function renderHelp(): string {
     "dotagent",
     "",
     "Usage:",
-    "  dotagent init [--cwd <path>] [--dry-run] [--yes]",
+    "  dotagent init [--cwd <path>] [--runtimes <list>] [--dry-run] [--yes]",
     "  dotagent update [--cwd <path>] [--dry-run] [--yes]",
     "  dotagent doctor [--cwd <path>]",
     "  dotagent playbook list [--cwd <path>]",
     "  dotagent playbook init <name> [--cwd <path>] [--dry-run] [--yes]"
   ].join("\n");
+}
+
+function mergeRuntimes(existing: string[] | undefined, value: string): string[] {
+  const parsed = value
+    .split(",")
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0);
+
+  return [...(existing ?? []), ...parsed];
 }
 
 function normalizeError(error: unknown): DotagentError {

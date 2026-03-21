@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { Writable } from "node:stream";
+import { Readable, Writable } from "node:stream";
 
 import { runCli } from "../../src/cli.js";
 
@@ -28,6 +28,7 @@ test("runCli returns help when no command is provided", async () => {
   const exitCode = await runCli({
     argv: [],
     cwd: process.cwd(),
+    stdin: Readable.from([]),
     stdout,
     stderr
   });
@@ -44,6 +45,7 @@ test("runCli lists bundled playbooks", async () => {
   const exitCode = await runCli({
     argv: ["playbook", "list"],
     cwd: process.cwd(),
+    stdin: Readable.from([]),
     stdout,
     stderr
   });
@@ -60,6 +62,7 @@ test("runCli reports an error for an unknown command", async () => {
   const exitCode = await runCli({
     argv: ["unknown-command"],
     cwd: process.cwd(),
+    stdin: Readable.from([]),
     stdout,
     stderr
   });
