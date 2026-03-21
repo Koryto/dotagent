@@ -101,7 +101,34 @@ test("dotagent update overwrites an unchanged managed file when the bundled sour
   assert.match(stdout.buffer, /Update complete/);
 });
 
-test("dotagent update preserves divergent local changes and drops ownership for skipped files", async () => {
+test("dotagent update exits cleanly without prompting when no managed changes are required", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-noop-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["update", "--cwd", root],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /No managed updates required/);
+});
+
+test("dotagent update preserves divergent local changes and keeps historical ownership for skipped files", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-skip-"));
 
   let exitCode = await runCli({
@@ -133,5 +160,7 @@ test("dotagent update preserves divergent local changes and drops ownership for 
 
   const manifest = loadManifest(root);
   assert.ok(manifest);
-  assert.equal(manifest.ownedFiles.some((entry) => entry.path === ".agent/workflows/standard.md"), false);
+  const ownershipRecord = manifest.ownedFiles.find((entry) => entry.path === ".agent/workflows/standard.md");
+  assert.ok(ownershipRecord);
+  assert.equal(typeof ownershipRecord.contentHash, "string");
 });

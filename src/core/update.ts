@@ -1,6 +1,6 @@
 import path from "node:path";
 
-import { collectFilePaths, fileExists, hashBuffer, readBinaryFile, toRelativeManifestPath, writeBinaryFile } from "./files.js";
+import { collectFilePaths, fileExists, hashBuffer, readBinaryFile, removeFileIfExists, toRelativeManifestPath, writeBinaryFile } from "./files.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
 import { readFrameworkRef } from "./framework.js";
@@ -11,12 +11,12 @@ import { DotagentError } from "../utils/errors.js";
 const UPDATE_NAMESPACES = ["workflows", "skills", "playbooks"] as const;
 
 type UpdateOwner = Extract<FileOwnershipRecord["owner"], "framework" | "playbook">;
-type UpdateAction = "create" | "update" | "adopt" | "skip";
+type UpdateAction = "create" | "update" | "remove" | "adopt" | "skip";
 
 export interface ManagedUpdatePlan {
   relativePath: string;
   targetPath: string;
-  sourcePath: string;
+  sourcePath?: string;
   owner: UpdateOwner;
   action: UpdateAction;
   contentHash: string;
@@ -62,9 +62,20 @@ export function planUpdate(context: CliContext): UpdatePlan {
 }
 
 export function applyUpdatePlan(plan: UpdatePlan): UpdateExecutionResult {
-  const updatedFiles = plan.files.filter((entry) => entry.action === "create" || entry.action === "update");
+  const updatedFiles = plan.files.filter(
+    (entry) => entry.action === "create" || entry.action === "update" || entry.action === "remove"
+  );
 
   for (const filePlan of updatedFiles) {
+    if (filePlan.action === "remove") {
+      removeFileIfExists(filePlan.targetPath);
+      continue;
+    }
+
+    if (!filePlan.sourcePath) {
+      throw new DotagentError(`Managed update is missing a bundled source path: ${filePlan.relativePath}`);
+    }
+
     const content = readBinaryFile(filePlan.sourcePath);
     writeBinaryFile(filePlan.targetPath, content);
   }
@@ -81,6 +92,7 @@ export function renderUpdatePlan(plan: UpdatePlan): string {
   const counts = {
     create: plan.files.filter((entry) => entry.action === "create").length,
     update: plan.files.filter((entry) => entry.action === "update").length,
+    remove: plan.files.filter((entry) => entry.action === "remove").length,
     adopt: plan.files.filter((entry) => entry.action === "adopt").length,
     skip: plan.files.filter((entry) => entry.action === "skip").length
   };
@@ -91,7 +103,7 @@ export function renderUpdatePlan(plan: UpdatePlan): string {
     `project_root: ${plan.projectRoot}`,
     `framework_ref: ${plan.frameworkRef}`,
     `bundled_playbooks: ${plan.bundledPlaybooks.length > 0 ? plan.bundledPlaybooks.join(", ") : "(none)"}`,
-    `managed_files: create=${counts.create}, update=${counts.update}, adopt=${counts.adopt}, skip=${counts.skip}`,
+    `managed_files: create=${counts.create}, update=${counts.update}, remove=${counts.remove}, adopt=${counts.adopt}, skip=${counts.skip}`,
     "namespaces: workflows, skills, playbooks",
     "manifest: write .agent/.dotagent-manifest.json"
   ].join("\n");
@@ -104,6 +116,7 @@ function planManagedUpdates(
 ): ManagedUpdatePlan[] {
   const plans: ManagedUpdatePlan[] = [];
   const ownership = new Map(existingManifest.ownedFiles.map((entry) => [entry.path, entry]));
+  const seenPaths = new Set<string>();
 
   for (const namespace of UPDATE_NAMESPACES) {
     const sourceRoot = path.join(bundledAgentRoot, namespace);
@@ -115,6 +128,7 @@ function planManagedUpdates(
       const sourceHash = hashBuffer(readBinaryFile(sourcePath));
       const existingRecord = ownership.get(relativePath);
       const owner: UpdateOwner = namespace === "playbooks" ? "playbook" : "framework";
+      seenPaths.add(relativePath);
 
       if (!targetExists) {
         plans.push({
@@ -164,6 +178,51 @@ function planManagedUpdates(
     }
   }
 
+  for (const existingRecord of existingManifest.ownedFiles) {
+    if (!isUpdateManagedRecord(existingRecord)) {
+      continue;
+    }
+
+    if (seenPaths.has(existingRecord.path)) {
+      continue;
+    }
+
+    const targetPath = path.join(projectRoot, ...existingRecord.path.split("/"));
+    const targetExists = fileExists(targetPath);
+    const owner: UpdateOwner = existingRecord.owner;
+
+    if (!targetExists) {
+      plans.push({
+        relativePath: existingRecord.path,
+        targetPath,
+        owner,
+        action: "remove",
+        contentHash: existingRecord.contentHash ?? ""
+      });
+      continue;
+    }
+
+    const targetHash = hashBuffer(readBinaryFile(targetPath));
+    if (existingRecord.contentHash && existingRecord.contentHash === targetHash) {
+      plans.push({
+        relativePath: existingRecord.path,
+        targetPath,
+        owner,
+        action: "remove",
+        contentHash: existingRecord.contentHash
+      });
+      continue;
+    }
+
+    plans.push({
+      relativePath: existingRecord.path,
+      targetPath,
+      owner,
+      action: "skip",
+      contentHash: existingRecord.contentHash ?? ""
+    });
+  }
+
   return plans.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
 }
 
@@ -185,6 +244,10 @@ function buildUpdatedManifest(
 
   for (const plan of plans) {
     if (plan.action === "skip") {
+      continue;
+    }
+
+    if (plan.action === "remove") {
       ownership.delete(plan.relativePath);
       continue;
     }
@@ -198,4 +261,12 @@ function buildUpdatedManifest(
 
   manifest.ownedFiles = [...ownership.values()].sort((left, right) => left.path.localeCompare(right.path));
   return manifest;
+}
+
+function isUpdateManagedRecord(record: FileOwnershipRecord): record is FileOwnershipRecord & { owner: UpdateOwner } {
+  if (record.owner !== "framework" && record.owner !== "playbook") {
+    return false;
+  }
+
+  return UPDATE_NAMESPACES.some((namespace) => record.path.startsWith(`.agent/${namespace}/`));
 }

@@ -7,6 +7,7 @@ import {
   readFileSync,
   readdirSync,
   statSync,
+  unlinkSync,
   writeFileSync
 } from "node:fs";
 import path from "node:path";
@@ -48,6 +49,12 @@ export function hashUtf8(content: string): string {
 
 export function fileExists(filePath: string): boolean {
   return existsSync(filePath);
+}
+
+export function removeFileIfExists(filePath: string): void {
+  if (existsSync(filePath)) {
+    unlinkSync(filePath);
+  }
 }
 
 export function filesAreEqual(leftPath: string, rightPath: string): boolean {

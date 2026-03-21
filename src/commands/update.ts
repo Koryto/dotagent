@@ -6,7 +6,16 @@ export async function handleUpdate(context: CliContext): Promise<number> {
   const plan = planUpdate(context);
   context.logger.info(renderUpdatePlan(plan));
 
+  const writableChanges = plan.files.filter(
+    (entry) => entry.action === "create" || entry.action === "update" || entry.action === "remove"
+  );
+
   if (context.flags.dryRun) {
+    return 0;
+  }
+
+  if (writableChanges.length === 0) {
+    context.logger.info("\nNo managed updates required.");
     return 0;
   }
 
