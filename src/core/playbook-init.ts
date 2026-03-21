@@ -37,6 +37,7 @@ export interface PlaybookInitPlan {
 
 export interface PlaybookInitExecutionResult {
   writtenFiles: PlaybookInitFilePlan[];
+  skippedFiles: PlaybookInitFilePlan[];
   gitignore: PlaybookGitignorePlan | null;
 }
 
@@ -98,6 +99,7 @@ export function planPlaybookInit(
 
 export function applyPlaybookInitPlan(plan: PlaybookInitPlan): PlaybookInitExecutionResult {
   const writtenFiles = plan.files.filter((entry) => entry.action === "create");
+  const skippedFiles = plan.files.filter((entry) => entry.action === "skip");
 
   for (const filePlan of writtenFiles) {
     ensureParentDirectory(filePlan.targetPath);
@@ -113,6 +115,7 @@ export function applyPlaybookInitPlan(plan: PlaybookInitPlan): PlaybookInitExecu
 
   return {
     writtenFiles,
+    skippedFiles,
     gitignore: plan.gitignore
   };
 }
@@ -143,7 +146,9 @@ function planTemplateFiles(projectRoot: string, templateRoot: string, roundRoot:
     throw new DotagentError(`Playbook template directory is missing: ${templateRoot}`);
   }
 
-  return collectFilePaths(templateRoot).map((sourcePath) => {
+  return collectFilePaths(templateRoot)
+    .filter((sourcePath) => shouldCopyTemplateFile(sourcePath))
+    .map((sourcePath) => {
     const relativeFromTemplate = path.relative(templateRoot, sourcePath);
     const targetPath = path.join(roundRoot, relativeFromTemplate);
 
@@ -200,4 +205,9 @@ function planPlaybookGitignore(projectRoot: string, gitignoreEntry?: string): Pl
 
 function toProjectRelativePath(projectRoot: string, absolutePath: string): string {
   return path.relative(projectRoot, absolutePath).split(path.sep).join("/");
+}
+
+function shouldCopyTemplateFile(sourcePath: string): boolean {
+  const basename = path.basename(sourcePath).toLowerCase();
+  return basename !== "reviewer_template.md" && basename !== "batch_template.md";
 }

@@ -2,7 +2,7 @@ import path from "node:path";
 
 import { fileExists } from "./files.js";
 import { loadManifest } from "./manifest.js";
-import { listBundledPlaybooks, listInstalledPlaybooks } from "./playbooks.js";
+import { listBundledPlaybooks, listInstalledPlaybooks, loadInstalledPlaybookContract } from "./playbooks.js";
 import { RUNTIME_ADAPTERS } from "./adapters.js";
 import { planUpdate } from "./update.js";
 import { resolveDotagentRoot } from "./paths.js";
@@ -212,6 +212,18 @@ function inspectFrameworkLayout(context: CliContext, bundledPlaybooks: string[],
       issues.push({
         severity: "error",
         message: `Bundled playbook is missing from the installed framework: .agent/playbooks/${playbookName}/PLAYBOOK.md`
+      });
+    }
+
+    try {
+      loadInstalledPlaybookContract(context.projectRoot, playbookName);
+    } catch (error) {
+      issues.push({
+        severity: "error",
+        message: toDoctorMessage(
+          error,
+          `Installed playbook contract is invalid: .agent/playbooks/${playbookName}/playbook.json`
+        )
       });
     }
   }

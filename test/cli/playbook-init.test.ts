@@ -81,6 +81,14 @@ test("dotagent playbook init scaffolds the first filesystem round and ignores ru
     existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "lead", "30_round_results.md")),
     true
   );
+  assert.equal(
+    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "reviewers", "reviewer_template.md")),
+    false
+  );
+  assert.equal(
+    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "verification", "batch_template.md")),
+    false
+  );
   assert.match(readFileSync(path.join(root, ".gitignore"), "utf8"), /\.ecrr\//);
   assert.match(stdout.buffer, /Playbook initialization complete/);
 });
@@ -122,5 +130,5 @@ test("dotagent playbook init preserves divergent round files on rerun", async ()
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.equal(readFileSync(contextPath, "utf8"), "local round context\n");
-  assert.match(stdout.buffer, /No playbook runtime changes required|Playbook initialization complete/);
+  assert.match(stdout.buffer, /Preserved divergent files: 1|preserved_divergent_files: 1/);
 });

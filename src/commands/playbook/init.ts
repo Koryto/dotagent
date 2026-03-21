@@ -20,8 +20,14 @@ export async function handlePlaybookInit(command: PlaybookInitCommand, context: 
   }
 
   const writableChanges = plan.files.filter((entry) => entry.action === "create");
+  const skippedFiles = plan.files.filter((entry) => entry.action === "skip");
   const shouldWriteGitignore = plan.gitignore?.action === "create" || plan.gitignore?.action === "append";
   if (writableChanges.length === 0 && !shouldWriteGitignore) {
+    if (skippedFiles.length > 0) {
+      context.logger.info(`\nNo writable playbook runtime changes required. Preserved divergent files: ${skippedFiles.length}.`);
+      return 0;
+    }
+
     context.logger.info("\nNo playbook runtime changes required.");
     return 0;
   }
@@ -37,7 +43,8 @@ export async function handlePlaybookInit(command: PlaybookInitCommand, context: 
     [
       "",
       "Playbook initialization complete.",
-      `created_files: ${result.writtenFiles.length}`
+      `created_files: ${result.writtenFiles.length}`,
+      `preserved_divergent_files: ${result.skippedFiles.length}`
     ].join("\n")
   );
   return 0;
