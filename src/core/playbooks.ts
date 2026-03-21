@@ -196,12 +196,11 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
 }
 
 function assertInstalledPlaybookRoot(projectRoot: string, playbookName: string): string {
-  const playbooksRoot = path.join(projectRoot, ".agent", "playbooks");
-  const playbookRoot = path.join(playbooksRoot, playbookName);
+  const playbookRoot = path.join(projectRoot, ".agent", "playbooks", playbookName);
 
   try {
     return assertNonSymlinkedPathWithinRoot(
-      playbooksRoot,
+      projectRoot,
       playbookRoot,
       `Installed playbook root for ${playbookName}`
     );

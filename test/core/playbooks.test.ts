@@ -155,3 +155,37 @@ test("loadInstalledPlaybookContract rejects symlinked installed playbook roots",
 
   rmSync(path.join(playbooksRoot, "the-test-playbook"), { recursive: true, force: true });
 });
+
+test("loadInstalledPlaybookContract rejects symlinked .agent ancestors", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-symlink-agent-root-"));
+  const outsideProject = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-symlink-agent-target-"));
+  const outsidePlaybookRoot = path.join(outsideProject, ".agent", "playbooks", "the-test-playbook");
+
+  mkdirSync(outsidePlaybookRoot, { recursive: true });
+  writeFileSync(path.join(outsidePlaybookRoot, "PLAYBOOK.md"), "# Outside\n", "utf8");
+  writeFileSync(
+    path.join(outsidePlaybookRoot, "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "the-test-playbook",
+        version: "0.1.0",
+        defaultTransport: "filesystem",
+        transports: {
+          filesystem: {
+            runtimeRoot: ".ecrr",
+            templateDir: "filesystem/round_template"
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  symlinkSync(path.join(outsideProject, ".agent"), path.join(root, ".agent"), "junction");
+
+  assert.throws(() => loadInstalledPlaybookContract(root, "the-test-playbook"), PlaybookContractError);
+
+  rmSync(path.join(root, ".agent"), { recursive: true, force: true });
+});

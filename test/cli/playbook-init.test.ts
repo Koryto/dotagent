@@ -394,6 +394,69 @@ test("dotagent playbook init rejects symlinked installed playbook roots", async 
   assert.equal(existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "00_round_context.md")), false);
 });
 
+test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-init-symlink-agent-root-"));
+  const outsideProject = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-init-symlink-agent-target-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  mkdirSync(path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "filesystem", "round_template"), {
+    recursive: true
+  });
+  writeFileSync(path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "PLAYBOOK.md"), "# Outside\n", "utf8");
+  writeFileSync(
+    path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "the-extreme-cr-rig",
+        version: "0.1.0",
+        defaultTransport: "filesystem",
+        transports: {
+          filesystem: {
+            runtimeRoot: ".ecrr",
+            templateDir: "filesystem/round_template",
+            taskScoped: true,
+            initialRound: "round_001",
+            gitignoreEntry: ".ecrr/"
+          }
+        }
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+  writeFileSync(
+    path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "filesystem", "round_template", "00_round_context.md"),
+    "outside context\n",
+    "utf8"
+  );
+
+  rmSync(path.join(root, ".agent"), { recursive: true, force: true });
+  symlinkSync(path.join(outsideProject, ".agent"), path.join(root, ".agent"), "junction");
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 6);
+  assert.match(stderr.buffer, /symlinked root|symlinked path component/i);
+  assert.equal(existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "00_round_context.md")), false);
+});
+
 test("dotagent playbook init --verbose reports individual template file actions", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-init-verbose-"));
 
