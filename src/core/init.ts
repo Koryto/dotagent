@@ -2,14 +2,13 @@ import path from "node:path";
 
 import type { SupportedRuntime } from "./adapters.js";
 import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, isRuntimeBridgePath, resolveRuntimeInstalledAt } from "./adapters.js";
-import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
+import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, requireGeneratedUtf8Content, safeAppendUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
 import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills, type BundledFrameworkSkill } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
 import { renderRuntimeAdapterManifest, renderRuntimeInitBridge, renderRuntimeSkillBridge } from "../runtime/templates.js";
 import type { CliContext } from "../models/command.js";
 import type { DotagentManifest, FileOwnershipRecord, InstalledAdapterRecord } from "../models/manifest.js";
-import { DotagentError } from "../utils/errors.js";
 
 type ManagedOwner = FileOwnershipRecord["owner"];
 type PlanAction = "create" | "adopt" | "skip" | "remove";
@@ -117,7 +116,7 @@ export function applyInitPlan(plan: InitPlan): InitExecutionResult {
     safeWriteUtf8File(
       plan.projectRoot,
       filePlan.targetPath,
-      requirePlannedUtf8Content(filePlan),
+      requireGeneratedUtf8Content(filePlan.relativePath, filePlan.content, "init"),
       `Generated file write: ${filePlan.relativePath}`
     );
   }
@@ -289,14 +288,6 @@ function planAdapterFiles(
   }
 
   return results.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
-}
-
-function requirePlannedUtf8Content(plan: Pick<ManagedFilePlan, "relativePath" | "content">): string {
-  if (typeof plan.content === "string") {
-    return plan.content;
-  }
-
-  throw new DotagentError(`Generated file content was missing from the init plan: ${plan.relativePath}`);
 }
 
 function planGeneratedFile(

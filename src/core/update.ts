@@ -1,7 +1,7 @@
 import { statSync } from "node:fs";
 import path from "node:path";
 
-import { collectFilePaths, fileExists, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
+import { collectFilePaths, fileExists, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, requireGeneratedUtf8Content, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
 import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, isRuntimeBridgePath, resolveRuntimeInstalledAt, SUPPORTED_RUNTIMES } from "./adapters.js";
 import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
@@ -98,7 +98,7 @@ export function applyUpdatePlan(plan: UpdatePlan): UpdateExecutionResult {
     safeWriteUtf8File(
       plan.projectRoot,
       filePlan.targetPath,
-      requirePlannedUtf8Content(filePlan),
+      requireGeneratedUtf8Content(filePlan.relativePath, filePlan.content, "update"),
       `Managed file write: ${filePlan.relativePath}`
     );
   }
@@ -293,14 +293,6 @@ function planManagedUpdates(
   }
 
   return plans.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
-}
-
-function requirePlannedUtf8Content(plan: Pick<ManagedUpdatePlan, "relativePath" | "content">): string {
-  if (typeof plan.content === "string") {
-    return plan.content;
-  }
-
-  throw new DotagentError(`Generated file content was missing from the update plan: ${plan.relativePath}`);
 }
 
 function planGeneratedManagedUpdate(
