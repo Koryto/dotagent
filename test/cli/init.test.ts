@@ -84,11 +84,11 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-closeout", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-code-review", "SKILL.md")), true);
-  assert.match(readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"), /^---\r?\nname: dotagent-init\r?\ndescription: /);
+  assert.match(readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"), /^---\r?\nname: "dotagent-init"\r?\ndescription: "/);
   assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "init.md")), true);
   assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "closeout.md")), true);
   assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "code-review.md")), true);
-  assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /^---\r?\nname: dotagent:init\r?\ndescription: /);
+  assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /^---\r?\nname: "dotagent:init"\r?\ndescription: "/);
   assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /allowed-tools:\r?\n  - Read\r?\n  - Write\r?\n  - Bash/);
   assert.equal(existsSync(path.join(root, "AGENTS.md")), false);
   assert.equal(existsSync(path.join(root, "CLAUDE.md")), false);
@@ -119,7 +119,7 @@ test("dotagent init installs the copilot adapter under .github", async () => {
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-closeout", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-code-review", "SKILL.md")), true);
-  assert.match(readFileSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md"), "utf8"), /^---\r?\nname: dotagent-init\r?\ndescription: /);
+  assert.match(readFileSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md"), "utf8"), /^---\r?\nname: "dotagent-init"\r?\ndescription: "/);
   assert.match(readFileSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md"), "utf8"), /allowed-tools: Read, Write, Bash/);
 
   const manifest = loadManifest(root);

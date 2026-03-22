@@ -1,6 +1,6 @@
 ---
-name: closeout
-description: Close a task cleanly at the end of the standard workflow. Use for summary, promotion decisions, project progress updates, session state updates, and session log updates.
+name: "closeout"
+description: "Close a task cleanly at the end of the standard workflow. Use for summary, promotion decisions, project progress updates, session state updates, and session log updates."
 ---
 
 # Closeout
