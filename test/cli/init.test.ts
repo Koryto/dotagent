@@ -43,6 +43,25 @@ test("dotagent init dry-run reports planned work without writing files", async (
   assert.equal(existsSync(path.join(root, ".claude")), false);
 });
 
+test("dotagent init accepts space-separated runtimes after --runtimes", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-space-separated-runtimes-"));
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+
+  const exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "claude", "--dry-run"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.match(stdout.buffer, /runtimes: codex, claude/);
+  assert.equal(stderr.buffer, "");
+  assert.equal(existsSync(path.join(root, ".agent")), false);
+});
+
 test("dotagent init scaffolds the framework, adapters, gitignore, and manifest", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-apply-"));
   writeFileSync(path.join(root, ".gitignore"), "dist/\n", "utf8");
