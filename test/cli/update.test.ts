@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Readable, Writable } from "node:stream";
-import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -202,4 +202,37 @@ test("dotagent update --verbose reports individual managed file actions", async 
   assert.equal(stderr.buffer, "");
   assert.match(stdout.buffer, /managed_file_actions:/);
   assert.match(stdout.buffer, /- update: \.agent\/workflows\/standard\.md/);
+});
+
+test("dotagent update restores missing generated runtime wrappers and adapter manifests for installed runtimes", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-adapter-refresh-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  rmSync(path.join(root, ".codex", "skills", "dotagent-closeout", "SKILL.md"));
+  rmSync(path.join(root, ".codex", "dotagent.json"));
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["update", "--cwd", root, "--yes", "--verbose"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-closeout", "SKILL.md")), true);
+  assert.equal(existsSync(path.join(root, ".codex", "dotagent.json")), true);
+  assert.match(stdout.buffer, /- create: \.codex\/dotagent\.json/);
+  assert.match(stdout.buffer, /- create: \.codex\/skills\/dotagent-closeout\/SKILL\.md/);
 });

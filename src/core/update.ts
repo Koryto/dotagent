@@ -1,23 +1,28 @@
 import { statSync } from "node:fs";
 import path from "node:path";
 
-import { collectFilePaths, fileExists, hashBuffer, readBinaryFile, safeRemoveFileIfExists, safeWriteBinaryFile, toRelativeManifestPath } from "./files.js";
+import { collectFilePaths, fileExists, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
+import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, isRuntimeBridgePath, SUPPORTED_RUNTIMES } from "./adapters.js";
+import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
 import { readFrameworkRef } from "./framework.js";
+import { renderRuntimeAdapterManifest, renderRuntimeInitBridge, renderRuntimeSkillBridge } from "../runtime/templates.js";
 import type { CliContext } from "../models/command.js";
+import type { SupportedRuntime } from "./adapters.js";
 import type { DotagentManifest, FileOwnershipRecord } from "../models/manifest.js";
 import { BundledAssetsError, DotagentError } from "../utils/errors.js";
 
 const UPDATE_NAMESPACES = ["workflows", "skills", "playbooks"] as const;
 
-type UpdateOwner = Extract<FileOwnershipRecord["owner"], "framework" | "playbook">;
+type UpdateOwner = FileOwnershipRecord["owner"];
 type UpdateAction = "create" | "update" | "remove" | "adopt" | "skip";
 
 export interface ManagedUpdatePlan {
   relativePath: string;
   targetPath: string;
   sourcePath?: string;
+  content?: string;
   owner: UpdateOwner;
   action: UpdateAction;
   contentHash: string;
@@ -50,7 +55,13 @@ export function planUpdate(context: CliContext): UpdatePlan {
 
   const frameworkRef = readFrameworkRef(context.packageRoot);
   const bundledPlaybooks = listBundledPlaybooks(context.bundledAgentRoot).map((entry) => entry.name);
-  const files = planManagedUpdates(context.projectRoot, context.bundledAgentRoot, existingManifest);
+  const files = planManagedUpdates(
+    context.projectRoot,
+    context.bundledAgentRoot,
+    frameworkRef,
+    bundledPlaybooks,
+    existingManifest
+  );
   const manifest = buildUpdatedManifest(existingManifest, frameworkRef, bundledPlaybooks, files);
 
   return {
@@ -73,15 +84,21 @@ export function applyUpdatePlan(plan: UpdatePlan): UpdateExecutionResult {
       continue;
     }
 
-    if (!filePlan.sourcePath) {
-      throw new DotagentError(`Managed update is missing a bundled source path: ${filePlan.relativePath}`);
+    if (filePlan.sourcePath) {
+      const content = readBinaryFile(filePlan.sourcePath);
+      safeWriteBinaryFile(
+        plan.projectRoot,
+        filePlan.targetPath,
+        content,
+        `Managed file write: ${filePlan.relativePath}`
+      );
+      continue;
     }
 
-    const content = readBinaryFile(filePlan.sourcePath);
-    safeWriteBinaryFile(
+    safeWriteUtf8File(
       plan.projectRoot,
       filePlan.targetPath,
-      content,
+      filePlan.content ?? "",
       `Managed file write: ${filePlan.relativePath}`
     );
   }
@@ -110,7 +127,7 @@ export function renderUpdatePlan(plan: UpdatePlan, verbose = false): string {
     `framework_ref: ${plan.frameworkRef}`,
     `bundled_playbooks: ${plan.bundledPlaybooks.length > 0 ? plan.bundledPlaybooks.join(", ") : "(none)"}`,
     `managed_files: create=${counts.create}, update=${counts.update}, remove=${counts.remove}, adopt=${counts.adopt}, skip=${counts.skip}`,
-    "namespaces: workflows, skills, playbooks",
+    "namespaces: workflows, skills, playbooks, installed runtime adapters",
     "manifest: write .agent/.dotagent-manifest.json"
   ];
 
@@ -131,6 +148,8 @@ export function renderUpdatePlan(plan: UpdatePlan, verbose = false): string {
 function planManagedUpdates(
   projectRoot: string,
   bundledAgentRoot: string,
+  frameworkRef: string,
+  bundledPlaybooks: string[],
   existingManifest: DotagentManifest
 ): ManagedUpdatePlan[] {
   const plans: ManagedUpdatePlan[] = [];
@@ -201,6 +220,40 @@ function planManagedUpdates(
     }
   }
 
+  const installedRuntimes = normalizeInstalledRuntimes(existingManifest);
+  const bundledSkills = listBundledFrameworkSkills(bundledAgentRoot);
+  if (installedRuntimes.length > 0) {
+    assertBundledFrameworkSkillsAvailable(bundledAgentRoot, bundledSkills);
+  }
+
+  for (const runtime of installedRuntimes) {
+    const runtimeManifestTargetPath = path.join(projectRoot, ...getRuntimeManifestRelativePath(runtime).split("/"));
+    seenPaths.add(toRelativeManifestPath(projectRoot, runtimeManifestTargetPath));
+    plans.push(
+      planGeneratedManagedUpdate(
+        projectRoot,
+        runtimeManifestTargetPath,
+        renderRuntimeAdapterManifest(runtime, frameworkRef, resolveRuntimeInstalledAt(projectRoot, runtime)),
+        "adapter",
+        ownership.get(toRelativeManifestPath(projectRoot, runtimeManifestTargetPath))
+      )
+    );
+
+    for (const skill of bundledSkills) {
+      const targetPath = path.join(projectRoot, ...getRuntimeBridgeRelativePath(runtime, skill.skillName).split("/"));
+      const relativePath = toRelativeManifestPath(projectRoot, targetPath);
+      seenPaths.add(relativePath);
+      const content =
+        skill.skillName === "init"
+          ? renderRuntimeInitBridge(runtime, bundledSkills, bundledPlaybooks)
+          : renderRuntimeSkillBridge(runtime, skill);
+
+      plans.push(
+        planGeneratedManagedUpdate(projectRoot, targetPath, content, "adapter", ownership.get(relativePath))
+      );
+    }
+  }
+
   for (const existingRecord of existingManifest.ownedFiles) {
     if (!isUpdateManagedRecord(existingRecord)) {
       continue;
@@ -242,6 +295,60 @@ function planManagedUpdates(
   return plans.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
 }
 
+function planGeneratedManagedUpdate(
+  projectRoot: string,
+  targetPath: string,
+  content: string,
+  owner: UpdateOwner,
+  existingRecord: FileOwnershipRecord | undefined
+): ManagedUpdatePlan {
+  const relativePath = toRelativeManifestPath(projectRoot, targetPath);
+  const sourceHash = hashUtf8(content);
+
+  if (!fileExists(targetPath)) {
+    return {
+      relativePath,
+      targetPath,
+      owner,
+      action: "create",
+      contentHash: sourceHash,
+      content
+    };
+  }
+
+  const targetHash = hashUtf8(readUtf8File(targetPath));
+  if (targetHash === sourceHash) {
+    return {
+      relativePath,
+      targetPath,
+      owner,
+      action: "adopt",
+      contentHash: sourceHash,
+      content
+    };
+  }
+
+  if (existingRecord?.contentHash && existingRecord.contentHash === targetHash) {
+    return {
+      relativePath,
+      targetPath,
+      owner,
+      action: "update",
+      contentHash: sourceHash,
+      content
+    };
+  }
+
+  return {
+    relativePath,
+    targetPath,
+    owner,
+    action: "skip",
+    contentHash: sourceHash,
+    content
+  };
+}
+
 function buildUpdatedManifest(
   existingManifest: DotagentManifest,
   frameworkRef: string,
@@ -280,9 +387,46 @@ function buildUpdatedManifest(
 }
 
 function isUpdateManagedRecord(record: FileOwnershipRecord): record is FileOwnershipRecord & { owner: UpdateOwner } {
+  if (record.owner === "adapter") {
+    return (
+      (SUPPORTED_RUNTIMES as readonly SupportedRuntime[]).some((runtime) => isRuntimeBridgePath(runtime, record.path)) ||
+      (SUPPORTED_RUNTIMES as readonly SupportedRuntime[]).some(
+        (runtime) => record.path === getRuntimeManifestRelativePath(runtime)
+      )
+    );
+  }
+
   if (record.owner !== "framework" && record.owner !== "playbook") {
     return false;
   }
 
   return UPDATE_NAMESPACES.some((namespace) => record.path.startsWith(`.agent/${namespace}/`));
+}
+
+function normalizeInstalledRuntimes(existingManifest: DotagentManifest): SupportedRuntime[] {
+  const runtimes = existingManifest.installedAdapters
+    .map((entry) => entry.runtime)
+    .filter((runtime): runtime is SupportedRuntime =>
+      (SUPPORTED_RUNTIMES as readonly string[]).includes(runtime)
+    );
+
+  return [...new Set(runtimes)].sort((left, right) => left.localeCompare(right));
+}
+
+function resolveRuntimeInstalledAt(projectRoot: string, runtime: SupportedRuntime): string {
+  const manifestPath = path.join(projectRoot, ...getRuntimeManifestRelativePath(runtime).split("/"));
+  if (!fileExists(manifestPath)) {
+    return new Date().toISOString();
+  }
+
+  try {
+    const parsed = JSON.parse(readUtf8File(manifestPath)) as { installedAt?: unknown };
+    if (typeof parsed.installedAt === "string" && parsed.installedAt.length > 0) {
+      return parsed.installedAt;
+    }
+  } catch {
+    // Fall back to a fresh installation timestamp if the existing runtime manifest is unreadable.
+  }
+
+  return new Date().toISOString();
 }
