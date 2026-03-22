@@ -23,21 +23,23 @@ Each review round uses a dedicated workspace directory.
 Expected structure:
 
 ```text
-<repo>/.ecrr/<task_name>/round_001/
-|-- 00_round_context.md
-|-- 10_previous_round_feedback.md
-|-- README.md
-|-- reviewers/
-|   |-- reviewer_alpha.md
-|   |-- reviewer_beta.md
-|   `-- reviewer_gamma.md
-|-- lead/
-|   |-- 20_reviewer_feedback.md
-|   `-- 30_round_results.md
-|-- verification/
-|   |-- batch_001.md
-|   `-- batch_002.md
-`-- 60_round_verdict.md
+<repo>/.ecrr/<task_name>/
+|-- findings_ledger.md
+`-- round_001/
+    |-- 00_round_context.md
+    |-- 10_previous_round_feedback.md
+    |-- README.md
+    |-- reviewers/
+    |   |-- reviewer_alpha.md
+    |   |-- reviewer_beta.md
+    |   `-- reviewer_gamma.md
+    |-- lead/
+    |   |-- 20_reviewer_feedback.md
+    |   `-- 30_round_results.md
+    |-- verification/
+    |   |-- batch_001.md
+    |   `-- batch_002.md
+    `-- 60_round_verdict.md
 ```
 
 ## Artifact Purpose
@@ -54,6 +56,11 @@ Expected structure:
 - `10_previous_round_feedback.md`
   - summary of prior round outcomes relevant to this round
   - carry-forward references
+
+- `findings_ledger.md`
+  - cumulative findings memory for the task
+  - stable ids across rounds
+  - current disposition of previously accepted findings
 
 - `README.md`
   - canonical live round packet
@@ -91,6 +98,7 @@ Expected structure:
 The CLI is responsible for:
 
 - initializing the runtime root
+- scaffolding task-level artifacts such as `findings_ledger.md`
 - scaffolding the first round from the template
 - preserving the expected directory shape
 

@@ -44,7 +44,30 @@ test("loadInstalledPlaybookContract rejects traversal-capable runtime paths", ()
         name: "the-test-playbook",
         version: "0.1.0",
         runtimeRoot: "../outside",
-        templateDir: "round_template"
+        templateDir: "template"
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+
+  assert.throws(() => loadInstalledPlaybookContract(root, "the-test-playbook"), PlaybookContractError);
+});
+
+test("loadInstalledPlaybookContract rejects traversal-capable template paths", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-contract-template-paths-"));
+  const playbookRoot = path.join(root, ".agent", "playbooks", "the-test-playbook");
+  mkdirSync(playbookRoot, { recursive: true });
+  writeFileSync(path.join(playbookRoot, "PLAYBOOK.md"), "# Test\n", "utf8");
+  writeFileSync(
+    path.join(playbookRoot, "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "the-test-playbook",
+        version: "0.1.0",
+        runtimeRoot: ".ecrr",
+        templateDir: "../outside"
       },
       null,
       2
@@ -73,7 +96,7 @@ test("loadInstalledPlaybookContract rejects traversal-capable contract names", (
         name: "../outside",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "round_template"
+        templateDir: "template"
       },
       null,
       2
@@ -96,7 +119,7 @@ test("loadInstalledPlaybookContract rejects multiline gitignore entries", () => 
         name: "the-test-playbook",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "round_template",
+        templateDir: "template",
         gitignoreEntry: ".ecrr/\nsecret-dir/"
       },
       null,
@@ -121,7 +144,7 @@ test("loadInstalledPlaybookContract rejects symlinked installed playbook roots",
         name: "the-test-playbook",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "round_template"
+        templateDir: "template"
       },
       null,
       2
@@ -150,7 +173,7 @@ test("loadInstalledPlaybookContract rejects symlinked .agent ancestors", () => {
         name: "the-test-playbook",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "round_template"
+        templateDir: "template"
       },
       null,
       2

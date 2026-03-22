@@ -26,3 +26,4 @@ Use:
 - reasoning for stale or rejected items
 - deferred items and accepted reasoning
 - which points should not be repeated without new evidence
+- finding ids added or updated in `findings_ledger.md`

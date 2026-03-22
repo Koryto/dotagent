@@ -12,7 +12,7 @@ Use a compact shape in quick rounds.
 
 ## Unified Findings
 
-1. Severity - Title
+1. `finding_id` | Severity - Title
    Why it matters:
    Source reviewers:
    Fix direction:

@@ -22,10 +22,11 @@ Reviewers should start here after reading the relevant role-init file.
 
 ## Read Order
 
-1. `README.md`
-2. `00_round_context.md`
-3. `10_previous_round_feedback.md` when this is not the first round
-4. your assigned reviewer file under `reviewers/`
+1. `findings_ledger.md`
+2. `README.md`
+3. `00_round_context.md`
+4. `10_previous_round_feedback.md` when this is not the first round
+5. your assigned reviewer file under `reviewers/`
 
 If `10_previous_round_feedback.md` references prior round artifacts, read those before writing findings.
 
@@ -54,6 +55,7 @@ If `10_previous_round_feedback.md` references prior round artifacts, read those 
 ## Carry-Forward Rules
 
 - accepted_findings_to_verify:
+- accepted_finding_ids_to_verify:
 - rejected_or_deferred_items_not_to_re-raise_without_new_evidence:
 
 ## Missing-Artifact Policy

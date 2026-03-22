@@ -73,7 +73,7 @@ test("dotagent doctor reports traversal-capable playbook contracts", async () =>
         name: "the-extreme-cr-rig",
         version: "0.1.0",
         runtimeRoot: "../outside",
-        templateDir: "round_template",
+        templateDir: "template",
         taskScoped: true,
         initialRound: "round_001"
       },
@@ -118,7 +118,7 @@ test("dotagent doctor reports playbook contract name mismatches", async () => {
         name: "other-playbook",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "round_template",
+        templateDir: "template",
         taskScoped: true,
         initialRound: "round_001",
         gitignoreEntry: ".ecrr/"

@@ -7,7 +7,8 @@ Use this file if you are a `Wingman` in an active run of `the-extreme-cr-rig`.
 1. `.agent/skills/code-review/SKILL.md`
 2. `PLAYBOOK.md`
 3. `round_template/README.md`
-4. the active round packet:
+4. `findings_ledger.md` when it is present for the task
+5. the active round packet:
    - `README.md`
    - `00_round_context.md`
    - `10_previous_round_feedback.md` when relevant

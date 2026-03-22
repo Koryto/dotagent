@@ -89,6 +89,10 @@ Quick rounds may skip `lead/20_reviewer_feedback.md` when there is no meaningful
 
 Verification artifacts are expected whenever fix batches or manual validation occur.
 
+Task-level memory should be maintained in:
+
+- `findings_ledger.md`
+
 ## Round Flow
 
 1. **Round start**
@@ -111,6 +115,7 @@ Verification artifacts are expected whenever fix batches or manual validation oc
    - Stinson produces:
      - one reviewer-facing artifact
      - one human-facing round-results artifact
+   - Stinson updates `findings_ledger.md` with stable ids and current disposition.
 
 4. **Human review**
    - The human reviews the round results and execution plan.

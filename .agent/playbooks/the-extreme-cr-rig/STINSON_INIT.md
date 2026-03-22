@@ -19,6 +19,7 @@ You are responsible for:
 - classifying findings
 - producing reviewer-facing carry-forward feedback
 - producing the human-facing round results and execution plan
+- maintaining `findings_ledger.md`
 - coordinating fix and verification flow
 - closing the round with the human's verdict
 

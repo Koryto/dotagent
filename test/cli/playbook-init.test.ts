@@ -74,6 +74,10 @@ test("dotagent playbook init scaffolds the first filesystem round and ignores ru
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.equal(
+    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "findings_ledger.md")),
+    true
+  );
+  assert.equal(
     existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "00_round_context.md")),
     true
   );
@@ -100,9 +104,10 @@ test("dotagent playbook init scaffolds the first filesystem round and ignores ru
   assert.match(readFileSync(path.join(root, ".gitignore"), "utf8"), /\.ecrr\//);
   assert.match(stdout.buffer, /Playbook initialization complete/);
   assert.match(stdout.buffer, /created_directories: 3/);
+  assert.match(stdout.buffer, /created_files: 7/);
 });
 
-test("dotagent playbook init preserves divergent round files on rerun", async () => {
+test("dotagent playbook init preserves divergent task and round files on rerun", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-init-rerun-"));
 
   let exitCode = await runCli({
@@ -124,7 +129,9 @@ test("dotagent playbook init preserves divergent round files on rerun", async ()
   assert.equal(exitCode, 0);
 
   const contextPath = path.join(root, ".ecrr", "default_ability_alignment", "round_001", "00_round_context.md");
+  const ledgerPath = path.join(root, ".ecrr", "default_ability_alignment", "findings_ledger.md");
   writeFileSync(contextPath, "local round context\n", "utf8");
+  writeFileSync(ledgerPath, "local findings ledger\n", "utf8");
 
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
@@ -139,7 +146,8 @@ test("dotagent playbook init preserves divergent round files on rerun", async ()
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.equal(readFileSync(contextPath, "utf8"), "local round context\n");
-  assert.match(stdout.buffer, /Preserved divergent files: 1|preserved_divergent_files: 1/);
+  assert.equal(readFileSync(ledgerPath, "utf8"), "local findings ledger\n");
+  assert.match(stdout.buffer, /Preserved divergent files: 2|preserved_divergent_files: 2/);
 });
 
 test("dotagent playbook init recreates missing empty template directories on rerun", async () => {
@@ -201,7 +209,7 @@ test("dotagent playbook init rejects traversal-capable installed playbook contra
         name: "the-extreme-cr-rig",
         version: "0.1.0",
         runtimeRoot: "../outside",
-        templateDir: "round_template",
+        templateDir: "template",
         taskScoped: true,
         initialRound: "round_001"
       },
@@ -266,7 +274,7 @@ test("dotagent playbook init rejects symlinked template roots", async () => {
 
   mkdirSync(path.join(outside, "lead"), { recursive: true });
   writeFileSync(path.join(outside, "00_round_context.md"), "outside round context\n", "utf8");
-  const templateRoot = path.join(root, ".agent", "playbooks", "the-extreme-cr-rig", "round_template");
+  const templateRoot = path.join(root, ".agent", "playbooks", "the-extreme-cr-rig", "template", "round_template");
   rmSync(templateRoot, { recursive: true, force: true });
   symlinkSync(outside, templateRoot, "junction");
 
@@ -305,6 +313,7 @@ test("dotagent playbook init rejects symlinked template subdirectories", async (
     ".agent",
     "playbooks",
     "the-extreme-cr-rig",
+    "template",
     "round_template",
     "lead"
   );
@@ -342,7 +351,7 @@ test("dotagent playbook init rejects symlinked installed playbook roots", async 
   });
   assert.equal(exitCode, 0);
 
-  mkdirSync(path.join(outside, "round_template"), { recursive: true });
+  mkdirSync(path.join(outside, "template", "round_template"), { recursive: true });
   writeFileSync(path.join(outside, "PLAYBOOK.md"), "# Outside\n", "utf8");
   writeFileSync(
     path.join(outside, "playbook.json"),
@@ -351,7 +360,7 @@ test("dotagent playbook init rejects symlinked installed playbook roots", async 
         name: "the-extreme-cr-rig",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "round_template",
+        templateDir: "template",
         taskScoped: true,
         initialRound: "round_001",
         gitignoreEntry: ".ecrr/"
@@ -361,7 +370,7 @@ test("dotagent playbook init rejects symlinked installed playbook roots", async 
     )}\n`,
     "utf8"
   );
-  writeFileSync(path.join(outside, "round_template", "00_round_context.md"), "outside context\n", "utf8");
+  writeFileSync(path.join(outside, "template", "round_template", "00_round_context.md"), "outside context\n", "utf8");
 
   const installedPlaybookRoot = path.join(root, ".agent", "playbooks", "the-extreme-cr-rig");
   rmSync(installedPlaybookRoot, { recursive: true, force: true });
@@ -395,7 +404,7 @@ test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
   });
   assert.equal(exitCode, 0);
 
-  mkdirSync(path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "round_template"), {
+  mkdirSync(path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "template", "round_template"), {
     recursive: true
   });
   writeFileSync(path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "PLAYBOOK.md"), "# Outside\n", "utf8");
@@ -406,7 +415,7 @@ test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
         name: "the-extreme-cr-rig",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "round_template",
+        templateDir: "template",
         taskScoped: true,
         initialRound: "round_001",
         gitignoreEntry: ".ecrr/"
@@ -417,7 +426,7 @@ test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
     "utf8"
   );
   writeFileSync(
-    path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "round_template", "00_round_context.md"),
+    path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "template", "round_template", "00_round_context.md"),
     "outside context\n",
     "utf8"
   );

@@ -11,6 +11,7 @@ Use this file only when the active round is not the first round.
 
 ## Carry Forward
 
+- accepted_finding_ids_to_verify:
 - accepted_findings_to_verify:
 - resolved_findings:
 - still_open_findings:

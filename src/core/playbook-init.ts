@@ -64,6 +64,11 @@ export function planPlaybookInit(
     path.join(playbookRoot, contract.templateDir),
     `Playbook template root for ${contract.name}`
   );
+  const roundTemplateRoot = assertPathWithinRoot(
+    templateRoot,
+    path.join(templateRoot, "round_template"),
+    `Playbook round template root for ${contract.name}`
+  );
   const runtimeRoot = assertPathWithinRoot(
     context.projectRoot,
     contract.taskScoped
@@ -77,8 +82,14 @@ export function planPlaybookInit(
     path.join(runtimeRoot, roundDirectory),
     `Playbook round root for ${contract.name}`
   );
-  const directories = planTemplateDirectories(context.projectRoot, templateRoot, roundRoot);
-  const files = planTemplateFiles(context.projectRoot, templateRoot, roundRoot);
+  const directories = [
+    ...planTemplateDirectories(context.projectRoot, runtimeRoot, templateRoot, "task"),
+    ...planTemplateDirectories(context.projectRoot, roundRoot, roundTemplateRoot, "round")
+  ];
+  const files = [
+    ...planTemplateFiles(context.projectRoot, runtimeRoot, templateRoot, "task"),
+    ...planTemplateFiles(context.projectRoot, roundRoot, roundTemplateRoot, "round")
+  ];
   const gitignore = planPlaybookGitignore(context.projectRoot, contract.gitignoreEntry);
 
   return {
@@ -185,35 +196,52 @@ export function renderPlaybookInitPlan(plan: PlaybookInitPlan, verbose = false):
 
 function planTemplateDirectories(
   projectRoot: string,
-  templateRoot: string,
-  roundRoot: string
+  targetRoot: string,
+  templateRoot: string | null,
+  scope: "task" | "round"
 ): PlaybookInitDirectoryPlan[] {
+  if (!templateRoot) {
+    return [];
+  }
+
   if (!fileExists(templateRoot)) {
     throw new DotagentError(`Playbook template directory is missing: ${templateRoot}`);
   }
 
-  return collectDirectoryPaths(templateRoot, `Playbook template root: ${templateRoot}`).map((sourceDirectory) => {
+  return collectDirectoryPaths(templateRoot, `Playbook template root: ${templateRoot}`)
+    .filter((sourceDirectory) => shouldIncludeTemplatePath(templateRoot, sourceDirectory, scope))
+    .map((sourceDirectory) => {
     const relativeFromTemplate = path.relative(templateRoot, sourceDirectory);
-    const targetPath = path.join(roundRoot, relativeFromTemplate);
+    const targetPath = path.join(targetRoot, relativeFromTemplate);
 
     return {
       relativePath: toProjectRelativePath(projectRoot, targetPath),
       targetPath,
       action: fileExists(targetPath) ? "adopt" : "create"
     };
-  });
+    });
 }
 
-function planTemplateFiles(projectRoot: string, templateRoot: string, roundRoot: string): PlaybookInitFilePlan[] {
+function planTemplateFiles(
+  projectRoot: string,
+  targetRoot: string,
+  templateRoot: string | null,
+  scope: "task" | "round"
+): PlaybookInitFilePlan[] {
+  if (!templateRoot) {
+    return [];
+  }
+
   if (!fileExists(templateRoot)) {
     throw new DotagentError(`Playbook template directory is missing: ${templateRoot}`);
   }
 
   return collectFilePaths(templateRoot, `Playbook template root: ${templateRoot}`)
+    .filter((sourcePath) => shouldIncludeTemplatePath(templateRoot, sourcePath, scope))
     .filter((sourcePath) => shouldCopyTemplateFile(sourcePath))
     .map((sourcePath) => {
     const relativeFromTemplate = path.relative(templateRoot, sourcePath);
-    const targetPath = path.join(roundRoot, relativeFromTemplate);
+    const targetPath = path.join(targetRoot, relativeFromTemplate);
 
     if (!fileExists(targetPath)) {
       return {
@@ -273,4 +301,20 @@ function toProjectRelativePath(projectRoot: string, absolutePath: string): strin
 function shouldCopyTemplateFile(sourcePath: string): boolean {
   const basename = path.basename(sourcePath).toLowerCase();
   return basename !== "reviewer_template.md" && basename !== "batch_template.md";
+}
+
+function shouldIncludeTemplatePath(
+  templateRoot: string,
+  sourcePath: string,
+  scope: "task" | "round"
+): boolean {
+  const relativePath = path.relative(templateRoot, sourcePath);
+  const segments = relativePath.split(path.sep).filter((segment) => segment.length > 0);
+  const startsInRoundTemplate = segments[0] === "round_template";
+
+  if (scope === "round") {
+    return true;
+  }
+
+  return !startsInRoundTemplate;
 }
