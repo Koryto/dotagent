@@ -2,6 +2,7 @@
   "name": "@dotagent/cli",
   "version": "0.1.0",
   "description": "Operator CLI for dotagent",
+  "license": "Apache-2.0",
   "type": "module",
   "bin": {
     "dotagent": "./dist/index.js"
