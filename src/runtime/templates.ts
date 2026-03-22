@@ -135,17 +135,17 @@ function renderRuntimeBridgeFrontmatter(
     case "codex":
       return [
         "---",
-        `name: dotagent-${name}`,
-        `description: ${description}`,
+        `name: ${yamlString(`dotagent-${name}`)}`,
+        `description: ${yamlString(description)}`,
         "metadata:",
-        `  short-description: ${description}`,
+        `  short-description: ${yamlString(description)}`,
         "---"
       ];
     case "claude":
       return [
         "---",
-        `name: dotagent:${name}`,
-        `description: ${description}`,
+        `name: ${yamlString(`dotagent:${name}`)}`,
+        `description: ${yamlString(description)}`,
         "allowed-tools:",
         "  - Read",
         "  - Write",
@@ -155,7 +155,7 @@ function renderRuntimeBridgeFrontmatter(
     case "opencode":
       return [
         "---",
-        `description: ${description}`,
+        `description: ${yamlString(description)}`,
         "tools:",
         "  read: true",
         "  write: true",
@@ -165,12 +165,16 @@ function renderRuntimeBridgeFrontmatter(
     case "copilot":
       return [
         "---",
-        `name: dotagent-${name}`,
-        `description: ${description}`,
+        `name: ${yamlString(`dotagent-${name}`)}`,
+        `description: ${yamlString(description)}`,
         "allowed-tools: Read, Write, Bash",
         "---"
       ];
     default:
-      return ["---", `description: ${description}`, "---"];
+      return ["---", `description: ${yamlString(description)}`, "---"];
   }
+}
+
+function yamlString(value: string): string {
+  return JSON.stringify(value);
 }

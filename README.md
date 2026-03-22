@@ -86,7 +86,7 @@ Skills are loaded on demand, not kept in hot context by default.
 
 `playbooks/` is an optional namespace for operational packages that are too large, stateful, or role-dependent to fit cleanly into a single skill.
 
-See [.agent/playbooks/README.md](C:\Users\Mykor\Projects\dotagent\.agent\playbooks\README.md) for the current conventions.
+See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current conventions.
 
 ## Session Model
 

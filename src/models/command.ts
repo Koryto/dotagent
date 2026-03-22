@@ -17,6 +17,11 @@ export interface HelpCommand {
   flags: CommandFlags;
 }
 
+export interface VersionCommand {
+  kind: "version";
+  flags: CommandFlags;
+}
+
 export interface InitCommand {
   kind: "init";
   flags: CommandFlags;
@@ -45,13 +50,14 @@ export interface PlaybookInitCommand {
 
 export type ParsedCommand =
   | HelpCommand
+  | VersionCommand
   | InitCommand
   | UpdateCommand
   | DoctorCommand
   | PlaybookListCommand
   | PlaybookInitCommand;
 
-export type CliCommand = Exclude<ParsedCommand, HelpCommand>;
+export type CliCommand = Exclude<ParsedCommand, HelpCommand | VersionCommand>;
 
 export interface CliContext {
   invocationCwd: string;

@@ -38,6 +38,40 @@ test("runCli returns help when no command is provided", async () => {
   assert.equal(stderr.buffer, "");
 });
 
+test("runCli prints the package version for --version", async () => {
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+
+  const exitCode = await runCli({
+    argv: ["--version"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.match(stdout.buffer, /^\d+\.\d+\.\d+\r?\n?$/);
+  assert.equal(stderr.buffer, "");
+});
+
+test("runCli prints the package version for version subcommand", async () => {
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+
+  const exitCode = await runCli({
+    argv: ["version"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.match(stdout.buffer, /^\d+\.\d+\.\d+\r?\n?$/);
+  assert.equal(stderr.buffer, "");
+});
+
 test("runCli lists bundled playbooks", async () => {
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
