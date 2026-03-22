@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileExists } from "./files.js";
 import { loadManifest } from "./manifest.js";
 import { listBundledPlaybooks, listInstalledPlaybooks, loadInstalledPlaybookContract } from "./playbooks.js";
-import { RUNTIME_ADAPTERS } from "./adapters.js";
+import { getRuntimeEntrypointRelativePath, RUNTIME_ADAPTERS } from "./adapters.js";
 import { planUpdate } from "./update.js";
 import { resolveDotagentRoot } from "./paths.js";
 import type { CliContext } from "../models/command.js";
@@ -173,7 +173,7 @@ function inspectAdapters(
   }
 
   for (const descriptor of RUNTIME_ADAPTERS) {
-    const adapterPath = path.join(context.projectRoot, descriptor.directoryName, "INDEX.md");
+    const adapterPath = path.join(context.projectRoot, ...getRuntimeEntrypointRelativePath(descriptor.runtime).split("/"));
     const declared = manifest.installedAdapters.some((entry) => entry.runtime === descriptor.runtime);
     if (fileExists(adapterPath) && !declared) {
       issues.push({

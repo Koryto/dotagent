@@ -1,11 +1,13 @@
 import path from "node:path";
 
+import { readdirSync, statSync } from "node:fs";
+
 import type { SupportedRuntime } from "./adapters.js";
-import { getRuntimeDescriptor } from "./adapters.js";
+import { getRuntimeBridgeRelativePath, getRuntimeDescriptor, getRuntimeEntrypointRelativePath } from "./adapters.js";
 import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
-import { renderAgentsBridge, renderRuntimeIndex } from "../runtime/templates.js";
+import { renderRuntimeBootstrapBridge, renderRuntimeSkillBridge, type FrameworkSkillDescriptor } from "../runtime/templates.js";
 import type { CliContext } from "../models/command.js";
 import type { DotagentManifest, FileOwnershipRecord, InstalledAdapterRecord } from "../models/manifest.js";
 
@@ -54,10 +56,11 @@ export function planInit(
   runtimes: SupportedRuntime[]
 ): InitPlan {
   const bundledPlaybooks = listBundledPlaybooks(context.bundledAgentRoot).map((entry) => entry.name);
+  const bundledSkills = listBundledFrameworkSkills(context.bundledAgentRoot);
   const existingManifest = loadManifest(context.projectRoot);
 
   const frameworkFiles = planBundledFrameworkFiles(context.projectRoot, context.bundledAgentRoot);
-  const adapterFiles = planAdapterFiles(context.projectRoot, runtimes, bundledPlaybooks);
+  const adapterFiles = planAdapterFiles(context.projectRoot, runtimes, bundledPlaybooks, bundledSkills);
   const gitignore = planGitignore(context.projectRoot);
   const manifest = buildManifest(
     context.projectRoot,
@@ -186,20 +189,26 @@ function planBundledFrameworkFiles(projectRoot: string, bundledAgentRoot: string
 function planAdapterFiles(
   projectRoot: string,
   runtimes: SupportedRuntime[],
-  bundledPlaybooks: string[]
+  bundledPlaybooks: string[],
+  bundledSkills: readonly FrameworkSkillDescriptor[]
 ): ManagedFilePlan[] {
   const results: ManagedFilePlan[] = [];
 
   for (const runtime of runtimes) {
-    const descriptor = getRuntimeDescriptor(runtime);
-    const targetPath = path.join(projectRoot, descriptor.directoryName, "INDEX.md");
-    const content = renderRuntimeIndex(runtime, bundledPlaybooks);
-    results.push(planGeneratedFile(projectRoot, targetPath, content, "adapter"));
-  }
+    const bootstrapTargetPath = path.join(projectRoot, ...getRuntimeEntrypointRelativePath(runtime).split("/"));
+    results.push(
+      planGeneratedFile(
+        projectRoot,
+        bootstrapTargetPath,
+        renderRuntimeBootstrapBridge(runtime, bundledSkills, bundledPlaybooks),
+        "adapter"
+      )
+    );
 
-  if (runtimes.length > 0) {
-    const agentsPath = path.join(projectRoot, "AGENTS.md");
-    results.push(planGeneratedFile(projectRoot, agentsPath, renderAgentsBridge(), "adapter"));
+    for (const skill of bundledSkills) {
+      const targetPath = path.join(projectRoot, ...getRuntimeBridgeRelativePath(runtime, skill.skillName).split("/"));
+      results.push(planGeneratedFile(projectRoot, targetPath, renderRuntimeSkillBridge(runtime, skill), "adapter"));
+    }
   }
 
   return results;
@@ -313,8 +322,7 @@ function mergeInstalledAdapters(
   const map = new Map(existing.map((entry) => [entry.runtime, entry]));
 
   for (const runtime of runtimes) {
-    const descriptor = getRuntimeDescriptor(runtime);
-    const targetPath = path.join(projectRoot, descriptor.directoryName, "INDEX.md");
+    const targetPath = path.join(projectRoot, ...getRuntimeEntrypointRelativePath(runtime).split("/"));
     const plan = adapterPlans.find((entry) => entry.targetPath === targetPath);
     if (!plan) {
       continue;
@@ -327,6 +335,43 @@ function mergeInstalledAdapters(
   }
 
   return [...map.values()].sort((left, right) => left.runtime.localeCompare(right.runtime));
+}
+
+function listBundledFrameworkSkills(bundledAgentRoot: string): FrameworkSkillDescriptor[] {
+  const skillsRoot = path.join(bundledAgentRoot, "skills");
+  if (!fileExists(skillsRoot)) {
+    return [];
+  }
+
+  const results: FrameworkSkillDescriptor[] = [
+    {
+      skillName: "bootstrap",
+      sourcePath: ".agent/BOOTSTRAP.md"
+    }
+  ];
+
+  for (const entry of readdirSync(skillsRoot, { withFileTypes: true })) {
+    if (!entry.isDirectory()) {
+      continue;
+    }
+
+    const skillPath = path.join(skillsRoot, entry.name, "SKILL.md");
+
+    try {
+      if (!statSync(skillPath).isFile()) {
+        continue;
+      }
+    } catch {
+      continue;
+    }
+
+    results.push({
+      skillName: entry.name,
+      sourcePath: `.agent/skills/${entry.name}/SKILL.md`
+    });
+  }
+
+  return results.sort((left, right) => left.skillName.localeCompare(right.skillName));
 }
 
 function summarizeManagedFiles(label: string, plans: ManagedFilePlan[]): string {

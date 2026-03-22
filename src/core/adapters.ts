@@ -6,14 +6,14 @@ export type SupportedRuntime = (typeof SUPPORTED_RUNTIMES)[number];
 
 export interface RuntimeAdapterDescriptor {
   runtime: SupportedRuntime;
-  directoryName: string;
+  entrypointPath: string;
 }
 
 export const RUNTIME_ADAPTERS: readonly RuntimeAdapterDescriptor[] = [
-  { runtime: "codex", directoryName: ".codex" },
-  { runtime: "claude", directoryName: ".claude" },
-  { runtime: "opencode", directoryName: ".opencode" },
-  { runtime: "copilot", directoryName: ".github" }
+  { runtime: "codex", entrypointPath: ".codex/skills/dotagent-bootstrap/SKILL.md" },
+  { runtime: "claude", entrypointPath: ".claude/commands/dotagent/bootstrap.md" },
+  { runtime: "opencode", entrypointPath: ".opencode/commands/dotagent-bootstrap.md" },
+  { runtime: "copilot", entrypointPath: ".github/skills/dotagent-bootstrap/SKILL.md" }
 ];
 
 export function parseRuntimeSelection(values: string[]): SupportedRuntime[] {
@@ -35,6 +35,25 @@ export function getRuntimeDescriptor(runtime: SupportedRuntime): RuntimeAdapterD
   }
 
   return descriptor;
+}
+
+export function getRuntimeEntrypointRelativePath(runtime: SupportedRuntime): string {
+  return getRuntimeDescriptor(runtime).entrypointPath;
+}
+
+export function getRuntimeBridgeRelativePath(runtime: SupportedRuntime, bridgeName: string): string {
+  switch (runtime) {
+    case "codex":
+      return `.codex/skills/dotagent-${bridgeName}/SKILL.md`;
+    case "claude":
+      return `.claude/commands/dotagent/${bridgeName}.md`;
+    case "opencode":
+      return `.opencode/commands/dotagent-${bridgeName}.md`;
+    case "copilot":
+      return `.github/skills/dotagent-${bridgeName}/SKILL.md`;
+    default:
+      throw new CliUsageError(`Unsupported runtime bridge path lookup: ${runtime}.`);
+  }
 }
 
 function isSupportedRuntime(value: string): value is SupportedRuntime {

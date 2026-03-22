@@ -59,9 +59,14 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.equal(existsSync(path.join(root, ".agent", "BOOTSTRAP.md")), true);
-  assert.equal(existsSync(path.join(root, ".codex", "INDEX.md")), true);
-  assert.equal(existsSync(path.join(root, ".claude", "INDEX.md")), true);
-  assert.equal(existsSync(path.join(root, "AGENTS.md")), true);
+  assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-bootstrap", "SKILL.md")), true);
+  assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-closeout", "SKILL.md")), true);
+  assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-code-review", "SKILL.md")), true);
+  assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "bootstrap.md")), true);
+  assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "closeout.md")), true);
+  assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "code-review.md")), true);
+  assert.equal(existsSync(path.join(root, "AGENTS.md")), false);
+  assert.equal(existsSync(path.join(root, "CLAUDE.md")), false);
   assert.match(readFileSync(path.join(root, ".gitignore"), "utf8"), /\.agent\//);
 
   const manifest = loadManifest(root);
@@ -85,14 +90,46 @@ test("dotagent init installs the copilot adapter under .github", async () => {
 
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
-  assert.equal(existsSync(path.join(root, ".github", "INDEX.md")), true);
+  assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-bootstrap", "SKILL.md")), true);
+  assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-closeout", "SKILL.md")), true);
+  assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-code-review", "SKILL.md")), true);
 
   const manifest = loadManifest(root);
   assert.ok(manifest);
   assert.deepEqual(manifest.installedAdapters, [
     {
       runtime: "copilot",
-      path: ".github/INDEX.md"
+      path: ".github/skills/dotagent-bootstrap/SKILL.md"
+    }
+  ]);
+  assert.match(stdout.buffer, /Initialization complete/);
+});
+
+test("dotagent init installs opencode runtime commands", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-opencode-"));
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+
+  const exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "opencode", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-bootstrap.md")), true);
+  assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-closeout.md")), true);
+  assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-code-review.md")), true);
+
+  const manifest = loadManifest(root);
+  assert.ok(manifest);
+  assert.deepEqual(manifest.installedAdapters, [
+    {
+      runtime: "opencode",
+      path: ".opencode/commands/dotagent-bootstrap.md"
     }
   ]);
   assert.match(stdout.buffer, /Initialization complete/);
@@ -115,6 +152,7 @@ test("dotagent init supports framework-only initialization with --yes and no run
   assert.equal(stderr.buffer, "");
   assert.equal(existsSync(path.join(root, ".agent", "BOOTSTRAP.md")), true);
   assert.equal(existsSync(path.join(root, "AGENTS.md")), false);
+  assert.equal(existsSync(path.join(root, "CLAUDE.md")), false);
   assert.equal(existsSync(path.join(root, ".codex")), false);
 
   const manifest = loadManifest(root);
@@ -205,7 +243,7 @@ test("dotagent init preserves installed adapter state when adapter files diverge
 
   assert.equal(exitCode, 0);
 
-  const adapterPath = path.join(root, ".codex", "INDEX.md");
+  const adapterPath = path.join(root, ".codex", "skills", "dotagent-code-review", "SKILL.md");
   writeFileSync(adapterPath, "local custom codex adapter\n", "utf8");
 
   const stdout = new MemoryWritable();
@@ -247,7 +285,7 @@ test("dotagent init rejects symlinked adapter destinations outside the project",
 
   assert.equal(exitCode, 1);
   assert.match(stderr.buffer, /symlinked path component/i);
-  assert.equal(existsSync(path.join(symlinkTarget, "INDEX.md")), false);
+  assert.equal(existsSync(path.join(symlinkTarget, "skills", "dotagent-bootstrap", "SKILL.md")), false);
   assert.equal(existsSync(path.join(root, ".agent", ".dotagent-manifest.json")), false);
 });
 
@@ -269,5 +307,5 @@ test("dotagent init --verbose reports individual framework and adapter file acti
   assert.match(stdout.buffer, /framework_file_actions:/);
   assert.match(stdout.buffer, /- create: \.agent\/BOOTSTRAP\.md/);
   assert.match(stdout.buffer, /adapter_file_actions:/);
-  assert.match(stdout.buffer, /- create: \.codex\/INDEX\.md/);
+  assert.match(stdout.buffer, /- create: \.codex\/skills\/dotagent-bootstrap\/SKILL\.md/);
 });
