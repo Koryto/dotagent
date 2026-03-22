@@ -1,0 +1,37 @@
+{
+  "name": "@dotagent/cli",
+  "version": "0.1.0",
+  "description": "Operator CLI for dotagent",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "dotagent": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    ".agent"
+  ],
+  "engines": {
+    "node": ">=20.20.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Koryto/dotagent.git"
+  },
+  "homepage": "https://github.com/Koryto/dotagent#readme",
+  "bugs": {
+    "url": "https://github.com/Koryto/dotagent/issues"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsc -p tsconfig.test.json && node --test .test-dist/**/*.test.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "typescript": "^5.9.0"
+  }
+}

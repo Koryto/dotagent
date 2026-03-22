@@ -1,5 +1,5 @@
 # Standard Workflow
-<!-- WORKFLOW_VERSION: 1.1 | STATUS: draft | TYPE: implementation -->
+<!-- WORKFLOW_VERSION: 1.2 | STATUS: draft | TYPE: implementation -->
 
 ## Purpose
 
@@ -20,10 +20,11 @@ Goal: clarify scope and produce an implementation plan.
 3. Create the plan:
    - substantial tasks: `tasks/{task_name}_ip.md`
    - simple tasks: inline in chat
+   - parallel tasks: prioritize using subagents when applicable due to explicit file/directory boundaries
 4. Include:
    - scope
    - affected files or systems
-   - implementation steps
+   - implementation steps - include subagent dividable work when applicable
    - risks
    - verification approach
 
@@ -86,9 +87,11 @@ Always:
 - perform review before calling work done
 - distinguish review from verification
 - be explicit about unresolved risk
+- assign explicit, non-overlapping file ownership to each sub-agent when working in parallel
 
 Never:
 - skip planning when a plan is needed
 - treat verification as optional when real risk exists
 - present unreviewed code as done
 - auto-promote task knowledge into `project/`
+- allow sub-agents to share file scope or write outside their designated sub-task assignments
