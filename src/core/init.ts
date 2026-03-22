@@ -3,7 +3,7 @@ import path from "node:path";
 import type { SupportedRuntime } from "./adapters.js";
 import { getRuntimeBridgeRelativePath, isRuntimeBridgePath } from "./adapters.js";
 import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
-import { listBundledFrameworkSkills } from "./framework-skills.js";
+import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
 import { renderRuntimeInitBridge, renderRuntimeSkillBridge, type FrameworkSkillDescriptor } from "../runtime/templates.js";
@@ -61,6 +61,7 @@ export function planInit(
   const frameworkFiles = planBundledFrameworkFiles(context.projectRoot, context.bundledAgentRoot);
   const adapterFiles = planAdapterFiles(
     context.projectRoot,
+    context.bundledAgentRoot,
     runtimes,
     bundledPlaybooks,
     bundledSkills,
@@ -198,6 +199,7 @@ function planBundledFrameworkFiles(projectRoot: string, bundledAgentRoot: string
 
 function planAdapterFiles(
   projectRoot: string,
+  bundledAgentRoot: string,
   runtimes: SupportedRuntime[],
   bundledPlaybooks: string[],
   bundledSkills: readonly FrameworkSkillDescriptor[],
@@ -205,6 +207,10 @@ function planAdapterFiles(
 ): ManagedFilePlan[] {
   const results: ManagedFilePlan[] = [];
   const expectedPaths = new Set<string>();
+
+  if (runtimes.length > 0) {
+    assertBundledFrameworkSkillsAvailable(bundledAgentRoot, bundledSkills);
+  }
 
   for (const runtime of runtimes) {
     const initSkill = bundledSkills.find((skill) => skill.skillName === "init");
@@ -244,6 +250,18 @@ function planAdapterFiles(
 
     const targetPath = path.join(projectRoot, ...existingRecord.path.split("/"));
     if (!fileExists(targetPath)) {
+      continue;
+    }
+
+    const targetHash = hashUtf8(readUtf8File(targetPath));
+    if (!existingRecord.contentHash || existingRecord.contentHash !== targetHash) {
+      results.push({
+        relativePath: existingRecord.path,
+        targetPath,
+        owner: "adapter",
+        action: "skip",
+        contentHash: existingRecord.contentHash ?? targetHash
+      });
       continue;
     }
 

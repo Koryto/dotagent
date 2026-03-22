@@ -17,7 +17,7 @@ export function renderRuntimeInitBridge(
   const playbookLines =
     bundledPlaybooks.length > 0 ? bundledPlaybooks.map((entry) => `- ${entry}`) : ["- none"];
 
-  return [
+  const body = [
     `# ${formatRuntimeBridgeName(runtime, "init")}`,
     "",
     "Use this runtime bridge to start working with the dotagent framework in this project.",
@@ -42,14 +42,21 @@ export function renderRuntimeInitBridge(
     "The framework bootstrap path remains `.agent/BOOTSTRAP.md`.",
     "These runtime files are generated bridges for native invocation only.",
     ""
-  ].join("\n");
+  ];
+
+  return renderRuntimeBridgeDocument(
+    runtime,
+    "init",
+    "Start a dotagent session from this runtime using the generated native bridge.",
+    body
+  );
 }
 
 export function renderRuntimeSkillBridge(
   runtime: SupportedRuntime,
   skill: FrameworkSkillDescriptor
 ): string {
-  return [
+  const body = [
     `# ${formatRuntimeBridgeName(runtime, skill.skillName)}`,
     "",
     "Generated bridge for a dotagent framework skill.",
@@ -60,7 +67,14 @@ export function renderRuntimeSkillBridge(
     `This wrapper exists so the skill can be invoked natively in ${runtime}.`,
     "The framework source of truth remains under `.agent/`.",
     ""
-  ].join("\n");
+  ];
+
+  return renderRuntimeBridgeDocument(
+    runtime,
+    skill.skillName,
+    `Invoke the dotagent ${skill.skillName} skill natively from this runtime.`,
+    body
+  );
 }
 
 function formatRuntimeBridgeName(runtime: SupportedRuntime, name: string): string {
@@ -82,5 +96,64 @@ function formatRuntimeInvocation(runtime: SupportedRuntime, name: string): strin
       return `\`dotagent-${name}\``;
     default:
       return `\`${formatRuntimeBridgeName(runtime, name)}\``;
+  }
+}
+
+function renderRuntimeBridgeDocument(
+  runtime: SupportedRuntime,
+  name: string,
+  description: string,
+  bodyLines: readonly string[]
+): string {
+  const frontmatter = renderRuntimeBridgeFrontmatter(runtime, name, description);
+  return [...frontmatter, "", ...bodyLines].join("\n");
+}
+
+function renderRuntimeBridgeFrontmatter(
+  runtime: SupportedRuntime,
+  name: string,
+  description: string
+): string[] {
+  switch (runtime) {
+    case "codex":
+      return [
+        "---",
+        `name: dotagent-${name}`,
+        `description: ${description}`,
+        "metadata:",
+        `  short-description: ${description}`,
+        "---"
+      ];
+    case "claude":
+      return [
+        "---",
+        `name: dotagent:${name}`,
+        `description: ${description}`,
+        "allowed-tools:",
+        "  - Read",
+        "  - Write",
+        "  - Bash",
+        "---"
+      ];
+    case "opencode":
+      return [
+        "---",
+        `description: ${description}`,
+        "tools:",
+        "  read: true",
+        "  write: true",
+        "  bash: true",
+        "---"
+      ];
+    case "copilot":
+      return [
+        "---",
+        `name: dotagent-${name}`,
+        `description: ${description}`,
+        "allowed-tools: Read, Write, Bash",
+        "---"
+      ];
+    default:
+      return ["---", `description: ${description}`, "---"];
   }
 }

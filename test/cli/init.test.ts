@@ -6,6 +6,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { runCli } from "../../src/cli.js";
+import { hashUtf8 } from "../../src/core/files.js";
 import { loadManifest } from "../../src/core/manifest.js";
 
 class MemoryWritable extends Writable {
@@ -62,9 +63,12 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-closeout", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-code-review", "SKILL.md")), true);
+  assert.match(readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"), /^---\r?\nname: dotagent-init\r?\ndescription: /);
   assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "init.md")), true);
   assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "closeout.md")), true);
   assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "code-review.md")), true);
+  assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /^---\r?\nname: dotagent:init\r?\ndescription: /);
+  assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /allowed-tools:\r?\n  - Read\r?\n  - Write\r?\n  - Bash/);
   assert.equal(existsSync(path.join(root, "AGENTS.md")), false);
   assert.equal(existsSync(path.join(root, "CLAUDE.md")), false);
   assert.match(readFileSync(path.join(root, ".gitignore"), "utf8"), /\.agent\//);
@@ -93,6 +97,8 @@ test("dotagent init installs the copilot adapter under .github", async () => {
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-closeout", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-code-review", "SKILL.md")), true);
+  assert.match(readFileSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md"), "utf8"), /^---\r?\nname: dotagent-init\r?\ndescription: /);
+  assert.match(readFileSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md"), "utf8"), /allowed-tools: Read, Write, Bash/);
 
   const manifest = loadManifest(root);
   assert.ok(manifest);
@@ -122,6 +128,8 @@ test("dotagent init installs opencode runtime commands", async () => {
   assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-init.md")), true);
   assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-closeout.md")), true);
   assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-code-review.md")), true);
+  assert.match(readFileSync(path.join(root, ".opencode", "commands", "dotagent-init.md"), "utf8"), /^---\r?\ndescription: /);
+  assert.match(readFileSync(path.join(root, ".opencode", "commands", "dotagent-init.md"), "utf8"), /tools:\r?\n  read: true\r?\n  write: true\r?\n  bash: true/);
 
   const manifest = loadManifest(root);
   assert.ok(manifest);
@@ -285,7 +293,7 @@ test("dotagent init removes obsolete manifest-owned runtime bridges for selected
   manifest.ownedFiles.push({
     path: ".codex/skills/dotagent-obsolete/SKILL.md",
     owner: "adapter",
-    contentHash: "obsolete"
+    contentHash: hashUtf8("obsolete bridge\n")
   });
   writeFileSync(
     path.join(root, ".agent", ".dotagent-manifest.json"),
@@ -313,6 +321,59 @@ test("dotagent init removes obsolete manifest-owned runtime bridges for selected
   assert.equal(
     updatedManifest.ownedFiles.some((entry) => entry.path === ".codex/skills/dotagent-obsolete/SKILL.md"),
     false
+  );
+});
+
+test("dotagent init preserves divergent obsolete manifest-owned runtime bridges", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-init-obsolete-diverged-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+
+  assert.equal(exitCode, 0);
+
+  const obsoletePath = path.join(root, ".codex", "skills", "dotagent-obsolete", "SKILL.md");
+  mkdirSync(path.dirname(obsoletePath), { recursive: true });
+  writeFileSync(obsoletePath, "local custom obsolete bridge\n", "utf8");
+
+  const manifest = loadManifest(root);
+  assert.ok(manifest);
+  manifest.ownedFiles.push({
+    path: ".codex/skills/dotagent-obsolete/SKILL.md",
+    owner: "adapter",
+    contentHash: "managed-obsolete-hash"
+  });
+  writeFileSync(
+    path.join(root, ".agent", ".dotagent-manifest.json"),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+    "utf8"
+  );
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes", "--verbose"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.equal(readFileSync(obsoletePath, "utf8"), "local custom obsolete bridge\n");
+  assert.match(stdout.buffer, /- skip: \.codex\/skills\/dotagent-obsolete\/SKILL\.md/);
+
+  const updatedManifest = loadManifest(root);
+  assert.ok(updatedManifest);
+  assert.equal(
+    updatedManifest.ownedFiles.some((entry) => entry.path === ".codex/skills/dotagent-obsolete/SKILL.md"),
+    true
   );
 });
 
