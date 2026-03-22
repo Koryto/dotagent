@@ -57,7 +57,8 @@ Do not assume they already exist before review starts.
 ## Carry-Forward Rules
 
 - accepted_finding_ids_to_verify:
-- rejected_or_deferred_items_not_to_re-raise_without_new_evidence:
+- deferred_finding_ids_with_accepted_reason:
+- rejected_or_stale_finding_ids_not_to_repeat_without_new_evidence:
 
 ## Missing-Artifact Policy
 
