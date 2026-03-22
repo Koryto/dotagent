@@ -1,6 +1,6 @@
 ---
-name: code-review
-description: Review code changes with production-grade rigor. Use for mandatory self-review before presenting implementation as complete, or when the user explicitly asks for a review. Focus on findings first: correctness, regressions, scale, architecture, best practices, extendability, and production readiness.
+name: "code-review"
+description: "Review code changes with production-grade rigor. Use for mandatory self-review before presenting implementation as complete, or when the user explicitly asks for a review. Focus on findings first: correctness, regressions, scale, architecture, best practices, extendability, and production readiness."
 ---
 
 # Code Review

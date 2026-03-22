@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import type { Readable, Writable } from "node:stream";
 
 import { handleDoctor } from "./commands/doctor.js";
@@ -25,12 +27,17 @@ export async function runCli(input: RunCliInput): Promise<number> {
 
   try {
     const parsed = parseArgv(input.argv);
+    const packageRoot = resolvePackageRoot(import.meta.url);
     if (parsed.kind === "help") {
       logger.info(renderHelp());
       return 0;
     }
 
-    const packageRoot = resolvePackageRoot(import.meta.url);
+    if (parsed.kind === "version") {
+      logger.info(readPackageVersion(packageRoot));
+      return 0;
+    }
+
     const projectRoot = resolveProjectRoot(parsed.flags.cwd ?? input.cwd);
     const bundledAgentRoot = resolveBundledAgentRoot(packageRoot);
     const projectState = detectProjectState(projectRoot);
@@ -88,6 +95,13 @@ function parseArgv(argv: string[]): ParsedCommand {
     if (token === "--help" || token === "-h") {
       flags.help = true;
       continue;
+    }
+
+    if (token === "--version" || token === "-v") {
+      return {
+        kind: "version",
+        flags
+      };
     }
 
     if (token === "--cwd") {
@@ -186,6 +200,8 @@ function parseArgv(argv: string[]): ParsedCommand {
 
   const [command, subcommand, maybeArg] = positionals;
   switch (command) {
+    case "version":
+      return { kind: "version", flags };
     case "init":
       return { kind: "init", flags };
     case "update":
@@ -235,6 +251,8 @@ function renderHelp(): string {
     "dotagent",
     "",
     "Usage:",
+    "  dotagent --version",
+    "  dotagent version",
     "  dotagent init [--cwd <path>] [--runtimes <list>] [--dry-run] [--verbose] [--yes]",
     "  dotagent update [--cwd <path>] [--dry-run] [--verbose] [--yes]",
     "  dotagent doctor [--cwd <path>]",
@@ -250,6 +268,17 @@ function mergeRuntimes(existing: string[] | undefined, value: string): string[] 
     .filter((entry) => entry.length > 0);
 
   return [...(existing ?? []), ...parsed];
+}
+
+function readPackageVersion(packageRoot: string): string {
+  const packageJsonPath = path.join(packageRoot, "package.json");
+  const parsed = JSON.parse(readFileSync(packageJsonPath, "utf8")) as { version?: unknown };
+
+  if (typeof parsed.version !== "string" || parsed.version.length === 0) {
+    throw new DotagentError(`Package version is missing from ${packageJsonPath}.`);
+  }
+
+  return parsed.version;
 }
 
 function collectFlagValues(argv: string[], startIndex: number): { values: string[]; lastIndex: number } {

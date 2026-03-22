@@ -1,6 +1,6 @@
 ---
-name: init
-description: Initialize a dotagent working session from within a runtime. Use as the native runtime entrypoint when the project is already initialized and the agent needs to start from the framework correctly.
+name: "init"
+description: "Initialize a dotagent working session from within a runtime. Use as the native runtime entrypoint when the project is already initialized and the agent needs to start from the framework correctly."
 ---
 
 # Init
