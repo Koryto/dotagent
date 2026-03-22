@@ -31,6 +31,21 @@ export function getRuntimeBridgeRelativePath(runtime: SupportedRuntime, bridgeNa
   }
 }
 
+export function isRuntimeBridgePath(runtime: SupportedRuntime, relativePath: string): boolean {
+  switch (runtime) {
+    case "codex":
+      return relativePath.startsWith(".codex/skills/dotagent-") && relativePath.endsWith("/SKILL.md");
+    case "claude":
+      return relativePath.startsWith(".claude/commands/dotagent/") && relativePath.endsWith(".md");
+    case "opencode":
+      return relativePath.startsWith(".opencode/commands/dotagent-") && relativePath.endsWith(".md");
+    case "copilot":
+      return relativePath.startsWith(".github/skills/dotagent-") && relativePath.endsWith("/SKILL.md");
+    default:
+      throw new CliUsageError(`Unsupported runtime bridge path match: ${runtime}.`);
+  }
+}
+
 function isSupportedRuntime(value: string): value is SupportedRuntime {
   return (SUPPORTED_RUNTIMES as readonly string[]).includes(value);
 }

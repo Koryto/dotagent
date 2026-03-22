@@ -1,8 +1,8 @@
 import path from "node:path";
 
 import type { SupportedRuntime } from "./adapters.js";
-import { getRuntimeBridgeRelativePath } from "./adapters.js";
-import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
+import { getRuntimeBridgeRelativePath, isRuntimeBridgePath } from "./adapters.js";
+import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
 import { listBundledFrameworkSkills } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
@@ -11,7 +11,7 @@ import type { CliContext } from "../models/command.js";
 import type { DotagentManifest, FileOwnershipRecord, InstalledAdapterRecord } from "../models/manifest.js";
 
 type ManagedOwner = FileOwnershipRecord["owner"];
-type PlanAction = "create" | "adopt" | "skip";
+type PlanAction = "create" | "adopt" | "skip" | "remove";
 type GitignoreAction = "create" | "append" | "unchanged";
 
 export interface ManagedFilePlan {
@@ -59,7 +59,13 @@ export function planInit(
   const existingManifest = loadManifest(context.projectRoot);
 
   const frameworkFiles = planBundledFrameworkFiles(context.projectRoot, context.bundledAgentRoot);
-  const adapterFiles = planAdapterFiles(context.projectRoot, runtimes, bundledPlaybooks, bundledSkills);
+  const adapterFiles = planAdapterFiles(
+    context.projectRoot,
+    runtimes,
+    bundledPlaybooks,
+    bundledSkills,
+    existingManifest
+  );
   const gitignore = planGitignore(context.projectRoot);
   const manifest = buildManifest(
     context.projectRoot,
@@ -85,6 +91,11 @@ export function planInit(
 
 export function applyInitPlan(plan: InitPlan): InitExecutionResult {
   for (const filePlan of [...plan.frameworkFiles, ...plan.adapterFiles]) {
+    if (filePlan.action === "remove") {
+      safeRemoveFileIfExists(plan.projectRoot, filePlan.targetPath, `Generated file remove: ${filePlan.relativePath}`);
+      continue;
+    }
+
     if (filePlan.action !== "create") {
       continue;
     }
@@ -189,14 +200,17 @@ function planAdapterFiles(
   projectRoot: string,
   runtimes: SupportedRuntime[],
   bundledPlaybooks: string[],
-  bundledSkills: readonly FrameworkSkillDescriptor[]
+  bundledSkills: readonly FrameworkSkillDescriptor[],
+  existingManifest: DotagentManifest | null
 ): ManagedFilePlan[] {
   const results: ManagedFilePlan[] = [];
+  const expectedPaths = new Set<string>();
 
   for (const runtime of runtimes) {
     const initSkill = bundledSkills.find((skill) => skill.skillName === "init");
     if (initSkill) {
       const initTargetPath = path.join(projectRoot, ...getRuntimeBridgeRelativePath(runtime, initSkill.skillName).split("/"));
+      expectedPaths.add(toRelativeManifestPath(projectRoot, initTargetPath));
       results.push(
         planGeneratedFile(
           projectRoot,
@@ -213,11 +227,36 @@ function planAdapterFiles(
       }
 
       const targetPath = path.join(projectRoot, ...getRuntimeBridgeRelativePath(runtime, skill.skillName).split("/"));
+      expectedPaths.add(toRelativeManifestPath(projectRoot, targetPath));
       results.push(planGeneratedFile(projectRoot, targetPath, renderRuntimeSkillBridge(runtime, skill), "adapter"));
     }
   }
 
-  return results;
+  for (const existingRecord of existingManifest?.ownedFiles ?? []) {
+    if (existingRecord.owner !== "adapter") {
+      continue;
+    }
+
+    const runtime = runtimes.find((entry) => isRuntimeBridgePath(entry, existingRecord.path));
+    if (!runtime || expectedPaths.has(existingRecord.path)) {
+      continue;
+    }
+
+    const targetPath = path.join(projectRoot, ...existingRecord.path.split("/"));
+    if (!fileExists(targetPath)) {
+      continue;
+    }
+
+    results.push({
+      relativePath: existingRecord.path,
+      targetPath,
+      owner: "adapter",
+      action: "remove",
+      contentHash: existingRecord.contentHash ?? ""
+    });
+  }
+
+  return results.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
 }
 
 function planGeneratedFile(
@@ -309,6 +348,11 @@ function mergeOwnedFiles(existing: FileOwnershipRecord[], plans: ManagedFilePlan
       continue;
     }
 
+    if (plan.action === "remove") {
+      map.delete(plan.relativePath);
+      continue;
+    }
+
     map.set(plan.relativePath, {
       path: plan.relativePath,
       owner: plan.owner,
@@ -338,10 +382,11 @@ function summarizeManagedFiles(label: string, plans: ManagedFilePlan[]): string 
   const counts = {
     create: plans.filter((plan) => plan.action === "create").length,
     adopt: plans.filter((plan) => plan.action === "adopt").length,
-    skip: plans.filter((plan) => plan.action === "skip").length
+    skip: plans.filter((plan) => plan.action === "skip").length,
+    remove: plans.filter((plan) => plan.action === "remove").length
   };
 
-  return `${label}: create=${counts.create}, adopt=${counts.adopt}, skip=${counts.skip}`;
+  return `${label}: create=${counts.create}, adopt=${counts.adopt}, skip=${counts.skip}, remove=${counts.remove}`;
 }
 
 function appendVerboseManagedFiles(lines: string[], label: string, plans: ManagedFilePlan[]): void {
