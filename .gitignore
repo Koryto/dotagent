@@ -1,7 +1,6 @@
 .idea/
 .DS_Store
 Thumbs.db
-ecrr-refinement/
 node_modules/
 dist/
 .test-dist/

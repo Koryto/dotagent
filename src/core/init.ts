@@ -1,16 +1,17 @@
 import path from "node:path";
 
 import type { SupportedRuntime } from "./adapters.js";
-import { getRuntimeDescriptor } from "./adapters.js";
-import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
+import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, isRuntimeBridgePath, resolveRuntimeInstalledAt } from "./adapters.js";
+import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, requireGeneratedUtf8Content, safeAppendUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
+import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills, type BundledFrameworkSkill } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
-import { renderAgentsBridge, renderRuntimeIndex } from "../runtime/templates.js";
+import { renderRuntimeAdapterManifest, renderRuntimeInitBridge, renderRuntimeSkillBridge } from "../runtime/templates.js";
 import type { CliContext } from "../models/command.js";
 import type { DotagentManifest, FileOwnershipRecord, InstalledAdapterRecord } from "../models/manifest.js";
 
 type ManagedOwner = FileOwnershipRecord["owner"];
-type PlanAction = "create" | "adopt" | "skip";
+type PlanAction = "create" | "adopt" | "skip" | "remove";
 type GitignoreAction = "create" | "append" | "unchanged";
 
 export interface ManagedFilePlan {
@@ -54,10 +55,19 @@ export function planInit(
   runtimes: SupportedRuntime[]
 ): InitPlan {
   const bundledPlaybooks = listBundledPlaybooks(context.bundledAgentRoot).map((entry) => entry.name);
+  const bundledSkills = listBundledFrameworkSkills(context.bundledAgentRoot);
   const existingManifest = loadManifest(context.projectRoot);
 
   const frameworkFiles = planBundledFrameworkFiles(context.projectRoot, context.bundledAgentRoot);
-  const adapterFiles = planAdapterFiles(context.projectRoot, runtimes, bundledPlaybooks);
+  const adapterFiles = planAdapterFiles(
+    context.projectRoot,
+    context.bundledAgentRoot,
+    frameworkRef,
+    runtimes,
+    bundledPlaybooks,
+    bundledSkills,
+    existingManifest
+  );
   const gitignore = planGitignore(context.projectRoot);
   const manifest = buildManifest(
     context.projectRoot,
@@ -83,6 +93,11 @@ export function planInit(
 
 export function applyInitPlan(plan: InitPlan): InitExecutionResult {
   for (const filePlan of [...plan.frameworkFiles, ...plan.adapterFiles]) {
+    if (filePlan.action === "remove") {
+      safeRemoveFileIfExists(plan.projectRoot, filePlan.targetPath, `Generated file remove: ${filePlan.relativePath}`);
+      continue;
+    }
+
     if (filePlan.action !== "create") {
       continue;
     }
@@ -101,7 +116,7 @@ export function applyInitPlan(plan: InitPlan): InitExecutionResult {
     safeWriteUtf8File(
       plan.projectRoot,
       filePlan.targetPath,
-      filePlan.content ?? "",
+      requireGeneratedUtf8Content(filePlan.relativePath, filePlan.content, "init"),
       `Generated file write: ${filePlan.relativePath}`
     );
   }
@@ -185,24 +200,94 @@ function planBundledFrameworkFiles(projectRoot: string, bundledAgentRoot: string
 
 function planAdapterFiles(
   projectRoot: string,
+  bundledAgentRoot: string,
+  frameworkRef: string,
   runtimes: SupportedRuntime[],
-  bundledPlaybooks: string[]
+  bundledPlaybooks: string[],
+  bundledSkills: readonly BundledFrameworkSkill[],
+  existingManifest: DotagentManifest | null
 ): ManagedFilePlan[] {
   const results: ManagedFilePlan[] = [];
-
-  for (const runtime of runtimes) {
-    const descriptor = getRuntimeDescriptor(runtime);
-    const targetPath = path.join(projectRoot, descriptor.directoryName, "INDEX.md");
-    const content = renderRuntimeIndex(runtime, bundledPlaybooks);
-    results.push(planGeneratedFile(projectRoot, targetPath, content, "adapter"));
-  }
+  const expectedPaths = new Set<string>();
 
   if (runtimes.length > 0) {
-    const agentsPath = path.join(projectRoot, "AGENTS.md");
-    results.push(planGeneratedFile(projectRoot, agentsPath, renderAgentsBridge(), "adapter"));
+    assertBundledFrameworkSkillsAvailable(bundledAgentRoot, bundledSkills);
   }
 
-  return results;
+  for (const runtime of runtimes) {
+    const runtimeManifestTargetPath = path.join(projectRoot, ...getRuntimeManifestRelativePath(runtime).split("/"));
+    expectedPaths.add(toRelativeManifestPath(projectRoot, runtimeManifestTargetPath));
+    results.push(
+      planGeneratedFile(
+        projectRoot,
+        runtimeManifestTargetPath,
+        renderRuntimeAdapterManifest(runtime, frameworkRef, resolveRuntimeInstalledAt(projectRoot, runtime)),
+        "adapter"
+      )
+    );
+
+    const initSkill = bundledSkills.find((skill) => skill.skillName === "init");
+    if (initSkill) {
+      const initTargetPath = path.join(projectRoot, ...getRuntimeBridgeRelativePath(runtime, initSkill.skillName).split("/"));
+      expectedPaths.add(toRelativeManifestPath(projectRoot, initTargetPath));
+      results.push(
+        planGeneratedFile(
+          projectRoot,
+          initTargetPath,
+          renderRuntimeInitBridge(runtime, bundledSkills, bundledPlaybooks),
+          "adapter"
+        )
+      );
+    }
+
+    for (const skill of bundledSkills) {
+      if (skill.skillName === "init") {
+        continue;
+      }
+
+      const targetPath = path.join(projectRoot, ...getRuntimeBridgeRelativePath(runtime, skill.skillName).split("/"));
+      expectedPaths.add(toRelativeManifestPath(projectRoot, targetPath));
+      results.push(planGeneratedFile(projectRoot, targetPath, renderRuntimeSkillBridge(runtime, skill), "adapter"));
+    }
+  }
+
+  for (const existingRecord of existingManifest?.ownedFiles ?? []) {
+    if (existingRecord.owner !== "adapter") {
+      continue;
+    }
+
+    const runtime = runtimes.find((entry) => isRuntimeBridgePath(entry, existingRecord.path));
+    if (!runtime || expectedPaths.has(existingRecord.path)) {
+      continue;
+    }
+
+    const targetPath = path.join(projectRoot, ...existingRecord.path.split("/"));
+    if (!fileExists(targetPath)) {
+      continue;
+    }
+
+    const targetHash = hashUtf8(readUtf8File(targetPath));
+    if (!existingRecord.contentHash || existingRecord.contentHash !== targetHash) {
+      results.push({
+        relativePath: existingRecord.path,
+        targetPath,
+        owner: "adapter",
+        action: "skip",
+        contentHash: existingRecord.contentHash ?? targetHash
+      });
+      continue;
+    }
+
+    results.push({
+      relativePath: existingRecord.path,
+      targetPath,
+      owner: "adapter",
+      action: "remove",
+      contentHash: existingRecord.contentHash ?? ""
+    });
+  }
+
+  return results.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
 }
 
 function planGeneratedFile(
@@ -281,7 +366,7 @@ function buildManifest(
   };
 
   manifest.ownedFiles = mergeOwnedFiles(manifest.ownedFiles, [...frameworkFiles, ...adapterFiles]);
-  manifest.installedAdapters = mergeInstalledAdapters(projectRoot, manifest.installedAdapters, adapterFiles, runtimes);
+  manifest.installedAdapters = mergeInstalledAdapters(manifest.installedAdapters, runtimes);
 
   return manifest;
 }
@@ -291,6 +376,11 @@ function mergeOwnedFiles(existing: FileOwnershipRecord[], plans: ManagedFilePlan
 
   for (const plan of plans) {
     if (plan.action === "skip") {
+      continue;
+    }
+
+    if (plan.action === "remove") {
+      map.delete(plan.relativePath);
       continue;
     }
 
@@ -305,24 +395,14 @@ function mergeOwnedFiles(existing: FileOwnershipRecord[], plans: ManagedFilePlan
 }
 
 function mergeInstalledAdapters(
-  projectRoot: string,
   existing: InstalledAdapterRecord[],
-  adapterPlans: ManagedFilePlan[],
   runtimes: SupportedRuntime[]
 ): InstalledAdapterRecord[] {
   const map = new Map(existing.map((entry) => [entry.runtime, entry]));
 
   for (const runtime of runtimes) {
-    const descriptor = getRuntimeDescriptor(runtime);
-    const targetPath = path.join(projectRoot, descriptor.directoryName, "INDEX.md");
-    const plan = adapterPlans.find((entry) => entry.targetPath === targetPath);
-    if (!plan) {
-      continue;
-    }
-
     map.set(runtime, {
-      runtime,
-      path: toRelativeManifestPath(projectRoot, targetPath)
+      runtime
     });
   }
 
@@ -333,10 +413,11 @@ function summarizeManagedFiles(label: string, plans: ManagedFilePlan[]): string 
   const counts = {
     create: plans.filter((plan) => plan.action === "create").length,
     adopt: plans.filter((plan) => plan.action === "adopt").length,
-    skip: plans.filter((plan) => plan.action === "skip").length
+    skip: plans.filter((plan) => plan.action === "skip").length,
+    remove: plans.filter((plan) => plan.action === "remove").length
   };
 
-  return `${label}: create=${counts.create}, adopt=${counts.adopt}, skip=${counts.skip}`;
+  return `${label}: create=${counts.create}, adopt=${counts.adopt}, skip=${counts.skip}, remove=${counts.remove}`;
 }
 
 function appendVerboseManagedFiles(lines: string[], label: string, plans: ManagedFilePlan[]): void {

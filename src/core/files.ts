@@ -100,6 +100,18 @@ export function safeRemoveFileIfExists(projectRoot: string, filePath: string, la
   }
 }
 
+export function requireGeneratedUtf8Content(
+  relativePath: string,
+  content: string | undefined,
+  planLabel: "init" | "update"
+): string {
+  if (typeof content === "string") {
+    return content;
+  }
+
+  throw new DotagentError(`Generated file content was missing from the ${planLabel} plan: ${relativePath}`);
+}
+
 export function assertNonSymlinkedPathWithinRoot(rootPath: string, targetPath: string, label: string): string {
   const resolvedTarget = assertPathWithinRoot(rootPath, targetPath, label);
   const resolvedRoot = path.resolve(rootPath);

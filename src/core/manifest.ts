@@ -74,7 +74,7 @@ function validateManifest(candidate: unknown, manifestPath: string): DotagentMan
     manifestVersion: candidate.manifestVersion,
     frameworkRef: candidate.frameworkRef,
     bundledPlaybooks: [...candidate.bundledPlaybooks],
-    installedAdapters: [...candidate.installedAdapters],
+    installedAdapters: candidate.installedAdapters.map((entry) => ({ runtime: entry.runtime })),
     ownedFiles: [...candidate.ownedFiles]
   };
 }
@@ -94,9 +94,7 @@ function isInstalledAdapterArray(candidate: unknown): candidate is DotagentManif
       (entry) =>
         typeof entry === "object" &&
         entry !== null &&
-        typeof entry.runtime === "string" &&
-        typeof entry.path === "string" &&
-        isSafeManifestPath(entry.path)
+        typeof entry.runtime === "string"
     )
   );
 }

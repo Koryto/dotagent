@@ -24,7 +24,7 @@ A playbook is intended to package:
 - an operational procedure
 - the supporting standards and references it needs
 - any role-specific entrypoints
-- any transport-specific templates or scaffolds
+- any runtime templates or scaffolds
 
 The goal is to make complex procedures reusable without bloating `dotagent` core.
 
@@ -38,7 +38,7 @@ It may define:
 - phases or rounds
 - artifacts
 - templates
-- transport-specific entrypoints
+- runtime-specific entrypoints
 - supporting standards
 
 Not every playbook will look the same.
@@ -65,7 +65,7 @@ Use a playbook when:
 - multiple files are required
 - the procedure has meaningful state or sequencing
 - multiple roles or participants may exist
-- the procedure needs templates, transports, or supporting standards
+- the procedure needs templates, runtime scaffolding, or supporting standards
 
 ## Namespace Conventions
 

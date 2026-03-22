@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Readable, Writable } from "node:stream";
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -177,6 +177,75 @@ test("planUpdate throws a bundled-assets error when a managed namespace is missi
   };
 
   assert.throws(() => planUpdate(context), BundledAssetsError);
+});
+
+test("planUpdate/applyUpdatePlan removes obsolete managed adapter wrappers for installed runtimes", () => {
+  const projectRoot = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-remove-adapter-project-"));
+  const packageRoot = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-update-remove-adapter-package-"));
+  const bundledAgentRoot = path.join(packageRoot, ".agent");
+
+  mkdirSync(path.join(bundledAgentRoot, "workflows"), { recursive: true });
+  mkdirSync(path.join(bundledAgentRoot, "skills", "init"), { recursive: true });
+  mkdirSync(path.join(bundledAgentRoot, "skills", "closeout"), { recursive: true });
+  mkdirSync(path.join(bundledAgentRoot, "playbooks"), { recursive: true });
+  writeFileSync(path.join(bundledAgentRoot, "skills", "init", "SKILL.md"), "# init\n", "utf8");
+  writeFileSync(path.join(bundledAgentRoot, "skills", "closeout", "SKILL.md"), "# closeout\n", "utf8");
+  writeFileSync(path.join(packageRoot, "package.json"), JSON.stringify({ name: "@dotagent/cli", version: "0.1.0" }), "utf8");
+
+  const obsoleteTargetPath = path.join(projectRoot, ".codex", "skills", "dotagent-obsolete", "SKILL.md");
+  mkdirSync(path.dirname(obsoleteTargetPath), { recursive: true });
+  const obsoleteContent = "obsolete managed adapter\n";
+  writeFileSync(obsoleteTargetPath, obsoleteContent, "utf8");
+
+  const manifest = createInitialManifest("@dotagent/cli@0.0.0", []);
+  manifest.installedAdapters = [{ runtime: "codex" }];
+  manifest.ownedFiles = [
+    {
+      path: ".codex/skills/dotagent-obsolete/SKILL.md",
+      owner: "adapter",
+      contentHash: hashUtf8(obsoleteContent)
+    }
+  ];
+  saveManifest(projectRoot, manifest);
+
+  const context: CliContext = {
+    invocationCwd: projectRoot,
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    projectRoot,
+    packageRoot,
+    bundledAgentRoot,
+    projectState: {
+      hasFramework: true,
+      hasManifest: true,
+      hasGitRoot: false,
+      dotagentRoot: path.join(projectRoot, ".agent")
+    },
+    flags: {
+      dryRun: false,
+      verbose: false,
+      yes: true,
+      help: false
+    },
+    logger: {
+      info(): void {},
+      warn(): void {},
+      error(): void {}
+    }
+  };
+
+  const plan = planUpdate(context);
+  const removal = plan.files.find((entry) => entry.relativePath === ".codex/skills/dotagent-obsolete/SKILL.md");
+  assert.ok(removal);
+  assert.equal(removal.action, "remove");
+
+  applyUpdatePlan(plan);
+
+  assert.equal(existsSync(obsoleteTargetPath), false);
+
+  const updatedManifest = loadManifest(projectRoot);
+  assert.ok(updatedManifest);
+  assert.equal(updatedManifest.ownedFiles.some((entry) => entry.path === ".codex/skills/dotagent-obsolete/SKILL.md"), false);
 });
 
 function readableExists(targetPath: string): boolean {
