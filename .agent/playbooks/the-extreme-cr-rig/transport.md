@@ -1,26 +1,26 @@
-# Filesystem Transport
-<!-- VERSION: 0.1 | STATUS: experimental -->
+# Filesystem Runtime
+<!-- VERSION: 0.2 | STATUS: experimental -->
 
 ## Purpose
 
-Define the current supported transport for `the-extreme-cr-rig`.
+Define the intended runtime model for `the-extreme-cr-rig`.
 
-This transport uses the local filesystem as the communication and artifact surface for rig rounds.
+This playbook runs through the local filesystem. The CLI scaffolds the runtime. Markdown artifacts remain the review contract.
 
-## Why Filesystem First
+## Why Filesystem
 
-The filesystem transport is:
+The filesystem runtime is:
 
 - easy to inspect
 - easy to debug
-- easy to operate manually
-- a good artifact model for future operator layers to build on
+- easy to review with normal repository tooling
+- stable enough to serve as the intended operating model for this playbook
 
-## Round Workspace
+## Runtime Workspace
 
-Each review round should use a dedicated workspace directory.
+Each review round uses a dedicated workspace directory.
 
-Recommended structure:
+Expected structure:
 
 ```text
 <repo>/.ecrr/<task_name>/round_001/
@@ -43,28 +43,26 @@ Recommended structure:
 ## Artifact Purpose
 
 - `00_round_context.md`
-  - round scope
+  - exact round scope
   - reviewed state / branch pair
   - change summary
   - relevant project rules
   - human-owned merge criteria when relevant
   - out-of-scope items
-  - Wingman roster
+  - reviewer roster
 
 - `10_previous_round_feedback.md`
   - summary of prior round outcomes relevant to this round
-  - prior reviewer-facing carry-forward references
-  - prior human-facing round-results references
-  - prior verdict references
+  - carry-forward references
 
 - `README.md`
-  - small round-local operator guide
-  - exact file flow for this round
+  - canonical live round packet
+  - exact instructions for the active round
 
 - `reviewers/reviewer_<name>.md`
   - one Wingman's findings
   - confirms review basis against current file state
-  - includes follow-up on that Wingman's prior findings when applicable
+  - includes follow-up on prior findings when applicable
 
 - `lead/20_reviewer_feedback.md`
   - reviewer-facing carry-forward artifact
@@ -88,24 +86,23 @@ Recommended structure:
   - unresolved risks
   - next action
 
-## Operating Flow
+## CLI Responsibility
 
-1. Stinson creates `<repo>/.ecrr/<task_name>/round_00X/`.
-2. Stinson copies the contents of `filesystem/round_template/` into the new round.
-3. Stinson fills `00_round_context.md` with human guidance.
-4. Stinson fills `10_previous_round_feedback.md` before Wingmen begin when the round is not the first round.
-5. Wingmen read the populated round files and write findings files.
-6. Stinson produces reviewer-facing feedback and the human-facing round results.
-7. The human approves the round results or requests another Stinson pass.
-8. Fixes are applied and verified batch by batch.
-9. The human decides `merge` or `another_round`, and Stinson records that in `60_round_verdict.md`.
+The CLI is responsible for:
 
-## Transport Rules
+- initializing the runtime root
+- scaffolding the first round from the template
+- preserving the expected directory shape
+
+Future round creation remains human-gated.
+
+## Runtime Rules
 
 - one reviewer file per Wingman
-- no hidden state outside round artifacts
+- no hidden state outside the runtime artifacts
 - the round should not start until required files are populated
 - reviewer-facing and human-facing Stinson outputs serve different audiences and should stay distinct
 - verification must be written down, not assumed
 - completed rounds should remain readable for later reference
 - Wingmen should have explicit access to prior round feedback before starting the next round
+- reviewers stop if the requested next round does not exist; they do not infer it

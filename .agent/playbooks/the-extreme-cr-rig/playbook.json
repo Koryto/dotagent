@@ -2,7 +2,7 @@
   "name": "the-extreme-cr-rig",
   "version": "0.1.0",
   "runtimeRoot": ".ecrr",
-  "templateDir": "filesystem/round_template",
+  "templateDir": "round_template",
   "gitignoreEntry": ".ecrr/",
   "taskScoped": true,
   "initialRound": "round_001"

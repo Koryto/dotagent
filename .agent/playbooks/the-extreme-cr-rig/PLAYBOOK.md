@@ -1,5 +1,5 @@
 # The Extreme CR Rig
-<!-- VERSION: 0.3 | STATUS: experimental -->
+<!-- VERSION: 0.4 | STATUS: experimental -->
 
 ## Purpose
 
@@ -15,6 +15,12 @@ This playbook sits above:
 
 - `.agent/skills/code-review/SKILL.md`
 
+Current operating model:
+
+- filesystem runtime
+- CLI as the operator layer
+- markdown artifacts as the review contract
+
 ## Roles
 
 - **Human**
@@ -24,7 +30,7 @@ This playbook sits above:
   - decides `merge` or `another_round`
 
 - **Stinson**
-  - prepares the rig
+  - initializes and operates the rig with human guidance
   - ingests Wingman outputs
   - synthesizes findings
   - coordinates fixes and verification
@@ -86,8 +92,8 @@ Verification artifacts are expected whenever fix batches or manual validation oc
 ## Round Flow
 
 1. **Round start**
-   - Stinson creates the round and populates context with human guidance.
-   - Wingmen do not begin until scope, reviewed state, roster, and any required carry-forward are present.
+   - Stinson initializes or advances the rig through the CLI when requested by the human.
+   - Wingmen do not begin until the active round packet is ready.
 
 2. **Independent review**
    - Each Wingman reviews using `.agent/skills/code-review/SKILL.md`.
@@ -123,20 +129,15 @@ Verification artifacts are expected whenever fix batches or manual validation oc
      - `merge`
      - `another_round`
 
-## Transport
+## Runtime
 
-Current supported transport:
+This playbook runs through the filesystem runtime described in:
 
-- filesystem
+- `transport.md`
 
-Transport docs:
+The concrete runtime template lives under:
 
-- `transport/abstract-model.md`
-- `transport/filesystem-transport.md`
-
-Use the concrete template under:
-
-- `filesystem/round_template/`
+- `round_template/`
 
 ## Rules
 
@@ -150,13 +151,6 @@ Use the concrete template under:
 - a missing Wingman submission must be made explicit by Stinson before the round proceeds
 - a round may proceed with partial Wingman submissions only if Stinson records that fact and the human accepts it
 - verification should be written into artifacts, not left only in chat
-
-## Non-Goals
-
-- enforcing one specific transport
-- forcing one specific model vendor
-- replacing human approval
-- replacing the core review skill
-- turning review into freeform group chat
+- next-round creation is human-gated, not automatic
 
 ## AND IT. IS. ON.

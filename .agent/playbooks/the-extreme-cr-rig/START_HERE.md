@@ -8,17 +8,19 @@ Entry point for `the-extreme-cr-rig`.
 2. if you are `Stinson`, read `STINSON_INIT.md`
 3. if you are a `Wingman`, read `WINGMAN_INIT.md`
 
-## Current Transport
+## Runtime Model
 
-Current supported transport:
+This playbook runs through:
 
-- filesystem
+- filesystem runtime
+- CLI operator flow
 
-Transport docs:
+Reference:
 
-- `transport/abstract-model.md`
-- `transport/filesystem-transport.md`
+- `transport.md`
 
-Use the concrete template under:
+## Handoff Rule
 
-- `filesystem/round_template/`
+Once an active round exists, the round-local packet becomes the live source of truth.
+
+For active review work, the round `README.md` should take over from this file.

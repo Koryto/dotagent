@@ -44,7 +44,7 @@ test("loadInstalledPlaybookContract rejects traversal-capable runtime paths", ()
         name: "the-test-playbook",
         version: "0.1.0",
         runtimeRoot: "../outside",
-        templateDir: "filesystem/round_template"
+        templateDir: "round_template"
       },
       null,
       2
@@ -73,7 +73,7 @@ test("loadInstalledPlaybookContract rejects traversal-capable contract names", (
         name: "../outside",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "filesystem/round_template"
+        templateDir: "round_template"
       },
       null,
       2
@@ -96,7 +96,7 @@ test("loadInstalledPlaybookContract rejects multiline gitignore entries", () => 
         name: "the-test-playbook",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "filesystem/round_template",
+        templateDir: "round_template",
         gitignoreEntry: ".ecrr/\nsecret-dir/"
       },
       null,
@@ -121,7 +121,7 @@ test("loadInstalledPlaybookContract rejects symlinked installed playbook roots",
         name: "the-test-playbook",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "filesystem/round_template"
+        templateDir: "round_template"
       },
       null,
       2
@@ -150,7 +150,7 @@ test("loadInstalledPlaybookContract rejects symlinked .agent ancestors", () => {
         name: "the-test-playbook",
         version: "0.1.0",
         runtimeRoot: ".ecrr",
-        templateDir: "filesystem/round_template"
+        templateDir: "round_template"
       },
       null,
       2
