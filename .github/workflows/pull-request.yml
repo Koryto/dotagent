@@ -72,8 +72,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          tar -tf "$TARBALL" | grep -q '^package/dist/'
-          tar -tf "$TARBALL" | grep -q '^package/.agent/'
+          tar -tf "$TARBALL" > package-contents.txt
+          grep -q '^package/dist/' package-contents.txt
+          grep -q '^package/.agent/' package-contents.txt
 
       - name: Install packed CLI into a temp directory
         shell: bash

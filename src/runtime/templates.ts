@@ -96,7 +96,7 @@ export function renderRuntimeSkillBridge(
 
 function formatRuntimeBridgeName(runtime: SupportedRuntime, name: string): string {
   if (runtime === "claude") {
-    return `dotagent/${name}`;
+    return `dotagent:${name}`;
   }
 
   return `dotagent-${name}`;
@@ -108,7 +108,7 @@ function formatRuntimeInvocation(runtime: SupportedRuntime, name: string): strin
     case "copilot":
       return `\`$${formatRuntimeBridgeName(runtime, name)}\``;
     case "claude":
-      return `\`dotagent/${name}\``;
+      return `\`/dotagent:${name}\``;
     case "opencode":
       return `\`dotagent-${name}\``;
     default:
