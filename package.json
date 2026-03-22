@@ -1,11 +1,11 @@
 {
-  "name": "@dotagent/cli",
+  "name": "@koryto/dotagent",
   "version": "0.1.0",
   "description": "Operator CLI for dotagent",
   "license": "Apache-2.0",
   "type": "module",
   "bin": {
-    "dotagent": "./dist/index.js"
+    "dotagent": "dist/index.js"
   },
   "files": [
     "dist",
