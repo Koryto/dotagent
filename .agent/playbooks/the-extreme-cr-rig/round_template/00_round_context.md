@@ -1,32 +1,21 @@
 # Round Context
 
-## Round
-
-- round_id:
-- round_mode: standard/quick
-- status:
+Use this file for the technical context behind the active round.
 
 ## Change Under Review
 
-- branch_pair:
-- reviewed_state:
-- diff_reference:
 - summary:
-- out_of_scope:
+- relevant_paths:
+- change_risks:
 
-## Relevant Context
+## Relevant Project Context
 
 - project_rules:
 - relevant_specs:
 - relevant_systems:
 
-## Merge Criteria
+## Review Notes
 
-- human_notes:
-
-## Wingman Roster
-
-- stinson:
-- expected_wingmen:
-- wingman_suffixes:
-- missing_submission_policy:
+- hotspots:
+- architectural_concerns:
+- verification_notes:

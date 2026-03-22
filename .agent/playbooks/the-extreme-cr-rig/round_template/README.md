@@ -1,33 +1,63 @@
-# Round Template
+# Round Packet
 
-This directory is copied into a live round workspace.
+This file is the canonical live handoff for the active round.
 
-## Standard Flow
+Reviewers should start here after reading the relevant role-init file.
 
-1. Stinson populates `00_round_context.md`.
-2. Stinson populates `10_previous_round_feedback.md` before Wingmen start when the round is not the first round.
-3. Wingmen write findings under `reviewers/`.
-4. Stinson writes:
-   - `lead/20_reviewer_feedback.md`
-   - `lead/30_round_results.md`
-5. Human approves the round results or asks for another Stinson pass.
-6. Fixes and verification artifacts are written when needed.
-7. Stinson records `60_round_verdict.md` after the human decides:
-   - `merge`
-   - `another_round`
+## Round Identity
 
-## Quick Round Flow
+- task_name:
+- round_id:
+- review_mode: full/fix-pass
+- reviewed_state:
+- prior_reviewed_state:
+- diff_reference:
+- round_status:
 
-Use quick rounds when the branch is already near merge and only low-signal follow-up remains.
+## Review Scope
 
-Quick rounds may skip `lead/20_reviewer_feedback.md` and use a compact `lead/30_round_results.md`.
+- review_target:
+- focus_areas:
+- out_of_scope:
 
-## Required Files
+## Read Order
 
-- `00_round_context.md`
-- `reviewers/`
-- `60_round_verdict.md`
+1. `README.md`
+2. `00_round_context.md`
+3. `10_previous_round_feedback.md` when this is not the first round
+4. your assigned reviewer file under `reviewers/`
 
-Required for non-initial rounds:
+If `10_previous_round_feedback.md` references prior round artifacts, read those before writing findings.
 
-- `10_previous_round_feedback.md`
+## Reviewer Roster
+
+- stinson:
+- expected_wingmen:
+- reviewer_suffixes:
+- reviewer_output_paths:
+
+## Merge Criteria
+
+- human_merge_criteria:
+
+## Environment Constraints
+
+- os_assumptions:
+- runtime_target:
+- known_sandbox_limits:
+
+## Verification Expectations
+
+- expected_validation_commands:
+- acceptable_substitute_validation:
+
+## Carry-Forward Rules
+
+- accepted_findings_to_verify:
+- rejected_or_deferred_items_not_to_re-raise_without_new_evidence:
+
+## Missing-Artifact Policy
+
+- if this requested round does not exist, stop and wait
+- do not infer missing round state from chat or git history
+- do not start until the packet fields above are filled
