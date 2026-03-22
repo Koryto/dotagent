@@ -1,8 +1,41 @@
 # dotagent
 
-`dotagent` is a template for running AI-assisted software development with explicit gates, durable project memory, and human ownership of the codebase.
+`dotagent` is a framework for running AI-assisted software development with explicit gates, durable project memory, and human ownership of the codebase.
 
-It is opinionated on purpose. The goal is not "vibe coding with nicer prompts." The goal is to keep serious codebases understandable, resumable, and extendable while using agents aggressively.
+It is opinionated on purpose. The goal is not unrestricted autonomous coding. The goal is to keep serious codebases understandable, resumable, and reviewable while using agents aggressively.
+
+## Quickstart
+
+1. Install dependencies in this repo:
+
+   ```text
+   npm install
+   npm run build
+   ```
+
+2. Initialize a target project:
+
+   ```text
+   node .\dist\index.js init --cwd <project-path> --runtimes codex,claude --yes
+   ```
+
+3. Check the result:
+
+   ```text
+   node .\dist\index.js doctor --cwd <project-path>
+   ```
+
+4. Start agent work from:
+
+   ```text
+   .agent/BOOTSTRAP.md
+   ```
+
+For playbooks, initialize the runtime explicitly through the CLI, for example:
+
+```text
+node .\dist\index.js playbook init the-extreme-cr-rig --cwd <project-path> --task <task-name> --yes
+```
 
 ## Why This Exists
 
@@ -16,13 +49,11 @@ This framework optimizes for:
 - architecture awareness
 - production-grade review discipline
 
-The assumption is simple:
-
 Agents can write code quickly, but humans still need to own the system. If the structure around the agent is weak, the codebase degrades faster than it did under normal human-paced development.
 
 ## Core Model
 
-The template standardizes project knowledge into four namespaces:
+The framework standardizes project knowledge into four primary namespaces:
 
 - `project/` - project constitution and standing rules
 - `specs/` - intended design and architecture
@@ -34,33 +65,23 @@ Supporting namespaces:
 - `state/` - current session state and session history
 - `workflows/` - gated execution workflows
 - `skills/` - on-demand procedural guidance
-- `playbooks/` - experimental operational packages for complex reusable procedures
+- `playbooks/` - optional multi-file operational packages
 
 ## Philosophy
 
-- Keep hot-loaded files small and stable.
-- Separate intended design from implemented reality.
-- Treat task artifacts as local working memory, not durable truth.
-- Require review before calling work done.
-- Keep the human in control of architectural decisions and risky execution.
+- keep hot-loaded files small and stable
+- separate intended design from implemented reality
+- treat task artifacts as local working memory, not durable truth
+- require review before calling work done
+- keep the human in control of architectural decisions and risky execution
 
-## What This Is Not
-
-- not a wrapper for unrestricted autonomous coding
-- not a prompt pack for "vibe coding"
-- not a replacement for engineering judgment
-- not a guarantee of quality if the framework's gates are ignored
-- not a rigid standard every project must follow exactly
-
-## Included Template
+## Included Framework
 
 ```text
 .agent/
 |-- BOOTSTRAP.md
-|-- ONBOARD.md
 |-- project/
 |   |-- PROJECT.md
-|   |-- learning_curve.md
 |   |-- project_progress.md
 |   `-- project_decision_log.md
 |-- state/
@@ -75,8 +96,7 @@ Supporting namespaces:
 |-- playbooks/
 |   `-- README.md
 |-- workflows/
-|   |-- standard.md
-|   `-- learning.md
+|   `-- standard.md
 |-- specs/
 |   |-- README.md
 |   `-- architecture/
@@ -99,71 +119,35 @@ Default implementation workflow:
 4. Verification
 5. Summary
 
-### `learning`
-
-Used when the user is ramping up on an unfamiliar stack, tool, or subsystem.
-
-It reads `project/learning_curve.md` to calibrate explanation depth and decide whether the user or the agent should implement each step.
-
 ## Skills
 
-Skills are intentionally loaded on demand, not kept in hot context.
-
-The exact skill set is expected to evolve over time.
+Skills are loaded on demand, not kept in hot context by default.
 
 ## Playbooks
 
-`playbooks/` is an experimental namespace for optional multi-file operational packages.
+`playbooks/` is an optional namespace for operational packages that are too large, stateful, or role-dependent to fit cleanly into a single skill.
 
-Playbooks are intended for procedures that are too large, stateful, or role-dependent to fit cleanly into a single skill.
-
-The namespace is under active development. See [.agent/playbooks/README.md](C:\Users\Mykor\Projects\dotagent\.agent\playbooks\README.md) for the current vision and conventions.
+See [.agent/playbooks/README.md](C:\Users\Mykor\Projects\dotagent\.agent\playbooks\README.md) for the current conventions.
 
 ## Session Model
 
-- `state/session_state.md` tracks whether the current session is idle or in progress.
-- `state/session_log.md` is append-only historical session context.
-- `BOOTSTRAP.md` is the single session entrypoint.
-- `ONBOARD.md` is the one-time setup entrypoint for projects that have not initialized the framework yet.
-
-This lets the user resume from the current task or from a prior session that built useful context in a subsystem.
+- `state/session_state.md` tracks whether the current session is idle or in progress
+- `state/session_log.md` is append-only historical session context
+- `BOOTSTRAP.md` is the session entrypoint after initialization
+- the CLI owns framework initialization and playbook runtime scaffolding
 
 ## How To Use
 
-1. Copy the `.agent/` directory into a project.
+1. Initialize the framework with `dotagent init`.
 2. Fill in `project/PROJECT.md`.
-3. Set the initial state in `state/session_state.md`.
-4. Start sessions by reading `BOOTSTRAP.md`.
+3. Set the initial state in `state/session_state.md` if needed.
+4. Start sessions from `BOOTSTRAP.md`.
 5. Keep durable system knowledge in `systems/`, not in task artifacts.
 6. Use `specs/` only when design intent needs to be defined or clarified.
 7. Use `tasks/` for plans, reviews, verification notes, and summaries.
 
 ## Notes
 
-- This template is not enforced by code. It is a working contract between the user and the agent.
+- The framework is not enforced by code alone. It is a working contract between the user and the agent.
 - Projects are free to extend or shrink it.
-- If a team removes important files, the framework does not break mechanically. It just becomes less effective.
-
-## Roadmap
-
-### Phase 1: Shared Engineering Operating System
-
-Transition from solo disciplined use to a partially shared engineering operating system.
-
-- add a CLI/operator layer that solves procedural pain across framework onboarding and playbook execution
-- move toward a model where only local execution state stays unshared
-- keep `state/` and `tasks/` local by default
-- evaluate sharing `project/`, `specs/`, `systems/`, `workflows/`, `skills/`, and eventually selected playbooks
-- add assistant-specific command adapters while keeping the framework itself agent-agnostic
-
-### Phase 2: Agent Concurrency
-
-Extend the framework from a single-core session model to a multi-process model for large projects with multiple unrelated tasks in flight.
-
-Likely work in this phase:
-
-- define a task pool the framework can expose to a manager agent
-- define the information the manager needs to allocate work to worker agents
-- create isolated workspaces or work branches per worker to avoid collisions
-- establish merge, review, and conflict-handling rules between concurrent workers
-- keep the concurrency model subordinate to the same memory, review, and verification standards as the single-agent flow
+- If a team removes important files, the framework does not break mechanically. It becomes less effective.
