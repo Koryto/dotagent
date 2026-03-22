@@ -4,18 +4,6 @@ export const SUPPORTED_RUNTIMES = ["codex", "claude", "opencode", "copilot"] as 
 
 export type SupportedRuntime = (typeof SUPPORTED_RUNTIMES)[number];
 
-export interface RuntimeAdapterDescriptor {
-  runtime: SupportedRuntime;
-  entrypointPath: string;
-}
-
-export const RUNTIME_ADAPTERS: readonly RuntimeAdapterDescriptor[] = [
-  { runtime: "codex", entrypointPath: ".codex/skills/dotagent-init/SKILL.md" },
-  { runtime: "claude", entrypointPath: ".claude/commands/dotagent/init.md" },
-  { runtime: "opencode", entrypointPath: ".opencode/commands/dotagent-init.md" },
-  { runtime: "copilot", entrypointPath: ".github/skills/dotagent-init/SKILL.md" }
-];
-
 export function parseRuntimeSelection(values: string[]): SupportedRuntime[] {
   const normalized = values.map((value) => value.trim().toLowerCase()).filter((value) => value.length > 0);
   const unique = [...new Set(normalized)];
@@ -26,19 +14,6 @@ export function parseRuntimeSelection(values: string[]): SupportedRuntime[] {
   }
 
   return unique as SupportedRuntime[];
-}
-
-export function getRuntimeDescriptor(runtime: SupportedRuntime): RuntimeAdapterDescriptor {
-  const descriptor = RUNTIME_ADAPTERS.find((entry) => entry.runtime === runtime);
-  if (!descriptor) {
-    throw new CliUsageError(`Unsupported runtime descriptor lookup: ${runtime}.`);
-  }
-
-  return descriptor;
-}
-
-export function getRuntimeEntrypointRelativePath(runtime: SupportedRuntime): string {
-  return getRuntimeDescriptor(runtime).entrypointPath;
 }
 
 export function getRuntimeBridgeRelativePath(runtime: SupportedRuntime, bridgeName: string): string {

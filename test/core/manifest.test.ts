@@ -83,3 +83,19 @@ test("loadManifest throws when a manifest path contains traversal", () => {
 
   assert.throws(() => loadManifest(root), ManifestCorruptionError);
 });
+
+test("saveManifest and loadManifest round-trip runtime-only adapter records", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-manifest-runtime-only-"));
+  const expected = {
+    manifestVersion: 1 as const,
+    frameworkRef: "local-dev",
+    bundledPlaybooks: ["the-extreme-cr-rig"],
+    installedAdapters: [{ runtime: "codex" }],
+    ownedFiles: []
+  };
+
+  saveManifest(root, expected);
+  const loaded = loadManifest(root);
+
+  assert.deepEqual(loaded, expected);
+});

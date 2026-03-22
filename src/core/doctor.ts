@@ -4,7 +4,7 @@ import { fileExists } from "./files.js";
 import { listBundledFrameworkSkills } from "./framework-skills.js";
 import { loadManifest } from "./manifest.js";
 import { listBundledPlaybooks, listInstalledPlaybooks, loadInstalledPlaybookContract } from "./playbooks.js";
-import { getRuntimeBridgeRelativePath, getRuntimeEntrypointRelativePath, RUNTIME_ADAPTERS } from "./adapters.js";
+import { getRuntimeBridgeRelativePath, SUPPORTED_RUNTIMES } from "./adapters.js";
 import { planUpdate } from "./update.js";
 import { resolveDotagentRoot } from "./paths.js";
 import type { CliContext } from "../models/command.js";
@@ -162,15 +162,6 @@ function inspectAdapters(
       continue;
     }
 
-    const adapterPath = path.join(context.projectRoot, ...entry.path.split("/"));
-    if (!fileExists(adapterPath)) {
-      issues.push({
-        severity: "error",
-        message: `Manifest declares adapter ${entry.runtime}, but the file is missing: ${entry.path}`
-      });
-      continue;
-    }
-
     for (const skill of bundledSkills) {
       const wrapperPath = path.join(
         context.projectRoot,
@@ -188,14 +179,20 @@ function inspectAdapters(
     installedAdapters.push(entry.runtime);
   }
 
-  for (const descriptor of RUNTIME_ADAPTERS) {
-    const adapterPath = path.join(context.projectRoot, ...getRuntimeEntrypointRelativePath(descriptor.runtime).split("/"));
-    const declared = manifest.installedAdapters.some((entry) => entry.runtime === descriptor.runtime);
-    if (fileExists(adapterPath) && !declared) {
-      issues.push({
-        severity: "warning",
-        message: `Found adapter file not tracked in the manifest: ${toProjectRelativePath(context.projectRoot, adapterPath)}`
-      });
+  for (const runtime of SUPPORTED_RUNTIMES) {
+    const declared = manifest.installedAdapters.some((entry) => entry.runtime === runtime);
+    if (declared) {
+      continue;
+    }
+
+    for (const skill of bundledSkills) {
+      const wrapperPath = path.join(context.projectRoot, ...getRuntimeBridgeRelativePath(runtime, skill.skillName).split("/"));
+      if (fileExists(wrapperPath)) {
+        issues.push({
+          severity: "warning",
+          message: `Found adapter file not tracked in the manifest: ${toProjectRelativePath(context.projectRoot, wrapperPath)}`
+        });
+      }
     }
   }
 
@@ -203,7 +200,7 @@ function inspectAdapters(
 }
 
 function isSupportedRuntime(candidate: string): candidate is SupportedRuntime {
-  return RUNTIME_ADAPTERS.some((descriptor) => descriptor.runtime === candidate);
+  return (SUPPORTED_RUNTIMES as readonly string[]).includes(candidate);
 }
 
 function inspectFrameworkLayout(context: CliContext, bundledPlaybooks: string[], issues: DoctorIssue[]): void {

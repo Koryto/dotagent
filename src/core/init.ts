@@ -1,7 +1,7 @@
 import path from "node:path";
 
 import type { SupportedRuntime } from "./adapters.js";
-import { getRuntimeBridgeRelativePath, getRuntimeEntrypointRelativePath } from "./adapters.js";
+import { getRuntimeBridgeRelativePath } from "./adapters.js";
 import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
 import { listBundledFrameworkSkills } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
@@ -194,17 +194,24 @@ function planAdapterFiles(
   const results: ManagedFilePlan[] = [];
 
   for (const runtime of runtimes) {
-    const bootstrapTargetPath = path.join(projectRoot, ...getRuntimeEntrypointRelativePath(runtime).split("/"));
-    results.push(
-      planGeneratedFile(
-        projectRoot,
-        bootstrapTargetPath,
-        renderRuntimeInitBridge(runtime, bundledSkills, bundledPlaybooks),
-        "adapter"
-      )
-    );
+    const initSkill = bundledSkills.find((skill) => skill.skillName === "init");
+    if (initSkill) {
+      const initTargetPath = path.join(projectRoot, ...getRuntimeBridgeRelativePath(runtime, initSkill.skillName).split("/"));
+      results.push(
+        planGeneratedFile(
+          projectRoot,
+          initTargetPath,
+          renderRuntimeInitBridge(runtime, bundledSkills, bundledPlaybooks),
+          "adapter"
+        )
+      );
+    }
 
     for (const skill of bundledSkills) {
+      if (skill.skillName === "init") {
+        continue;
+      }
+
       const targetPath = path.join(projectRoot, ...getRuntimeBridgeRelativePath(runtime, skill.skillName).split("/"));
       results.push(planGeneratedFile(projectRoot, targetPath, renderRuntimeSkillBridge(runtime, skill), "adapter"));
     }
@@ -289,7 +296,7 @@ function buildManifest(
   };
 
   manifest.ownedFiles = mergeOwnedFiles(manifest.ownedFiles, [...frameworkFiles, ...adapterFiles]);
-  manifest.installedAdapters = mergeInstalledAdapters(projectRoot, manifest.installedAdapters, adapterFiles, runtimes);
+  manifest.installedAdapters = mergeInstalledAdapters(manifest.installedAdapters, runtimes);
 
   return manifest;
 }
@@ -313,23 +320,14 @@ function mergeOwnedFiles(existing: FileOwnershipRecord[], plans: ManagedFilePlan
 }
 
 function mergeInstalledAdapters(
-  projectRoot: string,
   existing: InstalledAdapterRecord[],
-  adapterPlans: ManagedFilePlan[],
   runtimes: SupportedRuntime[]
 ): InstalledAdapterRecord[] {
   const map = new Map(existing.map((entry) => [entry.runtime, entry]));
 
   for (const runtime of runtimes) {
-    const targetPath = path.join(projectRoot, ...getRuntimeEntrypointRelativePath(runtime).split("/"));
-    const plan = adapterPlans.find((entry) => entry.targetPath === targetPath);
-    if (!plan) {
-      continue;
-    }
-
     map.set(runtime, {
-      runtime,
-      path: toRelativeManifestPath(projectRoot, targetPath)
+      runtime
     });
   }
 

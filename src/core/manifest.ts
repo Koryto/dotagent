@@ -94,9 +94,7 @@ function isInstalledAdapterArray(candidate: unknown): candidate is DotagentManif
       (entry) =>
         typeof entry === "object" &&
         entry !== null &&
-        typeof entry.runtime === "string" &&
-        typeof entry.path === "string" &&
-        isSafeManifestPath(entry.path)
+        typeof entry.runtime === "string"
     )
   );
 }

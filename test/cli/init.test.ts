@@ -98,8 +98,7 @@ test("dotagent init installs the copilot adapter under .github", async () => {
   assert.ok(manifest);
   assert.deepEqual(manifest.installedAdapters, [
     {
-      runtime: "copilot",
-      path: ".github/skills/dotagent-init/SKILL.md"
+      runtime: "copilot"
     }
   ]);
   assert.match(stdout.buffer, /Initialization complete/);
@@ -128,8 +127,7 @@ test("dotagent init installs opencode runtime commands", async () => {
   assert.ok(manifest);
   assert.deepEqual(manifest.installedAdapters, [
     {
-      runtime: "opencode",
-      path: ".opencode/commands/dotagent-init.md"
+      runtime: "opencode"
     }
   ]);
   assert.match(stdout.buffer, /Initialization complete/);

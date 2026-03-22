@@ -1,6 +1,5 @@
 export interface InstalledAdapterRecord {
   runtime: string;
-  path: string;
 }
 
 export interface FileOwnershipRecord {
