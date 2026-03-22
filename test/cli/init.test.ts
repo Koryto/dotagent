@@ -60,6 +60,8 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.equal(existsSync(path.join(root, ".agent", "BOOTSTRAP.md")), true);
+  assert.equal(existsSync(path.join(root, ".codex", "dotagent.json")), true);
+  assert.equal(existsSync(path.join(root, ".claude", "dotagent.json")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-closeout", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-code-review", "SKILL.md")), true);
@@ -94,6 +96,7 @@ test("dotagent init installs the copilot adapter under .github", async () => {
 
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
+  assert.equal(existsSync(path.join(root, ".github", "dotagent.json")), true);
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-closeout", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-code-review", "SKILL.md")), true);
@@ -125,6 +128,7 @@ test("dotagent init installs opencode runtime commands", async () => {
 
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
+  assert.equal(existsSync(path.join(root, ".opencode", "dotagent.json")), true);
   assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-init.md")), true);
   assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-closeout.md")), true);
   assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-code-review.md")), true);
@@ -419,5 +423,6 @@ test("dotagent init --verbose reports individual framework and adapter file acti
   assert.match(stdout.buffer, /framework_file_actions:/);
   assert.match(stdout.buffer, /- create: \.agent\/BOOTSTRAP\.md/);
   assert.match(stdout.buffer, /adapter_file_actions:/);
+  assert.match(stdout.buffer, /- create: \.codex\/dotagent\.json/);
   assert.match(stdout.buffer, /- create: \.codex\/skills\/dotagent-init\/SKILL\.md/);
 });

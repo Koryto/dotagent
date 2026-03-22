@@ -5,6 +5,23 @@ export interface FrameworkSkillDescriptor {
   sourcePath: string;
 }
 
+export function renderRuntimeAdapterManifest(
+  runtime: SupportedRuntime,
+  frameworkRef: string,
+  installedAt: string
+): string {
+  return `${JSON.stringify(
+    {
+      manifestVersion: 1,
+      runtime,
+      frameworkRef,
+      installedAt
+    },
+    null,
+    2
+  )}\n`;
+}
+
 export function renderRuntimeInitBridge(
   runtime: SupportedRuntime,
   frameworkSkills: readonly FrameworkSkillDescriptor[],

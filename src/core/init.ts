@@ -1,12 +1,12 @@
 import path from "node:path";
 
 import type { SupportedRuntime } from "./adapters.js";
-import { getRuntimeBridgeRelativePath, isRuntimeBridgePath } from "./adapters.js";
+import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, isRuntimeBridgePath } from "./adapters.js";
 import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
-import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills } from "./framework-skills.js";
+import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills, type BundledFrameworkSkill } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
-import { renderRuntimeInitBridge, renderRuntimeSkillBridge, type FrameworkSkillDescriptor } from "../runtime/templates.js";
+import { renderRuntimeAdapterManifest, renderRuntimeInitBridge, renderRuntimeSkillBridge } from "../runtime/templates.js";
 import type { CliContext } from "../models/command.js";
 import type { DotagentManifest, FileOwnershipRecord, InstalledAdapterRecord } from "../models/manifest.js";
 
@@ -62,6 +62,7 @@ export function planInit(
   const adapterFiles = planAdapterFiles(
     context.projectRoot,
     context.bundledAgentRoot,
+    frameworkRef,
     runtimes,
     bundledPlaybooks,
     bundledSkills,
@@ -200,9 +201,10 @@ function planBundledFrameworkFiles(projectRoot: string, bundledAgentRoot: string
 function planAdapterFiles(
   projectRoot: string,
   bundledAgentRoot: string,
+  frameworkRef: string,
   runtimes: SupportedRuntime[],
   bundledPlaybooks: string[],
-  bundledSkills: readonly FrameworkSkillDescriptor[],
+  bundledSkills: readonly BundledFrameworkSkill[],
   existingManifest: DotagentManifest | null
 ): ManagedFilePlan[] {
   const results: ManagedFilePlan[] = [];
@@ -213,6 +215,17 @@ function planAdapterFiles(
   }
 
   for (const runtime of runtimes) {
+    const runtimeManifestTargetPath = path.join(projectRoot, ...getRuntimeManifestRelativePath(runtime).split("/"));
+    expectedPaths.add(toRelativeManifestPath(projectRoot, runtimeManifestTargetPath));
+    results.push(
+      planGeneratedFile(
+        projectRoot,
+        runtimeManifestTargetPath,
+        renderRuntimeAdapterManifest(runtime, frameworkRef, resolveRuntimeInstalledAt(projectRoot, runtime)),
+        "adapter"
+      )
+    );
+
     const initSkill = bundledSkills.find((skill) => skill.skillName === "init");
     if (initSkill) {
       const initTargetPath = path.join(projectRoot, ...getRuntimeBridgeRelativePath(runtime, initSkill.skillName).split("/"));
@@ -394,6 +407,24 @@ function mergeInstalledAdapters(
   }
 
   return [...map.values()].sort((left, right) => left.runtime.localeCompare(right.runtime));
+}
+
+function resolveRuntimeInstalledAt(projectRoot: string, runtime: SupportedRuntime): string {
+  const manifestPath = path.join(projectRoot, ...getRuntimeManifestRelativePath(runtime).split("/"));
+  if (!fileExists(manifestPath)) {
+    return new Date().toISOString();
+  }
+
+  try {
+    const parsed = JSON.parse(readUtf8File(manifestPath)) as { installedAt?: unknown };
+    if (typeof parsed.installedAt === "string" && parsed.installedAt.length > 0) {
+      return parsed.installedAt;
+    }
+  } catch {
+    // Fall back to a fresh installation timestamp if the existing runtime manifest is unreadable.
+  }
+
+  return new Date().toISOString();
 }
 
 function summarizeManagedFiles(label: string, plans: ManagedFilePlan[]): string {

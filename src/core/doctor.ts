@@ -4,7 +4,7 @@ import { fileExists } from "./files.js";
 import { listBundledFrameworkSkills } from "./framework-skills.js";
 import { loadManifest } from "./manifest.js";
 import { listBundledPlaybooks, listInstalledPlaybooks, loadInstalledPlaybookContract } from "./playbooks.js";
-import { getRuntimeBridgeRelativePath, SUPPORTED_RUNTIMES } from "./adapters.js";
+import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, SUPPORTED_RUNTIMES } from "./adapters.js";
 import { planUpdate } from "./update.js";
 import { resolveDotagentRoot } from "./paths.js";
 import type { CliContext } from "../models/command.js";
@@ -162,6 +162,14 @@ function inspectAdapters(
       continue;
     }
 
+    const runtimeManifestPath = path.join(context.projectRoot, ...getRuntimeManifestRelativePath(entry.runtime).split("/"));
+    if (!fileExists(runtimeManifestPath)) {
+      issues.push({
+        severity: "error",
+        message: `Adapter ${entry.runtime} is missing its runtime manifest: ${toProjectRelativePath(context.projectRoot, runtimeManifestPath)}`
+      });
+    }
+
     for (const skill of bundledSkills) {
       const wrapperPath = path.join(
         context.projectRoot,
@@ -193,6 +201,14 @@ function inspectAdapters(
           message: `Found adapter file not tracked in the manifest: ${toProjectRelativePath(context.projectRoot, wrapperPath)}`
         });
       }
+    }
+
+    const runtimeManifestPath = path.join(context.projectRoot, ...getRuntimeManifestRelativePath(runtime).split("/"));
+    if (fileExists(runtimeManifestPath)) {
+      issues.push({
+        severity: "warning",
+        message: `Found adapter file not tracked in the manifest: ${toProjectRelativePath(context.projectRoot, runtimeManifestPath)}`
+      });
     }
   }
 

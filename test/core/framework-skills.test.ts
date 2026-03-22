@@ -32,6 +32,7 @@ test("assertBundledFrameworkSkillsAvailable accepts valid bundled skills", () =>
   assert.doesNotThrow(() => assertBundledFrameworkSkillsAvailable(bundledAgentRoot, skills));
   assert.deepEqual(skills, [
     {
+      bundledRelativePath: "skills/closeout/SKILL.md",
       skillName: "closeout",
       sourcePath: ".agent/skills/closeout/SKILL.md"
     }

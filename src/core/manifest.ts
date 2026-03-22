@@ -74,7 +74,7 @@ function validateManifest(candidate: unknown, manifestPath: string): DotagentMan
     manifestVersion: candidate.manifestVersion,
     frameworkRef: candidate.frameworkRef,
     bundledPlaybooks: [...candidate.bundledPlaybooks],
-    installedAdapters: [...candidate.installedAdapters],
+    installedAdapters: candidate.installedAdapters.map((entry) => ({ runtime: entry.runtime })),
     ownedFiles: [...candidate.ownedFiles]
   };
 }

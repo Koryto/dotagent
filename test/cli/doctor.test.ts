@@ -100,3 +100,33 @@ test("dotagent doctor reports missing generated runtime skill bridges", async ()
   assert.match(stdout.buffer, /missing a generated runtime bridge/);
   assert.match(stdout.buffer, /\.codex\/skills\/dotagent-closeout\/SKILL\.md/);
 });
+
+test("dotagent doctor reports missing runtime adapter manifests", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-doctor-missing-runtime-manifest-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  rmSync(path.join(root, ".codex", "dotagent.json"));
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["doctor", "--cwd", root],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 1);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /missing its runtime manifest/);
+  assert.match(stdout.buffer, /\.codex\/dotagent\.json/);
+});

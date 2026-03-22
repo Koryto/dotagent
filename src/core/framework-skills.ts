@@ -6,6 +6,7 @@ import { BundledAssetsError } from "../utils/errors.js";
 
 export interface BundledFrameworkSkill {
   skillName: string;
+  bundledRelativePath: string;
   sourcePath: string;
 }
 
@@ -27,12 +28,22 @@ export function listBundledFrameworkSkills(bundledAgentRoot: string): BundledFra
       if (!statSync(skillPath).isFile()) {
         throw new BundledAssetsError(`Bundled skill is missing SKILL.md: ${skillPath}`);
       }
-    } catch {
-      throw new BundledAssetsError(`Bundled skill is missing SKILL.md: ${skillPath}`);
+    } catch (error) {
+      if (error instanceof BundledAssetsError) {
+        throw error;
+      }
+
+      const errno = error as NodeJS.ErrnoException;
+      if (errno.code === "ENOENT") {
+        throw new BundledAssetsError(`Bundled skill is missing SKILL.md: ${skillPath}`);
+      }
+
+      throw error;
     }
 
     results.push({
       skillName: entry.name,
+      bundledRelativePath: `skills/${entry.name}/SKILL.md`,
       sourcePath: `.agent/skills/${entry.name}/SKILL.md`
     });
   }
@@ -49,7 +60,7 @@ export function assertBundledFrameworkSkillsAvailable(
   }
 
   for (const skill of bundledSkills) {
-    const sourcePath = path.join(bundledAgentRoot, ...skill.sourcePath.replace(".agent/", "").split("/"));
+    const sourcePath = path.join(bundledAgentRoot, ...skill.bundledRelativePath.split("/"));
     if (!fileExists(sourcePath) || !statSync(sourcePath).isFile()) {
       throw new BundledAssetsError(`Bundled skill source is missing: ${sourcePath}`);
     }

@@ -31,6 +31,21 @@ export function getRuntimeBridgeRelativePath(runtime: SupportedRuntime, bridgeNa
   }
 }
 
+export function getRuntimeManifestRelativePath(runtime: SupportedRuntime): string {
+  switch (runtime) {
+    case "codex":
+      return ".codex/dotagent.json";
+    case "claude":
+      return ".claude/dotagent.json";
+    case "opencode":
+      return ".opencode/dotagent.json";
+    case "copilot":
+      return ".github/dotagent.json";
+    default:
+      throw new CliUsageError(`Unsupported runtime manifest path lookup: ${runtime}.`);
+  }
+}
+
 export function isRuntimeBridgePath(runtime: SupportedRuntime, relativePath: string): boolean {
   switch (runtime) {
     case "codex":
