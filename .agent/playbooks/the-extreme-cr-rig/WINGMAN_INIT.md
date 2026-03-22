@@ -6,9 +6,16 @@ Use this file if you are a `Wingman` in an active run of `the-extreme-cr-rig`.
 
 1. `.agent/skills/code-review/SKILL.md`
 2. `PLAYBOOK.md`
-3. `filesystem/round_template/README.md`
-4. `00_round_context.md`
-5. `10_previous_round_feedback.md` when relevant
+3. `template/round_template/README.md`
+
+Keep these hot-loaded for the duration of the rig:
+
+- `.agent/skills/code-review/SKILL.md`
+- `WINGMAN_INIT.md`
+
+For every new round, begin by reading the active round `README.md`.
+
+Then read the additional round artifacts it points you to.
 
 If this is not the first round, also read the prior round outputs referenced in `10_previous_round_feedback.md`.
 
@@ -24,14 +31,28 @@ Your output file should be:
 
 - `reviewers/reviewer_<suffix>.md`
 
+Do not edit `findings_ledger.md`.
+
+Finding ids in shared artifacts are maintained by Stinson only.
+
 ## Your Job
 
 You are responsible for:
-- review the change using `.agent/skills/code-review/SKILL.md`
-- verify the live file state before writing findings
-- validate the status of prior findings you raised
-- avoid repeating rejected findings without new evidence
-- write a structured findings file that Stinson can ingest
+
+- reviewing the change using `.agent/skills/code-review/SKILL.md`
+- verifying the live file state before writing findings
+- validating the status of prior findings you raised
+- reusing existing finding ids when the round artifacts provide them
+- avoiding repetition of rejected findings without new evidence
+- writing a structured findings file that Stinson can ingest
+
+## Live Review Rule
+
+The active round packet is the live source of truth.
+
+Do not infer scope, reviewed state, or reviewer target paths from chat if the round artifacts already define them.
+
+Do not duplicate or override the active round packet with ad hoc reviewer instructions unless the human explicitly changes the round plan.
 
 ## If You Have No Findings
 

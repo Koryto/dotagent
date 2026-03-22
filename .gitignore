@@ -1,7 +1,7 @@
 .idea/
 .DS_Store
 Thumbs.db
-cli-task/
+ecrr-refinement/
 node_modules/
 dist/
 .test-dist/

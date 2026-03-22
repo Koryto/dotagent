@@ -104,94 +104,48 @@ function validatePlaybookContract(candidate: unknown, contractPath: string): Pla
     throw new PlaybookContractError(`Playbook contract version must be a non-empty string: ${contractPath}`);
   }
 
-  if (typeof record.defaultTransport !== "string" || record.defaultTransport.length === 0) {
-    throw new PlaybookContractError(`Playbook contract defaultTransport must be a non-empty string: ${contractPath}`);
+  if (typeof record.runtimeRoot !== "string" || record.runtimeRoot.length === 0) {
+    throw new PlaybookContractError(`Playbook contract runtimeRoot must be a non-empty string: ${contractPath}`);
   }
 
-  if (typeof record.transports !== "object" || record.transports === null) {
-    throw new PlaybookContractError(`Playbook contract transports must be an object: ${contractPath}`);
+  const runtimeRoot = normalizeContractPath(record.runtimeRoot, "Playbook contract runtimeRoot", contractPath);
+
+  if (typeof record.templateDir !== "string" || record.templateDir.length === 0) {
+    throw new PlaybookContractError(`Playbook contract templateDir must be a non-empty string: ${contractPath}`);
   }
 
-  const transports = record.transports as Record<string, unknown>;
-  for (const [transportName, transportValue] of Object.entries(transports)) {
-    if (typeof transportValue !== "object" || transportValue === null) {
-      throw new PlaybookContractError(`Playbook transport ${transportName} must be an object: ${contractPath}`);
-    }
+  const templateDir = normalizeContractPath(record.templateDir, "Playbook contract templateDir", contractPath);
 
-    const transportRecord = transportValue as Record<string, unknown>;
-    if (typeof transportRecord.runtimeRoot !== "string" || transportRecord.runtimeRoot.length === 0) {
-      throw new PlaybookContractError(
-        `Playbook transport ${transportName} runtimeRoot must be a non-empty string: ${contractPath}`
-      );
-    }
-
-    const runtimeRoot = normalizeContractPath(
-      transportRecord.runtimeRoot,
-      `Playbook transport ${transportName} runtimeRoot`,
-      contractPath
-    );
-
-    if (typeof transportRecord.templateDir !== "string" || transportRecord.templateDir.length === 0) {
-      throw new PlaybookContractError(
-        `Playbook transport ${transportName} templateDir must be a non-empty string: ${contractPath}`
-      );
-    }
-
-    const templateDir = normalizeContractPath(
-      transportRecord.templateDir,
-      `Playbook transport ${transportName} templateDir`,
-      contractPath
-    );
-
-    if (transportRecord.gitignoreEntry !== undefined && typeof transportRecord.gitignoreEntry !== "string") {
-      throw new PlaybookContractError(
-        `Playbook transport ${transportName} gitignoreEntry must be a string when present: ${contractPath}`
-      );
-    }
-
-    if (transportRecord.taskScoped !== undefined && typeof transportRecord.taskScoped !== "boolean") {
-      throw new PlaybookContractError(
-        `Playbook transport ${transportName} taskScoped must be a boolean when present: ${contractPath}`
-      );
-    }
-
-    if (transportRecord.initialRound !== undefined && typeof transportRecord.initialRound !== "string") {
-      throw new PlaybookContractError(
-        `Playbook transport ${transportName} initialRound must be a string when present: ${contractPath}`
-      );
-    }
-
-    transportRecord.runtimeRoot = runtimeRoot;
-    transportRecord.templateDir = templateDir;
-    if (typeof transportRecord.gitignoreEntry === "string") {
-      transportRecord.gitignoreEntry = normalizeGitignoreEntry(
-        transportRecord.gitignoreEntry,
-        `Playbook transport ${transportName} gitignoreEntry`,
-        contractPath
-      );
-    }
-    let initialRound: string | undefined;
-    if (typeof transportRecord.initialRound === "string") {
-      initialRound = normalizeContractPath(
-        transportRecord.initialRound,
-        `Playbook transport ${transportName} initialRound`,
-        contractPath
-      );
-    }
-    if (initialRound !== undefined) {
-      transportRecord.initialRound = initialRound;
-    }
+  if (record.gitignoreEntry !== undefined && typeof record.gitignoreEntry !== "string") {
+    throw new PlaybookContractError(`Playbook contract gitignoreEntry must be a string when present: ${contractPath}`);
   }
 
-  if (!(record.defaultTransport in transports)) {
-    throw new PlaybookContractError(`Playbook contract defaultTransport is not defined in transports: ${contractPath}`);
+  if (record.taskScoped !== undefined && typeof record.taskScoped !== "boolean") {
+    throw new PlaybookContractError(`Playbook contract taskScoped must be a boolean when present: ${contractPath}`);
+  }
+
+  if (record.initialRound !== undefined && typeof record.initialRound !== "string") {
+    throw new PlaybookContractError(`Playbook contract initialRound must be a string when present: ${contractPath}`);
+  }
+
+  let gitignoreEntry: string | undefined;
+  if (typeof record.gitignoreEntry === "string") {
+    gitignoreEntry = normalizeGitignoreEntry(record.gitignoreEntry, "Playbook contract gitignoreEntry", contractPath);
+  }
+
+  let initialRound: string | undefined;
+  if (typeof record.initialRound === "string") {
+    initialRound = normalizeContractPath(record.initialRound, "Playbook contract initialRound", contractPath);
   }
 
   return {
     name: playbookName,
     version: record.version,
-    defaultTransport: record.defaultTransport,
-    transports: transports as PlaybookContract["transports"]
+    runtimeRoot,
+    templateDir,
+    ...(gitignoreEntry !== undefined ? { gitignoreEntry } : {}),
+    ...(record.taskScoped !== undefined ? { taskScoped: record.taskScoped } : {}),
+    ...(initialRound !== undefined ? { initialRound } : {})
   };
 }
 
