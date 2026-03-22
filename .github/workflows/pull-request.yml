@@ -73,8 +73,16 @@ jobs:
         run: |
           set -euo pipefail
           tar -tf "$TARBALL" > package-contents.txt
-          grep -q '^package/dist/' package-contents.txt
-          grep -q '^package/.agent/' package-contents.txt
+          grep -Fq 'package/dist/' package-contents.txt || {
+            echo 'Missing dist/ in published tarball'
+            cat package-contents.txt
+            exit 1
+          }
+          grep -Fq 'package/.agent/' package-contents.txt || {
+            echo 'Missing .agent/ in published tarball'
+            cat package-contents.txt
+            exit 1
+          }
 
       - name: Install packed CLI into a temp directory
         shell: bash
