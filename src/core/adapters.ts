@@ -1,3 +1,6 @@
+import path from "node:path";
+
+import { fileExists, readUtf8File } from "./files.js";
 import { CliUsageError } from "../utils/errors.js";
 
 export const SUPPORTED_RUNTIMES = ["codex", "claude", "opencode", "copilot"] as const;
@@ -44,6 +47,24 @@ export function getRuntimeManifestRelativePath(runtime: SupportedRuntime): strin
     default:
       throw new CliUsageError(`Unsupported runtime manifest path lookup: ${runtime}.`);
   }
+}
+
+export function resolveRuntimeInstalledAt(projectRoot: string, runtime: SupportedRuntime): string {
+  const manifestPath = path.join(projectRoot, ...getRuntimeManifestRelativePath(runtime).split("/"));
+  if (!fileExists(manifestPath)) {
+    return new Date().toISOString();
+  }
+
+  try {
+    const parsed = JSON.parse(readUtf8File(manifestPath)) as { installedAt?: unknown };
+    if (typeof parsed.installedAt === "string" && parsed.installedAt.length > 0) {
+      return parsed.installedAt;
+    }
+  } catch {
+    // Fall back to a fresh installation timestamp if the existing runtime manifest is unreadable.
+  }
+
+  return new Date().toISOString();
 }
 
 export function isRuntimeBridgePath(runtime: SupportedRuntime, relativePath: string): boolean {

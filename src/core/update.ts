@@ -2,7 +2,7 @@ import { statSync } from "node:fs";
 import path from "node:path";
 
 import { collectFilePaths, fileExists, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
-import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, isRuntimeBridgePath, SUPPORTED_RUNTIMES } from "./adapters.js";
+import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, isRuntimeBridgePath, resolveRuntimeInstalledAt, SUPPORTED_RUNTIMES } from "./adapters.js";
 import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
@@ -98,7 +98,7 @@ export function applyUpdatePlan(plan: UpdatePlan): UpdateExecutionResult {
     safeWriteUtf8File(
       plan.projectRoot,
       filePlan.targetPath,
-      filePlan.content ?? "",
+      requirePlannedUtf8Content(filePlan),
       `Managed file write: ${filePlan.relativePath}`
     );
   }
@@ -295,6 +295,14 @@ function planManagedUpdates(
   return plans.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
 }
 
+function requirePlannedUtf8Content(plan: Pick<ManagedUpdatePlan, "relativePath" | "content">): string {
+  if (typeof plan.content === "string") {
+    return plan.content;
+  }
+
+  throw new DotagentError(`Generated file content was missing from the update plan: ${plan.relativePath}`);
+}
+
 function planGeneratedManagedUpdate(
   projectRoot: string,
   targetPath: string,
@@ -411,22 +419,4 @@ function normalizeInstalledRuntimes(existingManifest: DotagentManifest): Support
     );
 
   return [...new Set(runtimes)].sort((left, right) => left.localeCompare(right));
-}
-
-function resolveRuntimeInstalledAt(projectRoot: string, runtime: SupportedRuntime): string {
-  const manifestPath = path.join(projectRoot, ...getRuntimeManifestRelativePath(runtime).split("/"));
-  if (!fileExists(manifestPath)) {
-    return new Date().toISOString();
-  }
-
-  try {
-    const parsed = JSON.parse(readUtf8File(manifestPath)) as { installedAt?: unknown };
-    if (typeof parsed.installedAt === "string" && parsed.installedAt.length > 0) {
-      return parsed.installedAt;
-    }
-  } catch {
-    // Fall back to a fresh installation timestamp if the existing runtime manifest is unreadable.
-  }
-
-  return new Date().toISOString();
 }

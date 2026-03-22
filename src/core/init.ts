@@ -1,7 +1,7 @@
 import path from "node:path";
 
 import type { SupportedRuntime } from "./adapters.js";
-import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, isRuntimeBridgePath } from "./adapters.js";
+import { getRuntimeBridgeRelativePath, getRuntimeManifestRelativePath, isRuntimeBridgePath, resolveRuntimeInstalledAt } from "./adapters.js";
 import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeRemoveFileIfExists, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
 import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills, type BundledFrameworkSkill } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
@@ -9,6 +9,7 @@ import { listBundledPlaybooks } from "./playbooks.js";
 import { renderRuntimeAdapterManifest, renderRuntimeInitBridge, renderRuntimeSkillBridge } from "../runtime/templates.js";
 import type { CliContext } from "../models/command.js";
 import type { DotagentManifest, FileOwnershipRecord, InstalledAdapterRecord } from "../models/manifest.js";
+import { DotagentError } from "../utils/errors.js";
 
 type ManagedOwner = FileOwnershipRecord["owner"];
 type PlanAction = "create" | "adopt" | "skip" | "remove";
@@ -116,7 +117,7 @@ export function applyInitPlan(plan: InitPlan): InitExecutionResult {
     safeWriteUtf8File(
       plan.projectRoot,
       filePlan.targetPath,
-      filePlan.content ?? "",
+      requirePlannedUtf8Content(filePlan),
       `Generated file write: ${filePlan.relativePath}`
     );
   }
@@ -290,6 +291,14 @@ function planAdapterFiles(
   return results.sort((left, right) => left.relativePath.localeCompare(right.relativePath));
 }
 
+function requirePlannedUtf8Content(plan: Pick<ManagedFilePlan, "relativePath" | "content">): string {
+  if (typeof plan.content === "string") {
+    return plan.content;
+  }
+
+  throw new DotagentError(`Generated file content was missing from the init plan: ${plan.relativePath}`);
+}
+
 function planGeneratedFile(
   projectRoot: string,
   targetPath: string,
@@ -407,24 +416,6 @@ function mergeInstalledAdapters(
   }
 
   return [...map.values()].sort((left, right) => left.runtime.localeCompare(right.runtime));
-}
-
-function resolveRuntimeInstalledAt(projectRoot: string, runtime: SupportedRuntime): string {
-  const manifestPath = path.join(projectRoot, ...getRuntimeManifestRelativePath(runtime).split("/"));
-  if (!fileExists(manifestPath)) {
-    return new Date().toISOString();
-  }
-
-  try {
-    const parsed = JSON.parse(readUtf8File(manifestPath)) as { installedAt?: unknown };
-    if (typeof parsed.installedAt === "string" && parsed.installedAt.length > 0) {
-      return parsed.installedAt;
-    }
-  } catch {
-    // Fall back to a fresh installation timestamp if the existing runtime manifest is unreadable.
-  }
-
-  return new Date().toISOString();
 }
 
 function summarizeManagedFiles(label: string, plans: ManagedFilePlan[]): string {
