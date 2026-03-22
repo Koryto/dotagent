@@ -110,12 +110,14 @@ function parseArgv(argv: string[]): ParsedCommand {
     }
 
     if (token === "--runtimes") {
-      const nextValue = argv[index + 1];
-      if (!nextValue) {
+      const { values, lastIndex } = collectFlagValues(argv, index + 1);
+      if (values.length === 0) {
         throw new CliUsageError("Missing value for --runtimes.");
       }
-      flags.runtimes = mergeRuntimes(flags.runtimes, nextValue);
-      index += 1;
+      for (const value of values) {
+        flags.runtimes = mergeRuntimes(flags.runtimes, value);
+      }
+      index = lastIndex;
       continue;
     }
 
@@ -129,12 +131,14 @@ function parseArgv(argv: string[]): ParsedCommand {
     }
 
     if (token === "--runtime") {
-      const nextValue = argv[index + 1];
-      if (!nextValue) {
+      const { values, lastIndex } = collectFlagValues(argv, index + 1);
+      if (values.length === 0) {
         throw new CliUsageError("Missing value for --runtime.");
       }
-      flags.runtimes = mergeRuntimes(flags.runtimes, nextValue);
-      index += 1;
+      for (const value of values) {
+        flags.runtimes = mergeRuntimes(flags.runtimes, value);
+      }
+      index = lastIndex;
       continue;
     }
 
@@ -246,6 +250,26 @@ function mergeRuntimes(existing: string[] | undefined, value: string): string[] 
     .filter((entry) => entry.length > 0);
 
   return [...(existing ?? []), ...parsed];
+}
+
+function collectFlagValues(argv: string[], startIndex: number): { values: string[]; lastIndex: number } {
+  const values: string[] = [];
+  let index = startIndex;
+
+  while (index < argv.length) {
+    const token = argv[index];
+    if (!token || token.startsWith("-")) {
+      break;
+    }
+
+    values.push(token);
+    index += 1;
+  }
+
+  return {
+    values,
+    lastIndex: index - 1
+  };
 }
 
 function normalizeCommandPlaybookName(value: string): string {
