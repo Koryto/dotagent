@@ -6,36 +6,16 @@ It is opinionated on purpose. The goal is not unrestricted autonomous coding. Th
 
 ## Quickstart
 
-1. Install dependencies in this repo:
+Package-first usage instructions will land here after npm publish.
 
-   ```text
-   npm install
-   npm run build
-   ```
+Expected flow:
 
-2. Initialize a target project:
+- install `dotagent`
+- run `dotagent init`
+- run `dotagent doctor`
+- start agent work from `.agent/BOOTSTRAP.md`
 
-   ```text
-   node .\dist\index.js init --cwd <project-path> --runtimes codex,claude --yes
-   ```
-
-3. Check the result:
-
-   ```text
-   node .\dist\index.js doctor --cwd <project-path>
-   ```
-
-4. Start agent work from:
-
-   ```text
-   .agent/BOOTSTRAP.md
-   ```
-
-For playbooks, initialize the runtime explicitly through the CLI, for example:
-
-```text
-node .\dist\index.js playbook init the-extreme-cr-rig --cwd <project-path> --task <task-name> --yes
-```
+A development setup section can be added separately if this README needs to cover framework contributors too.
 
 ## Why This Exists
 
@@ -74,38 +54,6 @@ Supporting namespaces:
 - treat task artifacts as local working memory, not durable truth
 - require review before calling work done
 - keep the human in control of architectural decisions and risky execution
-
-## Included Framework
-
-```text
-.agent/
-|-- BOOTSTRAP.md
-|-- project/
-|   |-- PROJECT.md
-|   |-- project_progress.md
-|   `-- project_decision_log.md
-|-- state/
-|   |-- session_state.md
-|   `-- session_log.md
-|-- skills/
-|   |-- README.md
-|   |-- closeout/
-|   |   `-- SKILL.md
-|   `-- code-review/
-|       `-- SKILL.md
-|-- playbooks/
-|   `-- README.md
-|-- workflows/
-|   `-- standard.md
-|-- specs/
-|   |-- README.md
-|   `-- architecture/
-|       `-- README.md
-|-- systems/
-|   `-- README.md
-`-- tasks/
-    `-- README.md
-```
 
 ## Workflows
 
