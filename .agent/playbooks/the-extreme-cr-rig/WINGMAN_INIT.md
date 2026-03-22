@@ -31,6 +31,10 @@ Your output file should be:
 
 - `reviewers/reviewer_<suffix>.md`
 
+Do not edit `findings_ledger.md`.
+
+Finding ids in shared artifacts are maintained by Stinson only.
+
 ## Your Job
 
 You are responsible for:
@@ -38,6 +42,7 @@ You are responsible for:
 - reviewing the change using `.agent/skills/code-review/SKILL.md`
 - verifying the live file state before writing findings
 - validating the status of prior findings you raised
+- reusing existing finding ids when the round artifacts provide them
 - avoiding repetition of rejected findings without new evidence
 - writing a structured findings file that Stinson can ingest
 

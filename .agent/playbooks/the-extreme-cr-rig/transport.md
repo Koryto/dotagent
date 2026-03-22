@@ -30,9 +30,6 @@ Expected structure:
     |-- 10_previous_round_feedback.md
     |-- README.md
     |-- reviewers/
-    |   |-- reviewer_alpha.md
-    |   |-- reviewer_beta.md
-    |   `-- reviewer_gamma.md
     |-- lead/
     |   |-- 20_reviewer_feedback.md
     |   `-- 30_round_results.md
@@ -61,6 +58,7 @@ Expected structure:
   - cumulative findings memory for the task
   - stable ids across rounds
   - current disposition of previously accepted findings
+  - maintained by Stinson only
 
 - `README.md`
   - canonical live round packet
@@ -68,6 +66,7 @@ Expected structure:
 
 - `reviewers/reviewer_<name>.md`
   - one Wingman's findings
+  - created or assigned once the roster is known
   - confirms review basis against current file state
   - includes follow-up on prior findings when applicable
 
@@ -109,6 +108,7 @@ Future round creation remains human-gated.
 - one reviewer file per Wingman
 - no hidden state outside the runtime artifacts
 - the round should not start until required files are populated
+- reviewer files are outputs, not required pre-existing scaffold files
 - reviewer-facing and human-facing Stinson outputs serve different audiences and should stay distinct
 - verification must be written down, not assumed
 - completed rounds should remain readable for later reference

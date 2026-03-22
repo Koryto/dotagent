@@ -39,6 +39,8 @@ dotagent playbook init the-extreme-cr-rig --task <task_name>
 
 Do not manually scaffold the round filesystem unless you are explicitly handling a fallback case.
 
+Only Stinson updates `findings_ledger.md` and maintains the finding-id mapping across rounds.
+
 ## Round Creation Rules
 
 - initialize the first round through the CLI

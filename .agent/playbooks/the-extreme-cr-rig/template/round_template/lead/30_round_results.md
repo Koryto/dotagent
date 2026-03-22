@@ -19,7 +19,7 @@ Use a compact shape in quick rounds.
 
 ## Dropped / Deferred Notes
 
-- item:
+- `finding_id` or item:
 - reason:
 
 ## Execution Plan

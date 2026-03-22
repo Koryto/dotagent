@@ -72,6 +72,7 @@ Quick rounds should reduce ceremony, not remove rigor.
 
 Every round must have:
 
+- `README.md`
 - `00_round_context.md`
 - `reviewers/`
 - `60_round_verdict.md`
@@ -92,6 +93,10 @@ Verification artifacts are expected whenever fix batches or manual validation oc
 Task-level memory should be maintained in:
 
 - `findings_ledger.md`
+
+Only Stinson updates `findings_ledger.md` and assigns finding ids.
+
+Wingmen must reference existing ids when the round packet or carry-forward artifacts provide them, but they do not create or remap ids on their own.
 
 ## Round Flow
 
@@ -152,6 +157,7 @@ The concrete runtime template lives under:
 - fixes should be batched, not collapsed into one giant remediation pass
 - Wingmen must consume prior round feedback before another round
 - repeated findings must be justified as still-open or newly evidenced, not restated blindly
+- only Stinson assigns, updates, or remaps finding ids in shared artifacts
 - non-initial rounds should not start without carry-forward artifacts
 - a missing Wingman submission must be made explicit by Stinson before the round proceeds
 - a round may proceed with partial Wingman submissions only if Stinson records that fact and the human accepts it

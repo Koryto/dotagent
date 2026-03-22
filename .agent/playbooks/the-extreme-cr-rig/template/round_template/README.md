@@ -28,6 +28,8 @@ Reviewers should start here after reading the relevant role-init file.
 
 If `10_previous_round_feedback.md` references prior round artifacts, read those before writing findings.
 
+Finding ids referenced in this round come from `../findings_ledger.md`, which is maintained by Stinson.
+
 ## Reviewer Roster
 
 - stinson:
@@ -56,7 +58,6 @@ Do not assume they already exist before review starts.
 
 ## Carry-Forward Rules
 
-- accepted_findings_to_verify:
 - accepted_finding_ids_to_verify:
 - rejected_or_deferred_items_not_to_re-raise_without_new_evidence:
 
