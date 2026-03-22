@@ -6,16 +6,27 @@ It is opinionated on purpose. The goal is not unrestricted autonomous coding. Th
 
 ## Quickstart
 
-Package-first usage instructions will land here after npm publish.
+Install the published CLI:
 
-Expected flow:
+```bash
+npm install -g @koryto/dotagent
+```
 
-- install `dotagent`
-- run `dotagent init`
-- run `dotagent doctor`
-- start agent work from `.agent/BOOTSTRAP.md`
+Initialize the framework in your project.
 
-A development setup section can be added separately if this README needs to cover framework contributors too.
+Select the runtimes you actually want to support before copying the command:
+
+```bash
+dotagent init --runtimes <codex,claude,opencode,copilot>
+dotagent doctor
+```
+
+Then start agent work through your runtime's native `dotagent-init` wrapper.
+
+Examples:
+
+- Codex: `$dotagent-init`
+- Claude Code: `/dotagent:init`
 
 ## Why This Exists
 
