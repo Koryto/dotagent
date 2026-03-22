@@ -6,12 +6,16 @@ Use this file if you are a `Wingman` in an active run of `the-extreme-cr-rig`.
 
 1. `.agent/skills/code-review/SKILL.md`
 2. `PLAYBOOK.md`
-3. `round_template/README.md`
-4. `findings_ledger.md` when it is present for the task
-5. the active round packet:
-   - `README.md`
-   - `00_round_context.md`
-   - `10_previous_round_feedback.md` when relevant
+3. `template/round_template/README.md`
+
+Keep these hot-loaded for the duration of the rig:
+
+- `.agent/skills/code-review/SKILL.md`
+- `WINGMAN_INIT.md`
+
+For every new round, begin by reading the active round `README.md`.
+
+Then read the additional round artifacts it points you to.
 
 If this is not the first round, also read the prior round outputs referenced in `10_previous_round_feedback.md`.
 
@@ -42,6 +46,8 @@ You are responsible for:
 The active round packet is the live source of truth.
 
 Do not infer scope, reviewed state, or reviewer target paths from chat if the round artifacts already define them.
+
+Do not duplicate or override the active round packet with ad hoc reviewer instructions unless the human explicitly changes the round plan.
 
 ## If You Have No Findings
 

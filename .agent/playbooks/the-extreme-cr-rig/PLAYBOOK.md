@@ -142,7 +142,7 @@ This playbook runs through the filesystem runtime described in:
 
 The concrete runtime template lives under:
 
-- `round_template/`
+- `template/`
 
 ## Rules
 

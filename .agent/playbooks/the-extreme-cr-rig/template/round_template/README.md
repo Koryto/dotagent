@@ -22,11 +22,9 @@ Reviewers should start here after reading the relevant role-init file.
 
 ## Read Order
 
-1. `findings_ledger.md`
-2. `README.md`
-3. `00_round_context.md`
-4. `10_previous_round_feedback.md` when this is not the first round
-5. your assigned reviewer file under `reviewers/`
+1. `../findings_ledger.md`
+2. `00_round_context.md`
+3. `10_previous_round_feedback.md` when this is not the first round
 
 If `10_previous_round_feedback.md` references prior round artifacts, read those before writing findings.
 
@@ -36,6 +34,10 @@ If `10_previous_round_feedback.md` references prior round artifacts, read those 
 - expected_wingmen:
 - reviewer_suffixes:
 - reviewer_output_paths:
+
+Reviewer output files are write targets for this round.
+
+Do not assume they already exist before review starts.
 
 ## Merge Criteria
 

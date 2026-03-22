@@ -7,7 +7,13 @@ Use this file if you are `Stinson` for an active run of `the-extreme-cr-rig`.
 1. `.agent/skills/code-review/SKILL.md`
 2. `PLAYBOOK.md`
 3. `transport.md`
-4. `round_template/README.md`
+4. `template/round_template/README.md`
+
+Keep these hot-loaded for the duration of the rig:
+
+- `.agent/skills/code-review/SKILL.md`
+- `PLAYBOOK.md`
+- `STINSON_INIT.md`
 
 ## Your Job
 
@@ -54,6 +60,10 @@ Confirm:
 - environment constraints and verification expectations
 
 If those are incomplete, the round is not ready.
+
+For every new round, the active round `README.md` is the canonical live handoff.
+
+Do not send Wingmen to chat-only instructions when the round packet can carry the same guidance.
 
 ## Human Interaction Points
 
