@@ -1,8 +1,7 @@
 {
   "name": "@dotagent/cli",
   "version": "0.1.0",
-  "private": true,
-  "description": "Production-grade operator CLI for dotagent",
+  "description": "Operator CLI for dotagent",
   "type": "module",
   "bin": {
     "dotagent": "./dist/index.js"
@@ -12,7 +11,18 @@
     ".agent"
   ],
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=20.20.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Koryto/dotagent.git"
+  },
+  "homepage": "https://github.com/Koryto/dotagent#readme",
+  "bugs": {
+    "url": "https://github.com/Koryto/dotagent/issues"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -20,7 +30,7 @@
     "test": "tsc -p tsconfig.test.json && node --test .test-dist/**/*.test.js"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
+    "@types/node": "^20.17.0",
     "typescript": "^5.9.0"
   }
 }
