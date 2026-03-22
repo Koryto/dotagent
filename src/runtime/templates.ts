@@ -5,7 +5,7 @@ export interface FrameworkSkillDescriptor {
   sourcePath: string;
 }
 
-export function renderRuntimeBootstrapBridge(
+export function renderRuntimeInitBridge(
   runtime: SupportedRuntime,
   frameworkSkills: readonly FrameworkSkillDescriptor[],
   bundledPlaybooks: readonly string[]
@@ -18,12 +18,12 @@ export function renderRuntimeBootstrapBridge(
     bundledPlaybooks.length > 0 ? bundledPlaybooks.map((entry) => `- ${entry}`) : ["- none"];
 
   return [
-    `# ${formatRuntimeBridgeName(runtime, "bootstrap")}`,
+    `# ${formatRuntimeBridgeName(runtime, "init")}`,
     "",
     "Use this runtime bridge to start working with the dotagent framework in this project.",
     "",
-    "Read first:",
-    "- `.agent/BOOTSTRAP.md`",
+    "Load and follow:",
+    "- `.agent/skills/init/SKILL.md`",
     "",
     "Available native runtime bridges:",
     ...skillInvocationLines,
@@ -39,6 +39,7 @@ export function renderRuntimeBootstrapBridge(
     "- `dotagent playbook init <name>`",
     "",
     "The framework source of truth remains under `.agent/`.",
+    "The framework bootstrap path remains `.agent/BOOTSTRAP.md`.",
     "These runtime files are generated bridges for native invocation only.",
     ""
   ].join("\n");

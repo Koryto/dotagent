@@ -1,13 +1,12 @@
 import path from "node:path";
 
-import { readdirSync, statSync } from "node:fs";
-
 import type { SupportedRuntime } from "./adapters.js";
-import { getRuntimeBridgeRelativePath, getRuntimeDescriptor, getRuntimeEntrypointRelativePath } from "./adapters.js";
+import { getRuntimeBridgeRelativePath, getRuntimeEntrypointRelativePath } from "./adapters.js";
 import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, readBinaryFile, readUtf8File, safeAppendUtf8File, safeWriteBinaryFile, safeWriteUtf8File, toRelativeManifestPath } from "./files.js";
+import { listBundledFrameworkSkills } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
-import { renderRuntimeBootstrapBridge, renderRuntimeSkillBridge, type FrameworkSkillDescriptor } from "../runtime/templates.js";
+import { renderRuntimeInitBridge, renderRuntimeSkillBridge, type FrameworkSkillDescriptor } from "../runtime/templates.js";
 import type { CliContext } from "../models/command.js";
 import type { DotagentManifest, FileOwnershipRecord, InstalledAdapterRecord } from "../models/manifest.js";
 
@@ -200,7 +199,7 @@ function planAdapterFiles(
       planGeneratedFile(
         projectRoot,
         bootstrapTargetPath,
-        renderRuntimeBootstrapBridge(runtime, bundledSkills, bundledPlaybooks),
+        renderRuntimeInitBridge(runtime, bundledSkills, bundledPlaybooks),
         "adapter"
       )
     );
@@ -335,43 +334,6 @@ function mergeInstalledAdapters(
   }
 
   return [...map.values()].sort((left, right) => left.runtime.localeCompare(right.runtime));
-}
-
-function listBundledFrameworkSkills(bundledAgentRoot: string): FrameworkSkillDescriptor[] {
-  const skillsRoot = path.join(bundledAgentRoot, "skills");
-  if (!fileExists(skillsRoot)) {
-    return [];
-  }
-
-  const results: FrameworkSkillDescriptor[] = [
-    {
-      skillName: "bootstrap",
-      sourcePath: ".agent/BOOTSTRAP.md"
-    }
-  ];
-
-  for (const entry of readdirSync(skillsRoot, { withFileTypes: true })) {
-    if (!entry.isDirectory()) {
-      continue;
-    }
-
-    const skillPath = path.join(skillsRoot, entry.name, "SKILL.md");
-
-    try {
-      if (!statSync(skillPath).isFile()) {
-        continue;
-      }
-    } catch {
-      continue;
-    }
-
-    results.push({
-      skillName: entry.name,
-      sourcePath: `.agent/skills/${entry.name}/SKILL.md`
-    });
-  }
-
-  return results.sort((left, right) => left.skillName.localeCompare(right.skillName));
 }
 
 function summarizeManagedFiles(label: string, plans: ManagedFilePlan[]): string {

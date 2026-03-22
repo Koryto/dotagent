@@ -1,9 +1,10 @@
 import path from "node:path";
 
 import { fileExists } from "./files.js";
+import { listBundledFrameworkSkills } from "./framework-skills.js";
 import { loadManifest } from "./manifest.js";
 import { listBundledPlaybooks, listInstalledPlaybooks, loadInstalledPlaybookContract } from "./playbooks.js";
-import { getRuntimeEntrypointRelativePath, RUNTIME_ADAPTERS } from "./adapters.js";
+import { getRuntimeBridgeRelativePath, getRuntimeEntrypointRelativePath, RUNTIME_ADAPTERS } from "./adapters.js";
 import { planUpdate } from "./update.js";
 import { resolveDotagentRoot } from "./paths.js";
 import type { CliContext } from "../models/command.js";
@@ -146,6 +147,7 @@ function inspectAdapters(
   issues: DoctorIssue[]
 ): SupportedRuntime[] {
   const installedAdapters: SupportedRuntime[] = [];
+  const bundledSkills = listBundledFrameworkSkills(context.bundledAgentRoot);
 
   if (!manifest) {
     return installedAdapters;
@@ -167,6 +169,20 @@ function inspectAdapters(
         message: `Manifest declares adapter ${entry.runtime}, but the file is missing: ${entry.path}`
       });
       continue;
+    }
+
+    for (const skill of bundledSkills) {
+      const wrapperPath = path.join(
+        context.projectRoot,
+        ...getRuntimeBridgeRelativePath(entry.runtime, skill.skillName).split("/")
+      );
+
+      if (!fileExists(wrapperPath)) {
+        issues.push({
+          severity: "error",
+          message: `Adapter ${entry.runtime} is missing a generated runtime bridge: ${toProjectRelativePath(context.projectRoot, wrapperPath)}`
+        });
+      }
     }
 
     installedAdapters.push(entry.runtime);

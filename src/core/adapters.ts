@@ -10,10 +10,10 @@ export interface RuntimeAdapterDescriptor {
 }
 
 export const RUNTIME_ADAPTERS: readonly RuntimeAdapterDescriptor[] = [
-  { runtime: "codex", entrypointPath: ".codex/skills/dotagent-bootstrap/SKILL.md" },
-  { runtime: "claude", entrypointPath: ".claude/commands/dotagent/bootstrap.md" },
-  { runtime: "opencode", entrypointPath: ".opencode/commands/dotagent-bootstrap.md" },
-  { runtime: "copilot", entrypointPath: ".github/skills/dotagent-bootstrap/SKILL.md" }
+  { runtime: "codex", entrypointPath: ".codex/skills/dotagent-init/SKILL.md" },
+  { runtime: "claude", entrypointPath: ".claude/commands/dotagent/init.md" },
+  { runtime: "opencode", entrypointPath: ".opencode/commands/dotagent-init.md" },
+  { runtime: "copilot", entrypointPath: ".github/skills/dotagent-init/SKILL.md" }
 ];
 
 export function parseRuntimeSelection(values: string[]): SupportedRuntime[] {
