@@ -28,8 +28,6 @@ Reviewers should start here after reading the relevant role-init file.
 
 If `10_previous_round_feedback.md` references prior round artifacts, read those before writing findings.
 
-Finding ids referenced in this round come from `../findings_ledger.md`, which is maintained by Stinson.
-
 ## Reviewer Roster
 
 - stinson:

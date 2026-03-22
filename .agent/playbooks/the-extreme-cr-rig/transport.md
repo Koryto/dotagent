@@ -58,7 +58,6 @@ Expected structure:
   - cumulative findings memory for the task
   - stable ids across rounds
   - current disposition of previously accepted findings
-  - maintained by Stinson only
 
 - `README.md`
   - canonical live round packet
