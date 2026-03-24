@@ -44,6 +44,13 @@ const REQUIRED_FRAMEWORK_PATHS = [
   "playbooks"
 ] as const;
 
+const REQUIRED_STARTUP_FILES = [
+  "state/session_state.md",
+  "project/PROJECT.md",
+  "project/project_progress.md",
+  "workflows/standard.md"
+] as const;
+
 export function inspectDoctor(context: CliContext): DoctorReport {
   const issues: DoctorIssue[] = [];
   const bundledPlaybooks = listBundledPlaybooks(context.bundledAgentRoot).map((playbook) => playbook.name);
@@ -230,6 +237,16 @@ function inspectFrameworkLayout(context: CliContext, bundledPlaybooks: string[],
       issues.push({
         severity: "error",
         message: `Required framework path is missing: .agent/${relativePath}`
+      });
+    }
+  }
+
+  for (const relativePath of REQUIRED_STARTUP_FILES) {
+    const targetPath = path.join(dotagentRoot, relativePath);
+    if (!fileExists(targetPath)) {
+      issues.push({
+        severity: "error",
+        message: `Required framework startup file is missing: .agent/${relativePath}`
       });
     }
   }
