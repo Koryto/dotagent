@@ -130,3 +130,33 @@ test("dotagent doctor reports missing runtime adapter manifests", async () => {
   assert.match(stdout.buffer, /missing its runtime manifest/);
   assert.match(stdout.buffer, /\.codex\/dotagent\.json/);
 });
+
+test("dotagent doctor reports missing required framework startup files", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-doctor-missing-startup-file-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  rmSync(path.join(root, ".agent", "state", "session_state.md"));
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["doctor", "--cwd", root],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 1);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /missing required framework startup files|Required framework startup file is missing/);
+  assert.match(stdout.buffer, /\.agent\/state\/session_state\.md/);
+});

@@ -78,7 +78,7 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
 
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
-  assert.equal(existsSync(path.join(root, ".agent", "BOOTSTRAP.md")), true);
+  assert.equal(existsSync(path.join(root, ".agent", "skills", "init", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".codex", "dotagent.json")), true);
   assert.equal(existsSync(path.join(root, ".claude", "dotagent.json")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md")), true);
@@ -179,7 +179,7 @@ test("dotagent init supports framework-only initialization with --yes and no run
 
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
-  assert.equal(existsSync(path.join(root, ".agent", "BOOTSTRAP.md")), true);
+  assert.equal(existsSync(path.join(root, ".agent", "skills", "init", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, "AGENTS.md")), false);
   assert.equal(existsSync(path.join(root, "CLAUDE.md")), false);
   assert.equal(existsSync(path.join(root, ".codex")), false);
@@ -203,8 +203,8 @@ test("dotagent init preserves divergent managed files on safe rerun", async () =
 
   assert.equal(exitCode, 0);
 
-  const bootstrapPath = path.join(root, ".agent", "BOOTSTRAP.md");
-  writeFileSync(bootstrapPath, "custom local bootstrap\n", "utf8");
+  const initSkillPath = path.join(root, ".agent", "skills", "init", "SKILL.md");
+  writeFileSync(initSkillPath, "custom local init skill\n", "utf8");
 
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
@@ -218,11 +218,11 @@ test("dotagent init preserves divergent managed files on safe rerun", async () =
 
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
-  assert.equal(readFileSync(bootstrapPath, "utf8"), "custom local bootstrap\n");
+  assert.equal(readFileSync(initSkillPath, "utf8"), "custom local init skill\n");
 
   const manifest = loadManifest(root);
   assert.ok(manifest);
-  assert.equal(manifest.ownedFiles.some((entry) => entry.path === ".agent/BOOTSTRAP.md"), true);
+  assert.equal(manifest.ownedFiles.some((entry) => entry.path === ".agent/skills/init/SKILL.md"), true);
   assert.match(stdout.buffer, /Initialization complete/);
 });
 
@@ -239,8 +239,8 @@ test("dotagent init preserves last-known ownership for divergent managed files o
 
   assert.equal(exitCode, 0);
 
-  const bootstrapPath = path.join(root, ".agent", "BOOTSTRAP.md");
-  writeFileSync(bootstrapPath, "custom local bootstrap\n", "utf8");
+  const initSkillPath = path.join(root, ".agent", "skills", "init", "SKILL.md");
+  writeFileSync(initSkillPath, "custom local init skill\n", "utf8");
 
   exitCode = await runCli({
     argv: ["init", "--cwd", root, "--runtimes", "codex", "--yes"],
@@ -254,7 +254,7 @@ test("dotagent init preserves last-known ownership for divergent managed files o
 
   const manifest = loadManifest(root);
   assert.ok(manifest);
-  const ownershipRecord = manifest.ownedFiles.find((entry) => entry.path === ".agent/BOOTSTRAP.md");
+  const ownershipRecord = manifest.ownedFiles.find((entry) => entry.path === ".agent/skills/init/SKILL.md");
   assert.ok(ownershipRecord);
   assert.equal(typeof ownershipRecord.contentHash, "string");
 });
@@ -440,7 +440,7 @@ test("dotagent init --verbose reports individual framework and adapter file acti
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.match(stdout.buffer, /framework_file_actions:/);
-  assert.match(stdout.buffer, /- create: \.agent\/BOOTSTRAP\.md/);
+  assert.match(stdout.buffer, /- create: \.agent\/skills\/init\/SKILL\.md/);
   assert.match(stdout.buffer, /adapter_file_actions:/);
   assert.match(stdout.buffer, /- create: \.codex\/dotagent\.json/);
   assert.match(stdout.buffer, /- create: \.codex\/skills\/dotagent-init\/SKILL\.md/);

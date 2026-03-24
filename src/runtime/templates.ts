@@ -56,7 +56,7 @@ export function renderRuntimeInitBridge(
     "- `dotagent playbook init <name>`",
     "",
     "The framework source of truth remains under `.agent/`.",
-    "The framework bootstrap path remains `.agent/BOOTSTRAP.md`.",
+    "The framework init path remains `.agent/skills/init/SKILL.md`.",
     "These runtime files are generated bridges for native invocation only.",
     ""
   ];
