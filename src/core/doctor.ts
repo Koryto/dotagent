@@ -47,8 +47,7 @@ const REQUIRED_FRAMEWORK_PATHS = [
 const REQUIRED_STARTUP_FILES = [
   "state/session_state.md",
   "project/PROJECT.md",
-  "project/project_progress.md",
-  "workflows/standard.md"
+  "project/project_progress.md"
 ] as const;
 
 export function inspectDoctor(context: CliContext): DoctorReport {
