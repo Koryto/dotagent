@@ -39,7 +39,6 @@ export interface DoctorReport {
 }
 
 const REQUIRED_FRAMEWORK_PATHS = [
-  "BOOTSTRAP.md",
   "workflows",
   "skills",
   "playbooks"
