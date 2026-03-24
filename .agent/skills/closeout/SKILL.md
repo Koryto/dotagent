@@ -7,50 +7,82 @@ description: "Close a task cleanly at the end of the standard workflow. Use for 
 
 Use this skill during the Summary phase of the standard workflow.
 
-The goal is to finish work cleanly without leaving project state inconsistent.
+The goal is to leave the framework in a clean, resumable state with durable truth updated only where it belongs.
 
-## Responsibilities
+## Closeout Order
 
-### 1. Promotion Review
+Handle closeout in this order:
 
-Decide whether task knowledge stays local or should be promoted.
+1. review promotion targets
+2. write the task summary
+3. update project progress if durable progress changed
+4. update session state
+5. update the session log if the session is ending
 
-- update `systems/` when implemented reality changed significantly
-- do not promote anything into `project/` unless the user explicitly wants a project-level invariant recorded
-- do not treat task artifacts as durable truth
+Do not update logs first and then decide what the task actually changed.
 
-If a project-specific runbook or operator guide exists, do not confuse it with `project/` constitutional content.
+## Promotion Review
 
-### 2. Project Decision Review
+Decide what remains task-local and what becomes durable framework truth.
 
-If the task established a real project-level decision, record it in:
+Promote to `systems/` when:
+
+- implemented reality materially changed
+- a future engineer or agent would need this knowledge to work safely
+- the knowledge describes the current system, not just the task process
+
+Promote to `specs/` only when:
+
+- intended design changed
+- new design intent was created during the task
+
+Record a project-level decision only when the task created or changed a real standing rule, invariant, or strategic choice.
+
+Use:
 
 - `project/project_decision_log.md`
 
-Do not log routine cleanup, temporary scaffolding, or documentation churn as project decisions.
+Do not promote:
 
-### 3. Task Summary
+- temporary scaffolding
+- routine cleanup
+- implementation narration
+- task-local experiments
+- operator notes that are not project-wide truth
+
+Do not promote anything into `project/` by default. `project/` is constitutional, not a catch-all.
+
+## Task Summary
 
 Write:
 
 - `tasks/{task_name}_pr_summary.md`
 
-The summary should state:
+The summary should capture:
 
-- scope
+- task scope
 - main outcomes
-- important files or artifacts created/changed
-- key notes or remaining limits
+- important files or artifacts changed
+- verification performed
+- remaining limits, risks, or follow-ups
 
-### 4. Progress Update
+Keep it useful for a future human or agent who needs to understand what this task accomplished without replaying the session.
+
+## Progress Update
 
 Update:
 
 - `project/project_progress.md`
 
-Only record durable progress, not session narrative.
+Only record durable progress:
 
-### 5. Session State Update
+- completed milestones
+- new active phase
+- meaningful next priorities
+
+Do not turn `project_progress.md` into a session diary.
+
+## Session State Update
 
 Update:
 
@@ -58,53 +90,61 @@ Update:
 
 If the task is complete:
 
-- set the session back to `IDLE`
+- set the session to `IDLE`
 - clear active task references
-- leave handoff notes for the likely next task if useful
+- leave a short next-task pointer only if it is genuinely useful
 
 If the task is not complete:
 
 - keep the session in progress
-- leave clear handoff instructions
+- leave precise handoff instructions
+- name the files a future session should reload
 
-### 6. Session Log Update
+Session state must tell the next agent exactly whether it is resuming work or starting fresh.
+
+## Session Log Update
 
 If the session is ending, update:
 
 - `state/session_log.md`
 
-Include the session ID when the agent knows it.
-If the agent does not know the session ID, ask the user.
+Include the session ID when known. If it is required and unknown, ask the user.
 
-The session log entry should contain only high-signal context:
+Log only high-signal resumable context:
 
 - what was completed
-- important task artifacts
-- key decisions made in the session
-- why the session would be worth resuming later
+- what remains open
+- important artifacts
+- key decisions
+- why resuming this session would matter
 
-## Output Checklist
+Do not dump narrative chronology into the session log.
 
-Before leaving Summary, confirm that all applicable items were handled:
+## Output Contract
 
-- systems promotion reviewed
-- project decision log reviewed
-- task summary written
-- project progress updated
-- session state updated
-- session log updated or consciously skipped
+Before leaving Summary, confirm the status of:
+
+- promotion review
+- task summary
+- project progress
+- session state
+- session log
+
+If an item was intentionally skipped, say so explicitly.
 
 ## Rules
 
 Always:
 
 - prefer durable, high-signal updates over narrative history
-- keep project-wide logs clean
-- distinguish between constitutional project truth and operational project guidance
+- keep each namespace aligned to its truth type
+- leave the next session with a clear resume path
+- keep project-wide files lean
 
 Never:
 
 - promote task-local notes into `project/` by default
-- leave the session state ambiguous
-- write noisy session log entries that add no resumable value
+- leave session state ambiguous
+- log noise just because the file exists
+- confuse implemented reality, intended design, and project constitution
 

@@ -9,12 +9,6 @@ Review the code as if it will become part of a long-lived production codebase.
 
 The objective is not to be agreeable. The objective is to surface real risks early, while they are still cheap to fix.
 
-## When To Use
-
-- mandatory self-review after implementation and before verification closeout
-- any time the user asks for a review
-- any time the task changes non-trivial code paths, system boundaries, or production behavior
-
 ## Review Standards
 
 ### 1. Correctness and Regression Risk
@@ -24,6 +18,7 @@ The objective is not to be agreeable. The objective is to surface real risks ear
 - look for missing edge-case handling
 - look for behavior drift from the plan or intended design
 - assume regressions are more likely in state transitions, lifecycle paths, concurrency, and partial-failure scenarios
+- treat "works on the happy path" as insufficient evidence
 
 ### 2. Scale
 
@@ -67,6 +62,13 @@ Scale is always a top-level concern.
 - flag weak manual verification, or unverified critical paths
 - flag missing updates to `systems/` or `specs/` when the task clearly changed durable knowledge
 
+## Review Boundaries
+
+- review the changed code and the boundaries it affects
+- do not expand into broad unrelated cleanup, but do call out nearby issues when they create real risk, confusion, or follow-on cost
+- recommend rewrites when the current shape is materially weaker than a cleaner replacement, and explain why the rewrite is justified
+- separate direct evidence from inference; if a risk is inferred, say so explicitly
+
 ## Output Contract
 
 The output must be findings-first.
@@ -100,6 +102,8 @@ State explicitly:
 
 Then list any residual risk or verification gaps if they still exist.
 
+If the code is acceptable but only under explicit assumptions, name those assumptions.
+
 ## Severity Guidance
 
 - `High`: likely bug, regression, non-scalable design, broken invariant, or production risk that should be fixed before acceptance
@@ -120,6 +124,7 @@ Always:
 
 - prioritize real defects and architectural risks over praise or summary
 - be explicit when something is an inference versus directly evidenced
+- keep findings concrete enough that another engineer can act on them without guessing
 - call out scale risks even if the code is otherwise correct
 - call out maintainability and extendability issues before they calcify
 - prefer primary sources when validating best-practice claims
@@ -131,3 +136,4 @@ Never:
 - waive a concern just because it looks small
 - claim a best practice confidently when you are not sure
 - confuse review with verification
+- turn speculative taste preferences into findings

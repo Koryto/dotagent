@@ -92,7 +92,7 @@ See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current c
 
 - `state/session_state.md` tracks whether the current session is idle or in progress
 - `state/session_log.md` is append-only historical session context
-- `BOOTSTRAP.md` is the session entrypoint after initialization
+- `skills/init/SKILL.md` is the framework session entrypoint
 - the CLI owns framework initialization and playbook runtime scaffolding
 
 ## How To Use
@@ -100,7 +100,7 @@ See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current c
 1. Initialize the framework with `dotagent init`.
 2. Fill in `project/PROJECT.md`.
 3. Set the initial state in `state/session_state.md` if needed.
-4. Start sessions from `BOOTSTRAP.md`.
+4. Start sessions through your runtime-native `dotagent-init` bridge, which loads `skills/init/SKILL.md`.
 5. Keep durable system knowledge in `systems/`, not in task artifacts.
 6. Use `specs/` only when design intent needs to be defined or clarified.
 7. Use `tasks/` for plans, reviews, verification notes, and summaries.
