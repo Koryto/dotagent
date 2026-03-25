@@ -42,13 +42,14 @@ Agent actions:
 5. Choose the planning format:
    - substantial task: `tasks/{task_name}_ip.md`
    - simple task: concise inline plan in chat
-6. Include:
+6. When the task safely supports parallel decomposition, plan explicit sub-agent ownership during Planning.
+7. Include:
    - scope
    - affected files or systems
    - implementation steps
    - risks
    - verification approach
-7. Present the plan clearly to the user.
+8. Present the plan clearly to the user.
 
 Gate: user approves the plan
 
