@@ -56,7 +56,7 @@ Do not promote anything into `project/` by default. `project/` is constitutional
 
 Write:
 
-- `tasks/{task_name}_pr_summary.md`
+- `tasks/{task_name}/pr_summary.md`
 
 The summary should capture:
 
