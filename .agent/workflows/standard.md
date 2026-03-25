@@ -40,7 +40,7 @@ Agent actions:
    - clarify with the user
    - create or update the relevant `specs/` artifact before detailed implementation planning
 5. Choose the planning format:
-   - substantial task: `tasks/{task_name}_ip.md`
+   - substantial task: `tasks/{task_name}/ip.md`
    - simple task: concise inline plan in chat
 6. When the task safely supports parallel decomposition, plan explicit sub-agent ownership during Planning.
 7. Include:
@@ -88,11 +88,12 @@ Agent actions:
 2. Update `session_state.md` to `phase: review`.
 3. Load the `code-review` skill on demand.
 4. Review the changes.
-5. Write `tasks/{task_name}_review.md` for substantial tasks.
+5. Write `tasks/{task_name}/review.md` for substantial tasks.
 6. Fix findings and re-review until there are no unresolved findings, unless the user explicitly accepts them.
-7. Release the skill after review.
+7. Make the review result visible to the user and give the human a chance to inspect the work before continuing.
+8. Release the skill after review.
 
-Gate: no unresolved review findings remain, or the user explicitly accepts them
+Gate: user explicit approval. self-review is complete when unresolved findings are fixed or explicitly accepted by the user
 
 Do not present unreviewed implementation as complete.
 
@@ -107,7 +108,7 @@ Agent actions:
 3. Choose the verification path.
 4. Ask the user only if the correct verification path is unclear.
 5. Run verification with permission when required.
-6. Write `tasks/{task_name}_verification.md` for substantial tasks.
+6. Write `tasks/{task_name}/verification.md` for substantial tasks.
 7. If verification fails:
    - fix the issue
    - re-review if the fix is non-trivial

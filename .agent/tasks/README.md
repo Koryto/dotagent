@@ -12,14 +12,14 @@ Use this namespace for:
 
 Recommended naming:
 
-- `{task_name}_ip.md`
-- `{task_name}_review.md`
-- `{task_name}_verification.md`
-- `{task_name}_pr_summary.md`
+- `{task_name}/ip.md`
+- `{task_name}/review.md`
+- `{task_name}/verification.md`
+- `{task_name}/pr_summary.md`
 
 Example:
 
-- `combat_ability_ip.md`
-- `combat_ability_pr_summary.md`
+- `combat_ability/ip.md`
+- `combat_ability/pr_summary.md`
 
 Do not treat task files as durable system truth.
