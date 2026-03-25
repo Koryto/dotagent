@@ -34,9 +34,8 @@ If the agent does not know its session ID, ask the user before writing the entry
 - Summary of the session.
 - Major work completed.
 - Important task artifact:
-  - `tasks/{task_name}_pr_summary.md`
+  - `tasks/{task_name}/pr_summary.md`
 
 Key decisions (session N):
 - Decision one.
 - Decision two.
-
