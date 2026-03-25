@@ -34,7 +34,7 @@ Goal: clarify scope and produce an approved implementation path.
 Agent actions:
 
 1. Announce entry into Planning.
-2. Update `session_state.md` for an active task in `phase: planning`.
+2. Update `session_state.md` for an active task in `workflow: standard`, `phase: planning`.
 3. Read the task and clarify scope.
 4. If design intent is missing or unclear:
    - clarify with the user

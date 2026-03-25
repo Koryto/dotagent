@@ -45,6 +45,12 @@ blockers: []
   - leave clear handoff instructions
 - When the task is complete:
   - return the session to `IDLE`
-  - clear task-specific state
+  - set `workflow` to `standard`
+  - set `phase` to `none`
+  - set `task_name` to `none`
+  - clear `description`
+  - clear `resume_files`
+  - clear `blockers`
+  - clear stale handoff instructions unless a short next-task pointer is genuinely useful
 - `resume_files` should include the implementation plan when one exists, and any spec or system files required to resume safely.
 - Keep task-local detail in task artifacts, not in this file.

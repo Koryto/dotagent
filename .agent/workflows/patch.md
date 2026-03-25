@@ -35,7 +35,7 @@ Goal: confirm that `patch` is appropriate and define the change.
 Agent actions:
 
 1. Announce entry into Scope.
-2. Update `session_state.md` for an active task in `phase: scope`.
+2. Update `session_state.md` for an active task in `workflow: patch`, `phase: scope`.
 3. Confirm the task is still a good fit for `patch`.
 4. Give a concise inline plan in chat:
    - intended change
@@ -95,7 +95,7 @@ Agent actions:
    - what changed
    - what was verified
    - any remaining limitation or risk
-4. Return the session to `IDLE` if the task is complete.
+4. If the task is complete, return the session to `IDLE`, set `workflow` to `standard`, set `phase` to `none`, set `task_name` to `none`, clear `description`, clear `resume_files`, clear `blockers`, and clear stale handoff instructions.
 5. Only write task artifacts when they are actually useful.
 
 Gate: patch closeout is complete
