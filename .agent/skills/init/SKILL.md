@@ -56,13 +56,19 @@ Do not cold-load entire namespaces preemptively. Load only the files needed for 
 6. Read `.agent/project/project_progress.md`, then release it from active context unless it remains immediately useful.
 7. If resuming, load the files listed in `resume_files`.
 8. If resuming, load task artifacts under `.agent/tasks/` that match the active task.
-9. Only after the initialization sequence is complete, acknowledge ready state to the user and continue.
+9. If starting a new task or receiving a new task from the user, surface workflow selection explicitly.
+10. Keep `standard` as the default unless the user explicitly selects another workflow.
+11. If the task may fit a lighter path, offer `patch` explicitly instead of assuming the user knows it exists.
+12. If the user does not choose, continue with `standard`.
+13. Only after the initialization sequence is complete, acknowledge ready state to the user and continue.
 
 ## Responsibilities
 
 - start from the framework, not from ad hoc repo scanning
 - keep the hot set stable while exploring the codebase
 - follow the active workflow instead of improvising the phase order
+- treat `standard` as the default workflow unless the user explicitly selects another one
+- surface workflow selection explicitly when a new task is introduced
 - treat `specs/`, `systems/`, `tasks/`, and `project/` as different truth types
 - keep cold namespaces unloaded until the task actually needs them
 
@@ -74,6 +80,7 @@ Always:
 - read `session_state.md` before any planning or implementation
 - reload the hot set if heavy scanning pushes it out of active context
 - keep the user on the active workflow unless the user explicitly changes it
+- prompt for workflow selection when a new task starts instead of assuming the user knows the available workflows
 
 Never:
 

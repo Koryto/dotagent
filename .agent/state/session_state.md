@@ -30,6 +30,7 @@ blockers: []
 ## NOTES
 
 - Keep the state block accurate for handoff, resume, and phase visibility.
+- Use `standard` as the default workflow unless the user explicitly selects another one.
 - When a task becomes active:
   - set `status` to `IN_PROGRESS`
   - set `workflow`
