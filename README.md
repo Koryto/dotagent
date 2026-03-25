@@ -78,6 +78,17 @@ Default implementation workflow:
 4. Verification
 5. Summary
 
+### `patch`
+
+Lightweight workflow for small, low-risk fixes:
+
+1. Scope
+2. Patch
+3. Sanity
+4. Summary
+
+Use `standard` by default when the workflow is unspecified.
+
 ## Skills
 
 Skills are loaded on demand, not kept in hot context by default.
