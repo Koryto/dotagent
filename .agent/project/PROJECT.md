@@ -5,6 +5,16 @@
 
 Lean project constitution.
 
+## Template Mode
+
+If this file still reads like a template, make filling it a top priority before deep task work.
+
+Expected behavior:
+
+- proactively tell the user that `PROJECT.md` should be defined together
+- if this is an existing project and the agent already has enough context, offer to draft the file from current project knowledge for the user to confirm or correct
+- if the project is still unclear, guide the user through defining it instead of silently continuing with a weak project constitution
+
 This file should capture:
 
 - project identity
