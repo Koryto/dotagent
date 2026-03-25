@@ -1,25 +1,33 @@
 # Session State
-<!-- SESSION_VERSION: 1.0 | STATUS: template -->
+<!-- SESSION_VERSION: 2.0 | STATUS: template -->
 
-## CURRENT_STATE
+Keep this file small. This is the session control register, not a narrative log.
+
+Update it when:
+
+- a task starts
+- the active phase changes
+- the session pauses
+- the task closes out
+
+## STATE
 
 ```yaml
 status: IDLE
 workflow: standard
+phase: none
 task_name: none
-last_session_date: YYYY-MM-DD
-```
-
-## ACTIVE_TASK
-
-```yaml
 description: ""
-started: YYYY-MM-DD
+last_updated: YYYY-MM-DD
 resume_files: []
-plan_file: ""
 blockers: []
 ```
 
 ## HANDOFF_INSTRUCTIONS
 
 - No active task.
+
+## NOTES
+
+- `resume_files` should include the implementation plan when one exists, and any spec or system files required to resume safely.
+- Keep task-local detail in task artifacts, not in this file.
