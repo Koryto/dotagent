@@ -23,4 +23,3 @@ Example:
 - `combat_ability_pr_summary.md`
 
 Do not treat task files as durable system truth.
-

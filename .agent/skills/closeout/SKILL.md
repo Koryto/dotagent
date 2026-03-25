@@ -91,7 +91,13 @@ Update:
 If the task is complete:
 
 - set the session to `IDLE`
-- clear active task references
+- set `workflow` to `standard`
+- set `phase` to `none`
+- set `task_name` to `none`
+- clear `description`
+- clear `resume_files`
+- clear `blockers`
+- clear stale handoff instructions
 - leave a short next-task pointer only if it is genuinely useful
 
 If the task is not complete:
