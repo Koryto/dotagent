@@ -38,3 +38,44 @@ test("assertBundledFrameworkSkillsAvailable accepts valid bundled skills", () =>
     }
   ]);
 });
+
+test("listBundledFrameworkSkills includes playbook-local skills", () => {
+  const bundledAgentRoot = mkdtempSync(path.join(os.tmpdir(), "dotagent-framework-skills-playbook-local-"));
+  const skillRoot = path.join(
+    bundledAgentRoot,
+    "playbooks",
+    "deep-code-review",
+    "skills",
+    "dcr-lead-init"
+  );
+  mkdirSync(skillRoot, { recursive: true });
+  writeFileSync(path.join(skillRoot, "SKILL.md"), "# dcr-lead-init\n", "utf8");
+
+  const skills = listBundledFrameworkSkills(bundledAgentRoot);
+
+  assert.deepEqual(skills, [
+    {
+      bundledRelativePath: "playbooks/deep-code-review/skills/dcr-lead-init/SKILL.md",
+      skillName: "dcr-lead-init",
+      sourcePath: ".agent/playbooks/deep-code-review/skills/dcr-lead-init/SKILL.md"
+    }
+  ]);
+});
+
+test("listBundledFrameworkSkills rejects duplicated skill names across namespaces", () => {
+  const bundledAgentRoot = mkdtempSync(path.join(os.tmpdir(), "dotagent-framework-skills-duplicate-name-"));
+  const coreSkillRoot = path.join(bundledAgentRoot, "skills", "closeout");
+  const playbookSkillRoot = path.join(
+    bundledAgentRoot,
+    "playbooks",
+    "deep-code-review",
+    "skills",
+    "closeout"
+  );
+  mkdirSync(coreSkillRoot, { recursive: true });
+  mkdirSync(playbookSkillRoot, { recursive: true });
+  writeFileSync(path.join(coreSkillRoot, "SKILL.md"), "# closeout\n", "utf8");
+  writeFileSync(path.join(playbookSkillRoot, "SKILL.md"), "# closeout\n", "utf8");
+
+  assert.throws(() => listBundledFrameworkSkills(bundledAgentRoot), BundledAssetsError);
+});

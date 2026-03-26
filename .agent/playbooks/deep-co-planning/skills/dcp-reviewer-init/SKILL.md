@@ -1,14 +1,19 @@
-# Reviewer Init
+---
+name: "dcp-reviewer-init"
+description: "Join Deep Co-Planning as a reviewer for an active planning run."
+---
+
+# dcp-reviewer-init
 
 ## Read First
 
-1. `PLAYBOOK.md`
-2. `template/round_template/README.md`
+1. `.agent/playbooks/deep-co-planning/PLAYBOOK.md`
+2. `.agent/playbooks/deep-co-planning/template/round_template/README.md`
 
 Keep these hot-loaded for the duration of the playbook:
 
-- `PLAYBOOK.md`
-- `REVIEWER_INIT.md`
+- `.agent/playbooks/deep-co-planning/PLAYBOOK.md`
+- `.agent/playbooks/deep-co-planning/skills/dcp-reviewer-init/SKILL.md`
 
 For every new round, begin by reading the active round `README.md`.
 

@@ -1,17 +1,22 @@
-# Lead Init
+---
+name: "dcr-lead-init"
+description: "Start Deep Code Review as the lead for an active review run."
+---
+
+# dcr-lead-init
 
 ## Read First
 
 1. `.agent/skills/code-review/SKILL.md`
-2. `PLAYBOOK.md`
-3. `transport.md`
-4. `template/round_template/README.md`
+2. `.agent/playbooks/deep-code-review/PLAYBOOK.md`
+3. `.agent/playbooks/deep-code-review/transport.md`
+4. `.agent/playbooks/deep-code-review/template/round_template/README.md`
 
 Keep these hot-loaded for the duration of the playbook:
 
 - `.agent/skills/code-review/SKILL.md`
-- `PLAYBOOK.md`
-- `LEAD_INIT.md`
+- `.agent/playbooks/deep-code-review/PLAYBOOK.md`
+- `.agent/playbooks/deep-code-review/skills/dcr-lead-init/SKILL.md`
 
 ## Your Job
 
@@ -35,7 +40,7 @@ Use the CLI to initialize the runtime:
 dotagent playbook init deep-code-review --task <task_name>
 ```
 
-Do not manually scaffold the round filesystem unless you are explicitly handling a fallback case.
+Do not manually scaffold the review filesystem unless you are explicitly handling a fallback case.
 
 Only the lead updates `findings_ledger.md` and maintains the finding-id mapping across rounds.
 

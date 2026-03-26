@@ -10,4 +10,7 @@ Use it when:
 - the human wants reviewer pressure before locking a phase-level design
 - the output should later drive multiple tasks or implementation plans
 
-For actual use, start with [START_HERE.md](START_HERE.md).
+Native entry skills:
+
+- `dcp-lead-init`
+- `dcp-reviewer-init`

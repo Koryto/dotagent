@@ -1,15 +1,20 @@
-# Lead Init
+---
+name: "dcp-lead-init"
+description: "Start Deep Co-Planning as the lead for an active planning run."
+---
+
+# dcp-lead-init
 
 ## Read First
 
-1. `PLAYBOOK.md`
-2. `transport.md`
-3. `template/round_template/README.md`
+1. `.agent/playbooks/deep-co-planning/PLAYBOOK.md`
+2. `.agent/playbooks/deep-co-planning/transport.md`
+3. `.agent/playbooks/deep-co-planning/template/round_template/README.md`
 
 Keep these hot-loaded for the duration of the playbook:
 
-- `PLAYBOOK.md`
-- `LEAD_INIT.md`
+- `.agent/playbooks/deep-co-planning/PLAYBOOK.md`
+- `.agent/playbooks/deep-co-planning/skills/dcp-lead-init/SKILL.md`
 
 ## Your Job
 

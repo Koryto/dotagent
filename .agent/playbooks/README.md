@@ -23,7 +23,7 @@ A playbook is intended to package:
 
 - an operational procedure
 - the supporting standards and references it needs
-- any role-specific entrypoints
+- any role-specific entry skills
 - any runtime templates or scaffolds
 
 The goal is to make complex procedures reusable without bloating `dotagent` core.

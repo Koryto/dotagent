@@ -10,4 +10,7 @@ Use it when:
 - the changed path is critical enough to justify multi-round review
 - you want reviewer findings, lead synthesis, and human approval to remain explicit and inspectable
 
-For actual use, start with [START_HERE.md](START_HERE.md).
+Native entry skills:
+
+- `dcr-lead-init`
+- `dcr-reviewer-init`

@@ -1,15 +1,20 @@
-# Reviewer Init
+---
+name: "dcr-reviewer-init"
+description: "Join Deep Code Review as a reviewer for an active review run."
+---
+
+# dcr-reviewer-init
 
 ## Read First
 
 1. `.agent/skills/code-review/SKILL.md`
-2. `PLAYBOOK.md`
-3. `template/round_template/README.md`
+2. `.agent/playbooks/deep-code-review/PLAYBOOK.md`
+3. `.agent/playbooks/deep-code-review/template/round_template/README.md`
 
-Keep these hot-loaded for the duration of the rig:
+Keep these hot-loaded for the duration of the playbook:
 
 - `.agent/skills/code-review/SKILL.md`
-- `REVIEWER_INIT.md`
+- `.agent/playbooks/deep-code-review/skills/dcr-reviewer-init/SKILL.md`
 
 For every new round, begin by reading the active round `README.md`.
 
@@ -54,7 +59,7 @@ Do not duplicate or override the active round packet with ad hoc reviewer instru
 
 ## If You Have No Findings
 
-Do not drop from the rig automatically.
+Do not drop from the review automatically.
 
 If you reach `No findings.`:
 
