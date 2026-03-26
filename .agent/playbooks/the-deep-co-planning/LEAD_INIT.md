@@ -60,7 +60,9 @@ Confirm:
 
 If those are incomplete, the round is not ready.
 
-For every new round, the active round `README.md` is the canonical live handoff.
+For every new round, start from the active round `README.md`.
+
+Treat `00_round_context.md` as the full round contract.
 
 ## Human Interaction Points
 

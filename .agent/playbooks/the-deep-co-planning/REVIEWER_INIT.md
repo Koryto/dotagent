@@ -12,7 +12,7 @@ Keep these hot-loaded for the duration of the playbook:
 
 For every new round, begin by reading the active round `README.md`.
 
-Then read the additional artifacts it points you to.
+Then follow `00_round_context.md` for the full round contract and read order.
 
 If this is not the first round, also read the prior round outputs referenced in `10_previous_round_feedback.md`.
 
