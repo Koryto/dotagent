@@ -76,7 +76,6 @@ Current intended conventions:
 - package naming: `the-<playbook-name>`
 - each playbook defines its own role language
 - each playbook defines its own artifact model
-- each playbook may define its own signature phrasing when that serves the package
 
 These conventions belong to the playbook layer only.
 

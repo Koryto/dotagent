@@ -26,7 +26,6 @@ Expected structure:
 <repo>/.dcp/<task_name>/
 |-- HLD.md
 |-- README.md
-|-- known_unknowns.md
 |-- specs/
 |   |-- README.md
 |   `-- spec_template.md
@@ -52,10 +51,6 @@ Expected structure:
 - `HLD.md`
   - human-led high-level design baseline
   - the design object that reviewers first critique
-
-- `known_unknowns.md`
-  - bounded uncertainties that may legitimately remain after the playbook finishes
-  - should not contain hidden unanswered questions
 
 - `specs/README.md`
   - index for one or more specs derived from the approved HLD

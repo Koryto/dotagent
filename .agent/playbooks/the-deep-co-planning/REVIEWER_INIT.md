@@ -1,7 +1,5 @@
 # Reviewer Init
 
-Use this file if you are a `Reviewer` in an active run of `the-deep-co-planning`.
-
 ## Read First
 
 1. `PLAYBOOK.md`

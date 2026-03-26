@@ -1,7 +1,5 @@
 # Lead Init
 
-Use this file if you are the `Lead` for an active run of `the-deep-co-planning`.
-
 ## Read First
 
 1. `PLAYBOOK.md`
@@ -25,7 +23,7 @@ You are responsible for:
 - producing reviewer-facing carry-forward feedback
 - producing human-facing round results
 - deriving one or more specs from the approved HLD
-- maintaining `known_unknowns.md`
+- maintaining known unknowns inside the HLD or final specs
 - closing each round with the human's verdict
 
 ## Operator Path

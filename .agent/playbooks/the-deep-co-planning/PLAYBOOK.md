@@ -12,11 +12,6 @@ Use this playbook when:
 - the output should guide multiple later tasks or implementation plans
 - the planning work needs preserved reviewer artifacts and explicit approval gates
 
-This playbook sits above:
-
-- `.agent/workflows/standard.md`
-- `.agent/skills/init/SKILL.md`
-
 Current operating model:
 
 - filesystem runtime
@@ -53,7 +48,6 @@ Current operating model:
 Task-level artifacts:
 
 - `HLD.md`
-- `known_unknowns.md`
 - `specs/`
 
 Round-level artifacts:
@@ -86,7 +80,7 @@ Reviewers write their own output files only.
    - confirm this work is broad enough to justify Deep Co-Planning
 
 2. **HLD drafting**
-   - the lead and human prepare the HLD together
+   - the lead and human prepare the HLD together through discussion
    - this HLD becomes the baseline artifact for the first review round
    - if the work is obviously too narrow, the lead should recommend the normal standard workflow instead
 
@@ -184,6 +178,6 @@ The concrete runtime template lives under:
 - if the HLD is too broad, the lead and reviewers must say so clearly, but the human still decides whether to proceed
 - HLD approval and final spec approval are both human-gated
 - no round should close with hidden open questions
-- unresolved items in the final output must be recorded as known unknowns
+- unresolved items in the final HLD or specs must be recorded as known unknowns
 - the final specs must sharpen the HLD into implementation-driving structure; they must not merely restate it
 - reviewer outputs and lead synthesis should remain readable enough for later task-level implementation planning

@@ -1,6 +1,6 @@
 # Specs
 
-This directory holds the final implementation-driving spec output derived from the approved HLD.
+This directory holds the final specs produced from the approved HLD.
 
 Guidance:
 

@@ -40,3 +40,7 @@
 - Reviewer 1:
 - Reviewer 2:
 - Additional reviewers when present:
+
+## Known Unknowns
+
+- What bounded uncertainties are acceptable to carry into later spec or implementation work?

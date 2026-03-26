@@ -1,5 +1,7 @@
 # Spec Title
 
+Use this as a baseline. Add sections when the spec needs them, and remove sections that are irrelevant for the current spec.
+
 ## Objective
 
 - What concrete implementation objective does this spec define?

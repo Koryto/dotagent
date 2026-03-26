@@ -12,7 +12,6 @@ This directory is the live workspace for one Deep Co-Planning run.
 ## Primary Task Artifacts
 
 - `HLD.md`
-- `known_unknowns.md`
 - `specs/`
 
 ## Round Directories

@@ -25,10 +25,9 @@
 ## Read Order
 
 1. `../HLD.md`
-2. `../known_unknowns.md`
-3. `../specs/README.md`
-4. any active spec files named in this round
-5. `10_previous_round_feedback.md` when this is not the first round
+2. `../specs/README.md`
+3. any active spec files named in this round
+4. `10_previous_round_feedback.md` when this is not the first round
 
 ## Missing-Artifact Policy
 
