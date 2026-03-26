@@ -5,6 +5,19 @@ description: "Join Deep Code Review as a reviewer for an active review run."
 
 # dcr-reviewer-init
 
+## Invocation Contract
+
+```yaml
+suffix: <required>
+domain: <optional>
+```
+
+Do not start this reviewer role implicitly.
+
+Bind reviewer identity to an explicit `suffix` at invocation time.
+
+Add `domain` when the human or lead assigns one.
+
 ## Read First
 
 1. `.agent/skills/code-review/SKILL.md`

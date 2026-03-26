@@ -5,6 +5,16 @@ description: "Start Deep Co-Planning as the lead for an active planning run."
 
 # dcp-lead-init
 
+## Invocation Contract
+
+```yaml
+task_name: <required>
+```
+
+Do not start this playbook implicitly.
+
+Bind the lead run to an explicit `task_name` at invocation time.
+
 ## Read First
 
 1. `.agent/playbooks/deep-co-planning/PLAYBOOK.md`
