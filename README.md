@@ -99,8 +99,8 @@ Skills are loaded on demand, not kept in hot context by default.
 
 Current bundled playbooks:
 
-- `the-deep-co-planning` - turn a human-led HLD into one or more implementation-driving specs through structured reviewer pressure
-- `the-extreme-cr-rig` - run a structured multi-agent review loop for large or high-risk changes
+- `deep-co-planning` - turn a human-led HLD into one or more implementation-driving specs through structured reviewer pressure
+- `deep-code-review` - run a structured multi-agent review loop for large or high-risk changes
 
 See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current conventions.
 

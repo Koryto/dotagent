@@ -88,8 +88,8 @@ test("runCli lists bundled playbooks", async () => {
   });
 
   assert.equal(exitCode, 0);
-  assert.match(stdout.buffer, /the-deep-co-planning/);
-  assert.match(stdout.buffer, /the-extreme-cr-rig/);
+  assert.match(stdout.buffer, /deep-co-planning/);
+  assert.match(stdout.buffer, /deep-code-review/);
   assert.equal(stderr.buffer, "");
 });
 

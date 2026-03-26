@@ -1,6 +1,4 @@
-# Wingman Init
-
-Use this file if you are a `Wingman` in an active run of `the-extreme-cr-rig`.
+# Reviewer Init
 
 ## Read First
 
@@ -11,11 +9,11 @@ Use this file if you are a `Wingman` in an active run of `the-extreme-cr-rig`.
 Keep these hot-loaded for the duration of the rig:
 
 - `.agent/skills/code-review/SKILL.md`
-- `WINGMAN_INIT.md`
+- `REVIEWER_INIT.md`
 
 For every new round, begin by reading the active round `README.md`.
 
-Then read the additional round artifacts it points you to.
+Then follow `00_round_context.md` for the full round contract and read order.
 
 If this is not the first round, also read the prior round outputs referenced in `10_previous_round_feedback.md`.
 
@@ -24,7 +22,7 @@ If this is not the first round, also read the prior round outputs referenced in 
 Before writing findings, know:
 
 - your role in the roster
-- your Wingman suffix / filename
+- your reviewer suffix / filename
 - the exact round directory you are reviewing from
 
 Your output file should be:
@@ -33,7 +31,7 @@ Your output file should be:
 
 Do not edit `findings_ledger.md`.
 
-Finding ids in shared artifacts are maintained by Stinson only.
+Finding ids in shared artifacts are maintained by the lead only.
 
 ## Your Job
 
@@ -44,7 +42,7 @@ You are responsible for:
 - validating the status of prior findings you raised
 - reusing existing finding ids when the round artifacts provide them
 - avoiding repetition of rejected findings without new evidence
-- writing a structured findings file that Stinson can ingest
+- writing a structured findings file that the lead can ingest
 
 ## Live Review Rule
 

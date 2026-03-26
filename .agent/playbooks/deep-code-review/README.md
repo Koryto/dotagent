@@ -1,6 +1,6 @@
-# the-extreme-cr-rig
+# Deep Code Review
 
-`the-extreme-cr-rig` is an experimental playbook package for large or high-risk code review.
+`deep-code-review` is an experimental playbook package for large or high-risk code review.
 
 It packages a lead-centric multi-agent iterative review procedure that is heavier than a normal self-review but more structured than ad hoc multi-agent chat.
 

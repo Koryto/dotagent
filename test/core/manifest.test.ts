@@ -8,16 +8,16 @@ import { createInitialManifest, loadManifest, saveManifest } from "../../src/cor
 import { ManifestCorruptionError } from "../../src/utils/errors.js";
 
 test("createInitialManifest seeds framework ref and playbooks", () => {
-  const manifest = createInitialManifest("local-dev", ["the-deep-co-planning", "the-extreme-cr-rig"]);
+  const manifest = createInitialManifest("local-dev", ["deep-co-planning", "deep-code-review"]);
 
   assert.equal(manifest.frameworkRef, "local-dev");
-  assert.deepEqual(manifest.bundledPlaybooks, ["the-deep-co-planning", "the-extreme-cr-rig"]);
+  assert.deepEqual(manifest.bundledPlaybooks, ["deep-co-planning", "deep-code-review"]);
   assert.equal(manifest.manifestVersion, 1);
 });
 
 test("saveManifest and loadManifest round-trip manifest data", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-manifest-"));
-  const expected = createInitialManifest("local-dev", ["the-deep-co-planning", "the-extreme-cr-rig"]);
+  const expected = createInitialManifest("local-dev", ["deep-co-planning", "deep-code-review"]);
 
   saveManifest(root, expected);
   const loaded = loadManifest(root);
@@ -89,7 +89,7 @@ test("saveManifest and loadManifest round-trip runtime-only adapter records", ()
   const expected = {
     manifestVersion: 1 as const,
     frameworkRef: "local-dev",
-    bundledPlaybooks: ["the-deep-co-planning", "the-extreme-cr-rig"],
+    bundledPlaybooks: ["deep-co-planning", "deep-code-review"],
     installedAdapters: [{ runtime: "codex" }],
     ownedFiles: []
   };

@@ -3,7 +3,7 @@
 
 ## Purpose
 
-Define the intended runtime model for `the-deep-co-planning`.
+Define the intended runtime model for `deep-co-planning`.
 
 This playbook runs through the local filesystem. The CLI scaffolds the runtime. Markdown artifacts remain the planning contract.
 

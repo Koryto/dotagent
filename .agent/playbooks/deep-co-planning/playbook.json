@@ -1,9 +1,9 @@
 {
-  "name": "the-extreme-cr-rig",
+  "name": "deep-co-planning",
   "version": "0.1.0",
-  "runtimeRoot": ".ecrr",
+  "runtimeRoot": ".dcp",
   "templateDir": "template",
-  "gitignoreEntry": ".ecrr/",
+  "gitignoreEntry": ".dcp/",
   "taskScoped": true,
   "initialRound": "round_001"
 }

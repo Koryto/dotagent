@@ -35,7 +35,7 @@ test("dotagent playbook init dry-run reports filesystem scaffolding without writ
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--dry-run"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--dry-run"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -46,7 +46,7 @@ test("dotagent playbook init dry-run reports filesystem scaffolding without writ
   assert.equal(stderr.buffer, "");
   assert.match(stdout.buffer, /template_directories: create=3, adopt=0/);
   assert.match(stdout.buffer, /task: default_ability_alignment/);
-  assert.equal(existsSync(path.join(root, ".ecrr")), false);
+  assert.equal(existsSync(path.join(root, ".dcr")), false);
 });
 
 test("dotagent playbook init scaffolds the first filesystem round and ignores runtime state", async () => {
@@ -64,7 +64,7 @@ test("dotagent playbook init scaffolds the first filesystem round and ignores ru
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -74,34 +74,34 @@ test("dotagent playbook init scaffolds the first filesystem round and ignores ru
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.equal(
-    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "findings_ledger.md")),
+    existsSync(path.join(root, ".dcr", "default_ability_alignment", "findings_ledger.md")),
     true
   );
   assert.equal(
-    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "00_round_context.md")),
+    existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "00_round_context.md")),
     true
   );
   assert.equal(
-    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "lead", "30_round_results.md")),
+    existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "lead", "30_round_results.md")),
     true
   );
   assert.equal(
-    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "reviewers")),
+    existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "reviewers")),
     true
   );
   assert.equal(
-    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "verification")),
+    existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "verification")),
     true
   );
   assert.equal(
-    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "reviewers", "reviewer_template.md")),
+    existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "reviewers", "reviewer_template.md")),
     false
   );
   assert.equal(
-    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "verification", "batch_template.md")),
+    existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "verification", "batch_template.md")),
     false
   );
-  assert.match(readFileSync(path.join(root, ".gitignore"), "utf8"), /\.ecrr\//);
+  assert.match(readFileSync(path.join(root, ".gitignore"), "utf8"), /\.dcr\//);
   assert.match(stdout.buffer, /Playbook initialization complete/);
   assert.match(stdout.buffer, /created_directories: 3/);
   assert.match(stdout.buffer, /created_files: 7/);
@@ -120,7 +120,7 @@ test("dotagent playbook init preserves divergent task and round files on rerun",
   assert.equal(exitCode, 0);
 
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout: new MemoryWritable(),
@@ -128,15 +128,15 @@ test("dotagent playbook init preserves divergent task and round files on rerun",
   });
   assert.equal(exitCode, 0);
 
-  const contextPath = path.join(root, ".ecrr", "default_ability_alignment", "round_001", "00_round_context.md");
-  const ledgerPath = path.join(root, ".ecrr", "default_ability_alignment", "findings_ledger.md");
+  const contextPath = path.join(root, ".dcr", "default_ability_alignment", "round_001", "00_round_context.md");
+  const ledgerPath = path.join(root, ".dcr", "default_ability_alignment", "findings_ledger.md");
   writeFileSync(contextPath, "local round context\n", "utf8");
   writeFileSync(ledgerPath, "local findings ledger\n", "utf8");
 
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -163,7 +163,7 @@ test("dotagent playbook init recreates missing empty template directories on rer
   assert.equal(exitCode, 0);
 
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout: new MemoryWritable(),
@@ -171,13 +171,13 @@ test("dotagent playbook init recreates missing empty template directories on rer
   });
   assert.equal(exitCode, 0);
 
-  const reviewersPath = path.join(root, ".ecrr", "default_ability_alignment", "round_001", "reviewers");
+  const reviewersPath = path.join(root, ".dcr", "default_ability_alignment", "round_001", "reviewers");
   rmSync(reviewersPath, { recursive: true, force: true });
 
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -203,10 +203,10 @@ test("dotagent playbook init rejects traversal-capable installed playbook contra
   assert.equal(exitCode, 0);
 
   writeFileSync(
-    path.join(root, ".agent", "playbooks", "the-extreme-cr-rig", "playbook.json"),
+    path.join(root, ".agent", "playbooks", "deep-code-review", "playbook.json"),
     `${JSON.stringify(
       {
-        name: "the-extreme-cr-rig",
+        name: "deep-code-review",
         version: "0.1.0",
         runtimeRoot: "../outside",
         templateDir: "template",
@@ -222,7 +222,7 @@ test("dotagent playbook init rejects traversal-capable installed playbook contra
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -274,14 +274,14 @@ test("dotagent playbook init rejects symlinked template roots", async () => {
 
   mkdirSync(path.join(outside, "lead"), { recursive: true });
   writeFileSync(path.join(outside, "00_round_context.md"), "outside round context\n", "utf8");
-  const templateRoot = path.join(root, ".agent", "playbooks", "the-extreme-cr-rig", "template", "round_template");
+  const templateRoot = path.join(root, ".agent", "playbooks", "deep-code-review", "template", "round_template");
   rmSync(templateRoot, { recursive: true, force: true });
   symlinkSync(outside, templateRoot, "junction");
 
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -290,7 +290,7 @@ test("dotagent playbook init rejects symlinked template roots", async () => {
 
   assert.equal(exitCode, 1);
   assert.match(stderr.buffer, /symlinked root|symlinked path component/i);
-  assert.equal(existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "00_round_context.md")), false);
+  assert.equal(existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "00_round_context.md")), false);
 });
 
 test("dotagent playbook init rejects symlinked template subdirectories", async () => {
@@ -312,7 +312,7 @@ test("dotagent playbook init rejects symlinked template subdirectories", async (
     root,
     ".agent",
     "playbooks",
-    "the-extreme-cr-rig",
+    "deep-code-review",
     "template",
     "round_template",
     "lead"
@@ -323,7 +323,7 @@ test("dotagent playbook init rejects symlinked template subdirectories", async (
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -333,7 +333,7 @@ test("dotagent playbook init rejects symlinked template subdirectories", async (
   assert.equal(exitCode, 1);
   assert.match(stderr.buffer, /symlinked path component/i);
   assert.equal(
-    existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "lead", "20_reviewer_feedback.md")),
+    existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "lead", "20_reviewer_feedback.md")),
     false
   );
 });
@@ -357,13 +357,13 @@ test("dotagent playbook init rejects symlinked installed playbook roots", async 
     path.join(outside, "playbook.json"),
     `${JSON.stringify(
       {
-        name: "the-extreme-cr-rig",
+        name: "deep-code-review",
         version: "0.1.0",
-        runtimeRoot: ".ecrr",
+        runtimeRoot: ".dcr",
         templateDir: "template",
         taskScoped: true,
         initialRound: "round_001",
-        gitignoreEntry: ".ecrr/"
+        gitignoreEntry: ".dcr/"
       },
       null,
       2
@@ -372,14 +372,14 @@ test("dotagent playbook init rejects symlinked installed playbook roots", async 
   );
   writeFileSync(path.join(outside, "template", "round_template", "00_round_context.md"), "outside context\n", "utf8");
 
-  const installedPlaybookRoot = path.join(root, ".agent", "playbooks", "the-extreme-cr-rig");
+  const installedPlaybookRoot = path.join(root, ".agent", "playbooks", "deep-code-review");
   rmSync(installedPlaybookRoot, { recursive: true, force: true });
   symlinkSync(outside, installedPlaybookRoot, "junction");
 
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -388,7 +388,7 @@ test("dotagent playbook init rejects symlinked installed playbook roots", async 
 
   assert.equal(exitCode, 6);
   assert.match(stderr.buffer, /symlinked path component/i);
-  assert.equal(existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "00_round_context.md")), false);
+  assert.equal(existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "00_round_context.md")), false);
 });
 
 test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
@@ -404,21 +404,21 @@ test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
   });
   assert.equal(exitCode, 0);
 
-  mkdirSync(path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "template", "round_template"), {
+  mkdirSync(path.join(outsideProject, ".agent", "playbooks", "deep-code-review", "template", "round_template"), {
     recursive: true
   });
-  writeFileSync(path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "PLAYBOOK.md"), "# Outside\n", "utf8");
+  writeFileSync(path.join(outsideProject, ".agent", "playbooks", "deep-code-review", "PLAYBOOK.md"), "# Outside\n", "utf8");
   writeFileSync(
-    path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "playbook.json"),
+    path.join(outsideProject, ".agent", "playbooks", "deep-code-review", "playbook.json"),
     `${JSON.stringify(
       {
-        name: "the-extreme-cr-rig",
+        name: "deep-code-review",
         version: "0.1.0",
-        runtimeRoot: ".ecrr",
+        runtimeRoot: ".dcr",
         templateDir: "template",
         taskScoped: true,
         initialRound: "round_001",
-        gitignoreEntry: ".ecrr/"
+        gitignoreEntry: ".dcr/"
       },
       null,
       2
@@ -426,7 +426,7 @@ test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
     "utf8"
   );
   writeFileSync(
-    path.join(outsideProject, ".agent", "playbooks", "the-extreme-cr-rig", "template", "round_template", "00_round_context.md"),
+    path.join(outsideProject, ".agent", "playbooks", "deep-code-review", "template", "round_template", "00_round_context.md"),
     "outside context\n",
     "utf8"
   );
@@ -437,7 +437,7 @@ test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--yes"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -446,7 +446,7 @@ test("dotagent playbook init rejects symlinked .agent ancestors", async () => {
 
   assert.equal(exitCode, 6);
   assert.match(stderr.buffer, /symlinked root|symlinked path component/i);
-  assert.equal(existsSync(path.join(root, ".ecrr", "default_ability_alignment", "round_001", "00_round_context.md")), false);
+  assert.equal(existsSync(path.join(root, ".dcr", "default_ability_alignment", "round_001", "00_round_context.md")), false);
 });
 
 test("dotagent playbook init --verbose reports individual template file actions", async () => {
@@ -464,7 +464,7 @@ test("dotagent playbook init --verbose reports individual template file actions"
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
   exitCode = await runCli({
-    argv: ["playbook", "init", "the-extreme-cr-rig", "--cwd", root, "--task", "default_ability_alignment", "--dry-run", "--verbose"],
+    argv: ["playbook", "init", "deep-code-review", "--cwd", root, "--task", "default_ability_alignment", "--dry-run", "--verbose"],
     cwd: process.cwd(),
     stdin: Readable.from([]),
     stdout,
@@ -474,7 +474,7 @@ test("dotagent playbook init --verbose reports individual template file actions"
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.match(stdout.buffer, /template_directory_actions:/);
-  assert.match(stdout.buffer, /- create: \.ecrr\/default_ability_alignment\/round_001\/reviewers/);
+  assert.match(stdout.buffer, /- create: \.dcr\/default_ability_alignment\/round_001\/reviewers/);
   assert.match(stdout.buffer, /template_file_actions:/);
-  assert.match(stdout.buffer, /- create: \.ecrr\/default_ability_alignment\/round_001\/00_round_context\.md/);
+  assert.match(stdout.buffer, /- create: \.dcr\/default_ability_alignment\/round_001\/00_round_context\.md/);
 });

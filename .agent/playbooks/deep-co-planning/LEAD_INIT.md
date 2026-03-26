@@ -31,7 +31,7 @@ You are responsible for:
 Use the CLI to initialize the runtime:
 
 ```text
-dotagent playbook init the-deep-co-planning --task <task_name>
+dotagent playbook init deep-co-planning --task <task_name>
 ```
 
 Do not manually scaffold the planning filesystem unless you are explicitly handling a fallback case.

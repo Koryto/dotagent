@@ -1,6 +1,6 @@
 # Start Here
 
-Entry point for `the-deep-co-planning`.
+Entry point for `deep-co-planning`.
 
 ## Read In This Order
 

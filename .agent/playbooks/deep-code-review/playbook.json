@@ -1,9 +1,9 @@
 {
-  "name": "the-deep-co-planning",
+  "name": "deep-code-review",
   "version": "0.1.0",
-  "runtimeRoot": ".dcp",
+  "runtimeRoot": ".dcr",
   "templateDir": "template",
-  "gitignoreEntry": ".dcp/",
+  "gitignoreEntry": ".dcr/",
   "taskScoped": true,
   "initialRound": "round_001"
 }

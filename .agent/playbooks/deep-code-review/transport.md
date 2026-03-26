@@ -3,7 +3,7 @@
 
 ## Purpose
 
-Define the intended runtime model for `the-extreme-cr-rig`.
+Define the intended runtime model for `deep-code-review`.
 
 This playbook runs through the local filesystem. The CLI scaffolds the runtime. Markdown artifacts remain the review contract.
 
@@ -23,7 +23,7 @@ Each review round uses a dedicated workspace directory.
 Expected structure:
 
 ```text
-<repo>/.ecrr/<task_name>/
+<repo>/.dcr/<task_name>/
 |-- findings_ledger.md
 `-- round_001/
     |-- 00_round_context.md
@@ -60,18 +60,18 @@ Expected structure:
   - current disposition of previously accepted findings
 
 - `README.md`
-  - canonical live round packet
-  - exact instructions for the active round
+  - entry point for the active round
+  - points reviewers and the lead to the full round contract
 
 - `reviewers/reviewer_<name>.md`
-  - one Wingman's findings
+  - one reviewer's findings
   - created or assigned once the roster is known
   - confirms review basis against current file state
   - includes follow-up on prior findings when applicable
 
 - `lead/20_reviewer_feedback.md`
   - reviewer-facing carry-forward artifact
-  - classification of Wingman findings
+  - classification of reviewer findings
   - stale/rejected/deferred guidance for future rounds
 
 - `lead/30_round_results.md`
@@ -104,12 +104,12 @@ Future round creation remains human-gated.
 
 ## Runtime Rules
 
-- one reviewer file per Wingman
+- one reviewer file per reviewer
 - no hidden state outside the runtime artifacts
 - the round should not start until required files are populated
 - reviewer files are outputs, not required pre-existing scaffold files
-- reviewer-facing and human-facing Stinson outputs serve different audiences and should stay distinct
+- reviewer-facing and human-facing lead outputs serve different audiences and should stay distinct
 - verification must be written down, not assumed
 - completed rounds should remain readable for later reference
-- Wingmen should have explicit access to prior round feedback before starting the next round
+- reviewers should have explicit access to prior round feedback before starting the next round
 - reviewers stop if the requested next round does not exist; they do not infer it

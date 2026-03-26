@@ -1,6 +1,6 @@
-# the-deep-co-planning
+# Deep Co-Planning
 
-`the-deep-co-planning` is an experimental playbook package for phase-level design work that benefits from structured reviewer pressure.
+`deep-co-planning` is an experimental playbook package for phase-level design work that benefits from structured reviewer pressure.
 
 It packages a lead-centric multi-agent planning procedure that starts from a human-led HLD and yields one or more implementation-driving specs.
 

@@ -15,9 +15,9 @@ Use:
 - deferred
 - non-actionable
 
-## Missing Wingman Submissions
+## Missing Reviewer Submissions
 
-- expected_wingmen:
+- expected_reviewers:
 - missing_wingmen:
 - human_accepted_partial_round: yes/no
 

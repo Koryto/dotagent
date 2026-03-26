@@ -1,14 +1,12 @@
-# Round Packet
+# Round Context
 
-This file is the canonical live handoff for the active round.
-
-Reviewers should start here after reading the relevant role-init file.
+Use this file as the full round contract for the active review round.
 
 ## Round Identity
 
 - task_name:
 - round_id:
-- review_mode: full/fix-pass
+- review_mode: standard / quick
 - reviewed_state:
 - prior_reviewed_state:
 - diff_reference:
@@ -20,24 +18,12 @@ Reviewers should start here after reading the relevant role-init file.
 - focus_areas:
 - out_of_scope:
 
-## Read Order
-
-1. `../findings_ledger.md`
-2. `00_round_context.md`
-3. `10_previous_round_feedback.md` when this is not the first round
-
-If `10_previous_round_feedback.md` references prior round artifacts, read those before writing findings.
-
 ## Reviewer Roster
 
-- stinson:
-- expected_wingmen:
+- lead:
+- expected_reviewers:
 - reviewer_suffixes:
 - reviewer_output_paths:
-
-Reviewer output files are write targets for this round.
-
-Do not assume they already exist before review starts.
 
 ## Merge Criteria
 
@@ -59,6 +45,24 @@ Do not assume they already exist before review starts.
 - accepted_finding_ids_to_verify:
 - deferred_finding_ids_with_accepted_reason:
 - rejected_or_stale_finding_ids_not_to_repeat_without_new_evidence:
+
+## Change Under Review
+
+- summary:
+- relevant_paths:
+- change_risks:
+
+## Relevant Project Context
+
+- project_rules:
+- relevant_specs:
+- relevant_systems:
+
+## Review Notes
+
+- hotspots:
+- architectural_concerns:
+- verification_notes:
 
 ## Missing-Artifact Policy
 
