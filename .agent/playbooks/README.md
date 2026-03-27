@@ -67,20 +67,6 @@ Use a playbook when:
 - multiple roles or participants may exist
 - the procedure needs templates, runtime scaffolding, or supporting standards
 
-## Namespace Conventions
-
-Playbook packages should use a shared namespace language.
-
-Current intended conventions:
-
-- package naming: `the-<playbook-name>`
-- each playbook defines its own role language
-- each playbook defines its own artifact model
-
-These conventions belong to the playbook layer only.
-
-They should not leak into `dotagent` core files.
-
 ## Design Direction
 
 This namespace should stay:
@@ -91,7 +77,7 @@ This namespace should stay:
 
 It should be able to host very different playbooks over time, for example:
 
-- extreme code review
+- deep code review
 - deep co-planning
 - release orchestration
 - migration flows
