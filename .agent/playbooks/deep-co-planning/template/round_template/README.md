@@ -7,7 +7,7 @@ This file is the entry point for the active planning round.
 1. `00_round_context.md`
 2. `../HLD.md`
 3. `../specs/README.md`
-4. any active spec files named in `00_round_context.md`
+4. any active spec files named there
 5. `10_previous_round_feedback.md` when this is not the first round
 
 ## Write Targets
