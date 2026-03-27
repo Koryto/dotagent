@@ -33,4 +33,10 @@ Use `00_round_context.md` as the full round contract.
 
 - if this requested round does not exist, stop and wait
 - do not infer missing round state from chat or git history
+- do not start until the active round packet is populated
+
+## Missing-Artifact Policy
+
+- if this requested round does not exist, stop and wait
+- do not infer missing round state from chat or git history
 - do not start until the packet fields above are filled

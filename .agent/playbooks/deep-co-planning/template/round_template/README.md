@@ -23,3 +23,9 @@ This file is the entry point for the active planning round.
 - `60_round_verdict.md`
 
 Use `00_round_context.md` as the full round contract.
+
+## Missing-Artifact Policy
+
+- if this requested round does not exist, stop and wait
+- do not infer missing planning state from chat or git history
+- do not start until the active round packet is populated

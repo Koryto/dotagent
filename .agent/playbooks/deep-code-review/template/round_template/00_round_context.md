@@ -64,8 +64,3 @@ Use this file as the full round contract for the active review round.
 - architectural_concerns:
 - verification_notes:
 
-## Missing-Artifact Policy
-
-- if this requested round does not exist, stop and wait
-- do not infer missing round state from chat or git history
-- do not start until the packet fields above are filled

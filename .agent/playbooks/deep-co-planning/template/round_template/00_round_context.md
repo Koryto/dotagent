@@ -29,8 +29,3 @@
 3. any active spec files named in this round
 4. `10_previous_round_feedback.md` when this is not the first round
 
-## Missing-Artifact Policy
-
-- if the requested round does not exist, stop and wait
-- do not infer missing planning state from chat or git history
-- do not start until the packet fields above are filled
