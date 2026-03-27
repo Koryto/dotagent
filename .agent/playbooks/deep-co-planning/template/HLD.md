@@ -1,5 +1,9 @@
 # HLD
 
+Use this file to capture the result of the discussion, not to replace the discussion itself.
+
+The lead should first understand the planning target with the human, then shape that into this structure.
+
 ## Objective
 
 - What implementation phase is this HLD trying to define?
