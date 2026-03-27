@@ -63,4 +63,3 @@ Use this file as the full round contract for the active review round.
 - hotspots:
 - architectural_concerns:
 - verification_notes:
-
