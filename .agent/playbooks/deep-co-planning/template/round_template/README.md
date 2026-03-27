@@ -2,18 +2,13 @@
 
 This file is the entry point for the active planning round.
 
-## Round Identity
-
-- task_name:
-- round_id:
-- round_focus: hld-review / spec-review
-- approval_target:
-- round_status:
-
 ## Read Order
 
 1. `00_round_context.md`
-2. any additional artifacts named there
+2. `../HLD.md`
+3. `../specs/README.md`
+4. any active spec files named in `00_round_context.md`
+5. `10_previous_round_feedback.md` when this is not the first round
 
 ## Write Targets
 

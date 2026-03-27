@@ -18,7 +18,7 @@ Use:
 ## Missing Reviewer Submissions
 
 - expected_reviewers:
-- missing_wingmen:
+- missing_reviewers:
 - human_accepted_partial_round: yes/no
 
 ## Notes
