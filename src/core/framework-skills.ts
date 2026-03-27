@@ -22,15 +22,15 @@ export function listBundledFrameworkSkills(bundledAgentRoot: string): BundledFra
 
   const skillsRoot = path.join(bundledAgentRoot, "skills");
   if (fileExists(skillsRoot)) {
-      collectSkillDirectories(skillsRoot, (skillName, skillPath) => {
-        assertSkillFileExists(skillPath);
-        pushUniqueSkill(results, seenSkillNames, {
-          skillName,
-          bundledRelativePath: `skills/${skillName}/SKILL.md`,
-          sourcePath: `.agent/skills/${skillName}/SKILL.md`,
-          invocationArgs: readSkillInvocationArgs(skillPath)
-        });
+    collectSkillDirectories(skillsRoot, (skillName, skillPath) => {
+      const skillContent = readBundledSkillContent(skillPath);
+      pushUniqueSkill(results, seenSkillNames, {
+        skillName,
+        bundledRelativePath: `skills/${skillName}/SKILL.md`,
+        sourcePath: `.agent/skills/${skillName}/SKILL.md`,
+        invocationArgs: readSkillInvocationArgs(skillContent, skillPath)
       });
+    });
   }
 
   const playbooksRoot = path.join(bundledAgentRoot, "playbooks");
@@ -46,12 +46,12 @@ export function listBundledFrameworkSkills(bundledAgentRoot: string): BundledFra
       }
 
       collectSkillDirectories(playbookSkillsRoot, (skillName, skillPath) => {
-        assertSkillFileExists(skillPath);
+        const skillContent = readBundledSkillContent(skillPath);
         pushUniqueSkill(results, seenSkillNames, {
           skillName,
           bundledRelativePath: `playbooks/${playbookEntry.name}/skills/${skillName}/SKILL.md`,
           sourcePath: `.agent/playbooks/${playbookEntry.name}/skills/${skillName}/SKILL.md`,
-          invocationArgs: readSkillInvocationArgs(skillPath)
+          invocationArgs: readSkillInvocationArgs(skillContent, skillPath)
         });
       });
     }
@@ -89,11 +89,13 @@ function collectSkillDirectories(
   }
 }
 
-function assertSkillFileExists(skillPath: string): void {
+function readBundledSkillContent(skillPath: string): string {
   try {
     if (!statSync(skillPath).isFile()) {
       throw new BundledAssetsError(`Bundled skill is missing SKILL.md: ${skillPath}`);
     }
+
+    return readUtf8File(skillPath);
   } catch (error) {
     if (error instanceof BundledAssetsError) {
       throw error;
@@ -108,8 +110,8 @@ function assertSkillFileExists(skillPath: string): void {
   }
 }
 
-function readSkillInvocationArgs(skillPath: string): FrameworkSkillInvocationArg[] {
-  const frontmatter = extractFrontmatter(readUtf8File(skillPath));
+function readSkillInvocationArgs(skillContent: string, skillPath: string): FrameworkSkillInvocationArg[] {
+  const frontmatter = extractFrontmatter(skillContent);
   if (!frontmatter) {
     return [];
   }

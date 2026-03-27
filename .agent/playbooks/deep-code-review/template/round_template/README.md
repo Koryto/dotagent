@@ -2,16 +2,6 @@
 
 This file is the entry point for the active review round.
 
-## Round Identity
-
-- task_name:
-- round_id:
-- review_mode: standard / quick
-- reviewed_state:
-- prior_reviewed_state:
-- diff_reference:
-- round_status:
-
 ## Read Order
 
 1. `../findings_ledger.md`
@@ -34,9 +24,3 @@ Use `00_round_context.md` as the full round contract.
 - if this requested round does not exist, stop and wait
 - do not infer missing round state from chat or git history
 - do not start until the active round packet is populated
-
-## Missing-Artifact Policy
-
-- if this requested round does not exist, stop and wait
-- do not infer missing round state from chat or git history
-- do not start until the packet fields above are filled

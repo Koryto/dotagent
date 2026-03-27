@@ -1,14 +1,10 @@
 import type { SupportedRuntime } from "../core/adapters.js";
+import type { FrameworkSkillInvocationArg } from "../core/framework-skills.js";
 
 export interface FrameworkSkillDescriptor {
   skillName: string;
   sourcePath: string;
   invocationArgs: readonly FrameworkSkillInvocationArg[];
-}
-
-export interface FrameworkSkillInvocationArg {
-  name: string;
-  required: boolean;
 }
 
 export function renderRuntimeAdapterManifest(
