@@ -157,6 +157,41 @@ test("dotagent doctor reports missing required framework startup files", async (
 
   assert.equal(exitCode, 1);
   assert.equal(stderr.buffer, "");
-  assert.match(stdout.buffer, /missing required framework startup files|Required framework startup file is missing/);
+  assert.match(stdout.buffer, /manual restoration|Required framework startup file is missing/);
   assert.match(stdout.buffer, /\.agent\/state\/session_state\.md/);
 });
+
+test("dotagent doctor resolves the project root from nested directories in initialized projects", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-doctor-nested-root-"));
+  const nested = path.join(root, "src", "nested");
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  await import("node:fs").then(({ mkdirSync }) => mkdirSync(nested, { recursive: true }));
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["doctor", "--cwd", nested],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, new RegExp(`project_root: ${escapeRegExp(root)}`));
+  assert.match(stdout.buffer, /framework_present: true/);
+});
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}

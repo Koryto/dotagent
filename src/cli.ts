@@ -1,4 +1,3 @@
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import type { Readable, Writable } from "node:stream";
 
@@ -7,9 +6,10 @@ import { handleInit } from "./commands/init.js";
 import { handlePlaybookInit } from "./commands/playbook/init.js";
 import { handlePlaybookList } from "./commands/playbook/list.js";
 import { handleUpdate } from "./commands/update.js";
-import { detectProjectState, resolveProjectRoot } from "./core/project.js";
+import { detectProjectState, resolveExistingProjectRoot, resolveProjectRoot } from "./core/project.js";
 import { normalizePlaybookIdentifier } from "./core/playbooks.js";
 import { resolveBundledAgentRoot, resolvePackageRoot } from "./core/paths.js";
+import { readUtf8File } from "./core/files.js";
 import type { CliCommand, CliContext, CommandFlags, ParsedCommand } from "./models/command.js";
 import { CliUsageError, DotagentError, NotImplementedCliError, toExitCode } from "./utils/errors.js";
 import { createLogger } from "./utils/logger.js";
@@ -38,7 +38,10 @@ export async function runCli(input: RunCliInput): Promise<number> {
       return 0;
     }
 
-    const projectRoot = resolveProjectRoot(parsed.flags.cwd ?? input.cwd);
+    const requestedProjectRoot = parsed.flags.cwd ?? input.cwd;
+    const projectRoot = parsed.kind === "init"
+      ? resolveProjectRoot(requestedProjectRoot)
+      : resolveExistingProjectRoot(requestedProjectRoot);
     const bundledAgentRoot = resolveBundledAgentRoot(packageRoot);
     const projectState = detectProjectState(projectRoot);
 
@@ -272,7 +275,7 @@ function mergeRuntimes(existing: string[] | undefined, value: string): string[] 
 
 function readPackageVersion(packageRoot: string): string {
   const packageJsonPath = path.join(packageRoot, "package.json");
-  const parsed = JSON.parse(readFileSync(packageJsonPath, "utf8")) as { version?: unknown };
+  const parsed = JSON.parse(readUtf8File(packageJsonPath)) as { version?: unknown };
 
   if (typeof parsed.version !== "string" || parsed.version.length === 0) {
     throw new DotagentError(`Package version is missing from ${packageJsonPath}.`);

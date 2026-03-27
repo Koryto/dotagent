@@ -11,6 +11,9 @@
 
 - reviewed_state:
 - live_files_verified: yes/no
+- validation_mode: executed / partial / static-only
+- validation_limitations:
+- substitute_evidence_used:
 - notes:
 
 ## Follow-Up On Prior Findings
