@@ -8,6 +8,24 @@ export function resolveProjectRoot(startDirectory: string): string {
   return path.resolve(startDirectory);
 }
 
+export function resolveExistingProjectRoot(startDirectory: string): string {
+  const requestedRoot = path.resolve(startDirectory);
+  let current = requestedRoot;
+
+  while (true) {
+    if (existsSync(resolveDotagentRoot(current)) || existsSync(resolveManifestPath(current))) {
+      return current;
+    }
+
+    const parent = path.dirname(current);
+    if (parent === current) {
+      return requestedRoot;
+    }
+
+    current = parent;
+  }
+}
+
 export function detectProjectState(projectRoot: string): ProjectState {
   return {
     hasFramework: existsSync(resolveDotagentRoot(projectRoot)),

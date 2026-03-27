@@ -478,3 +478,34 @@ test("dotagent playbook init --verbose reports individual template file actions"
   assert.match(stdout.buffer, /template_file_actions:/);
   assert.match(stdout.buffer, /- create: \.dcr\/default_ability_alignment\/round_001\/00_round_context\.md/);
 });
+
+test("dotagent playbook init resolves the project root from nested directories", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbook-init-nested-root-"));
+  const nested = path.join(root, "packages", "cli");
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  mkdirSync(nested, { recursive: true });
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["playbook", "init", "deep-code-review", "--cwd", nested, "--task", "nested_review", "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.equal(existsSync(path.join(root, ".dcr", "nested_review", "round_001", "00_round_context.md")), true);
+  assert.equal(existsSync(path.join(nested, ".dcr")), false);
+});

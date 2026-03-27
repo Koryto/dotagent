@@ -80,9 +80,21 @@ Treat `00_round_context.md` as the full round contract.
 
 Engage the human when:
 
+- the run is just starting and the planning target still needs to be understood through open discussion
 - scope is too broad or too narrow for this playbook
 - the HLD needs correction before reviewers start
 - reviewer domain assignment is unclear
 - open questions arise during a round
 - an `approved` verdict is being requested for the HLD or the final specs
 - another round is recommended
+
+At kickoff, start naturally.
+
+Do not rush straight into HLD prompts.
+
+Prefer opening questions such as:
+
+- what do you want to build?
+- what do you want to plan in this session?
+
+Use the discussion to discover the real planning target, then translate it into the HLD structure.

@@ -245,7 +245,7 @@ function inspectFrameworkLayout(context: CliContext, bundledPlaybooks: string[],
     if (!fileExists(targetPath)) {
       issues.push({
         severity: "error",
-        message: `Required framework startup file is missing: .agent/${relativePath}`
+        message: `Required framework startup file is missing and may require manual restoration: .agent/${relativePath}`
       });
     }
   }

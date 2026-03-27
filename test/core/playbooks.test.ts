@@ -7,11 +7,25 @@ import path from "node:path";
 import { listBundledPlaybooks, loadInstalledPlaybookContract } from "../../src/core/playbooks.js";
 import { BundledAssetsError, PlaybookContractError } from "../../src/utils/errors.js";
 
-test("listBundledPlaybooks returns bundled playbooks with PLAYBOOK.md", () => {
+test("listBundledPlaybooks returns bundled playbooks with PLAYBOOK.md and playbook.json", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbooks-"));
   const playbooksRoot = path.join(root, "playbooks", "the-test-playbook");
   mkdirSync(playbooksRoot, { recursive: true });
   writeFileSync(path.join(playbooksRoot, "PLAYBOOK.md"), "# Test\n", "utf8");
+  writeFileSync(
+    path.join(playbooksRoot, "playbook.json"),
+    `${JSON.stringify(
+      {
+        name: "the-test-playbook",
+        version: "0.1.0",
+        runtimeRoot: ".dcr",
+        templateDir: "template"
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
 
   const playbooks = listBundledPlaybooks(root);
 
@@ -28,6 +42,25 @@ test("listBundledPlaybooks throws when the bundled playbooks directory is missin
 test("listBundledPlaybooks throws when a bundled playbook is missing PLAYBOOK.md", () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbooks-invalid-"));
   mkdirSync(path.join(root, "playbooks", "the-test-playbook"), { recursive: true });
+
+  assert.throws(() => listBundledPlaybooks(root), BundledAssetsError);
+});
+
+test("listBundledPlaybooks throws when a bundled playbook is missing playbook.json", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbooks-missing-contract-"));
+  const playbookRoot = path.join(root, "playbooks", "the-test-playbook");
+  mkdirSync(playbookRoot, { recursive: true });
+  writeFileSync(path.join(playbookRoot, "PLAYBOOK.md"), "# Test\n", "utf8");
+
+  assert.throws(() => listBundledPlaybooks(root), BundledAssetsError);
+});
+
+test("listBundledPlaybooks throws when a bundled playbook contract is invalid", () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-playbooks-invalid-contract-"));
+  const playbookRoot = path.join(root, "playbooks", "the-test-playbook");
+  mkdirSync(playbookRoot, { recursive: true });
+  writeFileSync(path.join(playbookRoot, "PLAYBOOK.md"), "# Test\n", "utf8");
+  writeFileSync(path.join(playbookRoot, "playbook.json"), "{ invalid json\n", "utf8");
 
   assert.throws(() => listBundledPlaybooks(root), BundledAssetsError);
 });

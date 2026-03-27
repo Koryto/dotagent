@@ -79,32 +79,37 @@ Reviewers write their own output files only.
    - assign reviewer domains when useful
    - confirm this work is broad enough to justify Deep Co-Planning
 
-2. **HLD drafting**
-   - the lead and human prepare the HLD together through discussion
+2. **Discussion**
+   - the lead starts with open discussion before hardening the planning target into HLD structure
+   - the goal is to understand the real planning target before the first HLD draft
+   - if the work is obviously too narrow, the lead should recommend the normal standard workflow instead
+
+3. **HLD drafting**
+   - the lead and human turn the discussion into a concrete HLD together
    - this HLD becomes the baseline artifact for the first review round
    - if the work is obviously too narrow, the lead should recommend the normal standard workflow instead
 
-3. **HLD review round(s)**
+4. **HLD review round(s)**
    - reviewers independently critique the HLD
    - the lead synthesizes reviewer pressure
    - broad or under-scoped HLDs must be called out explicitly
    - open questions must be surfaced to the human before the round closes
 
-4. **HLD approval gate**
+5. **HLD approval gate**
    - the human marks the HLD round `approved` to use it as the baseline for spec derivation
    - the lead may recommend decomposition if the HLD is too broad, but the human decides whether to proceed
 
-5. **Spec derivation**
+6. **Spec derivation**
    - the lead derives one or more specs from the approved HLD
    - a well-contained HLD should usually yield one spec
    - a broader HLD may legitimately yield a spec set
 
-6. **Spec review round(s)**
+7. **Spec review round(s)**
    - reviewers independently challenge the derived spec artifact set
    - focus on decomposition quality, sequencing, technical feasibility, missing interfaces, risks, and verification expectations
    - open questions must again be surfaced to the human before the round closes
 
-7. **Spec approval gate**
+8. **Spec approval gate**
    - the human marks the final spec or spec set `approved`
    - anything unresolved at this point must be recorded as a known unknown, not left as a hidden open question
 

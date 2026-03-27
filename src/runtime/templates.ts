@@ -173,6 +173,8 @@ function renderRuntimeBridgeFrontmatter(
         "  - Read",
         "  - Write",
         "  - Bash",
+        "  - Grep",
+        "  - Glob",
         "---"
       ]);
     case "opencode":
@@ -184,6 +186,8 @@ function renderRuntimeBridgeFrontmatter(
         "  read: true",
         "  write: true",
         "  bash: true",
+        "  grep: true",
+        "  glob: true",
         "---"
       ]);
     case "copilot":
@@ -192,7 +196,7 @@ function renderRuntimeBridgeFrontmatter(
         `name: ${yamlString(`dotagent-${name}`)}`,
         `description: ${yamlString(description)}`,
         argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
-        "allowed-tools: Read, Write, Bash",
+        "allowed-tools: Read, Write, Bash, Grep, Glob",
         "---"
       ]);
     default:
