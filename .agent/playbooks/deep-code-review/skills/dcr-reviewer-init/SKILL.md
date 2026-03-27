@@ -2,6 +2,7 @@
 name: "dcr-reviewer-init"
 description: "Join Deep Code Review as a reviewer for an active review run."
 invocation-args:
+  task_name: required
   suffix: required
   domain: optional
 ---
@@ -10,7 +11,7 @@ invocation-args:
 
 Do not start this reviewer role implicitly.
 
-Bind reviewer identity to an explicit `suffix` at invocation time.
+Bind the reviewer run to an explicit `task_name` and `suffix` at invocation time.
 
 Add `domain` when the human or lead assigns one.
 
@@ -35,6 +36,7 @@ If this is not the first round, also read the prior round outputs referenced in 
 
 Before writing findings, know:
 
+- the active task name
 - your role in the roster
 - your reviewer suffix / filename
 - the exact round directory you are reviewing from
