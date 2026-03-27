@@ -23,7 +23,7 @@ A playbook is intended to package:
 
 - an operational procedure
 - the supporting standards and references it needs
-- any role-specific entrypoints
+- any role-specific entry skills
 - any runtime templates or scaffolds
 
 The goal is to make complex procedures reusable without bloating `dotagent` core.
@@ -74,10 +74,8 @@ Playbook packages should use a shared namespace language.
 Current intended conventions:
 
 - package naming: `the-<playbook-name>`
-- primary orchestrator role: `Stinson`
-- supporting participants: `Wingman 1`, `Wingman 2`, and so on
-- PLAYBOOK.md file that define the active playbook flow should end with:
-  - `AND IT. IS. ON.`
+- each playbook defines its own role language
+- each playbook defines its own artifact model
 
 These conventions belong to the playbook layer only.
 
@@ -94,6 +92,7 @@ This namespace should stay:
 It should be able to host very different playbooks over time, for example:
 
 - extreme code review
+- deep co-planning
 - release orchestration
 - migration flows
 - multi-phase implementation procedures

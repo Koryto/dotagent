@@ -4,9 +4,9 @@ Use this file as the cumulative findings memory for the task.
 
 Each finding should keep a stable id across rounds.
 
-Only Stinson updates this file.
+Only Lead updates this file.
 
-Wingmen do not create, renumber, or remap finding ids here.
+Reviewers do not create, renumber, or remap finding ids here.
 
 ## Ledger
 

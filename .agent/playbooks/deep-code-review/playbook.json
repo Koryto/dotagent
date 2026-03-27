@@ -1,9 +1,9 @@
 {
-  "name": "the-extreme-cr-rig",
+  "name": "deep-code-review",
   "version": "0.1.0",
-  "runtimeRoot": ".ecrr",
+  "runtimeRoot": ".dcr",
   "templateDir": "template",
-  "gitignoreEntry": ".ecrr/",
+  "gitignoreEntry": ".dcr/",
   "taskScoped": true,
   "initialRound": "round_001"
 }

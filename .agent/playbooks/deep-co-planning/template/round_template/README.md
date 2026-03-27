@@ -1,0 +1,26 @@
+# Round Packet
+
+This file is the entry point for the active planning round.
+
+## Read Order
+
+1. `00_round_context.md`
+2. `../HLD.md`
+3. `../specs/README.md`
+4. any active spec files named there
+5. `10_previous_round_feedback.md` when this is not the first round
+
+## Write Targets
+
+- `reviewers/reviewer_<suffix>.md`
+- `lead/20_reviewer_feedback.md`
+- `lead/30_round_results.md`
+- `60_round_verdict.md`
+
+Use `00_round_context.md` as the full round contract.
+
+## Missing-Artifact Policy
+
+- if this requested round does not exist, stop and wait
+- do not infer missing planning state from chat or git history
+- do not start until the active round packet is populated

@@ -1,4 +1,4 @@
-# The Extreme CR Rig
+# Deep Code Review
 <!-- VERSION: 0.4 | STATUS: experimental -->
 
 ## Purpose
@@ -11,7 +11,7 @@ Use this playbook when:
 - the changed path is large, risky, or architecturally important
 - you want findings, synthesis, and merge decisions to remain explicit
 
-This playbook sits above:
+This playbook depends on:
 
 - `.agent/skills/code-review/SKILL.md`
 
@@ -27,16 +27,16 @@ Current operating model:
   - chooses reviewer count
   - owns disputed findings
   - defines merge criteria
-  - decides `merge` or `another_round`
+  - decides `approved` or `another_round`
 
-- **Stinson**
-  - initializes and operates the rig with human guidance
-  - ingests Wingman outputs
+- **Lead**
+  - initializes and operates the review with human guidance
+  - ingests reviewer outputs
   - synthesizes findings
   - coordinates fixes and verification
   - asks the human for approvals and the final verdict
 
-- **Wingman N**
+- **Reviewer N**
   - performs independent review
   - carries earlier findings forward between rounds
   - remains in the rig even after `No findings.`
@@ -50,11 +50,11 @@ Each round starts from:
 - exact review scope
 - exact reviewed state
 - relevant project rules and context
-- expected Wingman roster
+- expected reviewer roster
 - explicit out-of-scope items when relevant
 - human-owned merge criteria when relevant
 
-Wingmen must verify the live file state before writing findings.
+Reviewers must verify the live file state before writing findings.
 
 Diff-only review is not sufficient on its own.
 
@@ -94,22 +94,22 @@ Task-level memory should be maintained in:
 
 - `findings_ledger.md`
 
-Only Stinson updates `findings_ledger.md` and assigns finding ids.
+Only the lead updates `findings_ledger.md` and assigns finding ids.
 
-Wingmen must reference existing ids when the round packet or carry-forward artifacts provide them, but they do not create or remap ids on their own.
+Reviewers must reference existing ids when the round packet or carry-forward artifacts provide them, but they do not create or remap ids on their own.
 
 ## Round Flow
 
 1. **Round start**
-   - Stinson initializes or advances the rig through the CLI when requested by the human.
-   - Wingmen do not begin until the active round packet is ready.
+   - the lead initializes or advances the review through the CLI when requested by the human.
+   - Reviewers do not begin until the active round packet is ready.
 
 2. **Independent review**
-   - Each Wingman reviews using `.agent/skills/code-review/SKILL.md`.
-   - Each Wingman checks prior findings when relevant, avoids repeating rejected points without new evidence, and enters lightweight follow-up mode after `No findings.` instead of dropping from the rig.
+   - each reviewer reviews using `.agent/skills/code-review/SKILL.md`
+   - each reviewer checks prior findings when relevant, avoids repeating rejected points without new evidence, and enters lightweight follow-up mode after `No findings.` instead of dropping from the review
 
-3. **Stinson pass**
-   - Stinson ingests Wingman outputs and performs one synthesis pass.
+3. **Lead pass**
+   - the lead ingests reviewer outputs and performs one synthesis pass
    - Classification should use:
      - `accepted`
      - `duplicate`
@@ -117,14 +117,14 @@ Wingmen must reference existing ids when the round packet or carry-forward artif
      - `rejected`
      - `deferred`
      - `non-actionable`
-   - Stinson produces:
+   - the lead produces:
      - one reviewer-facing artifact
      - one human-facing round-results artifact
-   - Stinson updates `findings_ledger.md` with stable ids and current disposition.
+   - the lead updates `findings_ledger.md` with stable ids and current disposition
 
 4. **Human review**
-   - The human reviews the round results and execution plan.
-   - The human may approve them, reject them, or override disputed Stinson judgment.
+   - the human reviews the round results and execution plan
+   - the human may mark the round `approved`, request `another_round`, or override disputed lead judgment
 
 5. **Fix and verification**
    - Accepted work is implemented and verified in small enough batches to isolate regressions.
@@ -136,7 +136,7 @@ Wingmen must reference existing ids when the round packet or carry-forward artif
 7. **Human verdict**
    - Every finished round is closed.
    - The only human verdicts are:
-     - `merge`
+     - `approved`
      - `another_round`
 
 ## Runtime
@@ -151,17 +151,16 @@ The concrete runtime template lives under:
 
 ## Rules
 
-- Stinson is the only synthesis authority
-- Wingmen are signal producers, not coordinators
+- the lead is the only synthesis authority
+- Reviewers are signal producers, not coordinators
 - the human owns disputed findings, merge criteria, and the final verdict
 - fixes should be batched, not collapsed into one giant remediation pass
-- Wingmen must consume prior round feedback before another round
+- Reviewers must consume prior round feedback before another round
 - repeated findings must be justified as still-open or newly evidenced, not restated blindly
-- only Stinson assigns, updates, or remaps finding ids in shared artifacts
+- only the lead assigns, updates, or remaps finding ids in shared artifacts
 - non-initial rounds should not start without carry-forward artifacts
-- a missing Wingman submission must be made explicit by Stinson before the round proceeds
-- a round may proceed with partial Wingman submissions only if Stinson records that fact and the human accepts it
+- a missing reviewer submission must be made explicit by the lead before the round proceeds
+- a round may proceed with partial reviewer submissions only if the lead records that fact and the human accepts it
 - verification should be written into artifacts, not left only in chat
 - next-round creation is human-gated, not automatic
-
-## AND IT. IS. ON.
+- when the human asks for `another_round`, the lead creates the next round, carries forward the required artifacts, and waits until the new packet is ready before reviewers begin

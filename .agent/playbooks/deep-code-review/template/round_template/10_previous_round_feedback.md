@@ -7,10 +7,11 @@ Use this file only when the active round is not the first round.
 - prior_round_id:
 - prior_reviewer_feedback:
 - prior_round_results:
-- prior_verdict:
+- prior_verdict: approved / another_round
 
 ## Carry Forward
 
+- why_another_round_was_requested:
 - accepted_finding_ids_to_verify:
 - deferred_finding_ids_with_accepted_reason:
 - rejected_or_stale_finding_ids_not_to_repeat_without_new_evidence:

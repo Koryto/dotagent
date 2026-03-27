@@ -97,6 +97,11 @@ Skills are loaded on demand, not kept in hot context by default.
 
 `playbooks/` is an optional namespace for operational packages that are too large, stateful, or role-dependent to fit cleanly into a single skill.
 
+Current bundled playbooks:
+
+- `deep-co-planning` - turn a human-led HLD into one or more implementation-driving specs through structured reviewer pressure
+- `deep-code-review` - run a structured multi-agent review loop for large or high-risk changes
+
 See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current conventions.
 
 ## Session Model
@@ -110,11 +115,10 @@ See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current c
 
 1. Initialize the framework with `dotagent init`.
 2. Fill in `project/PROJECT.md`.
-3. Set the initial state in `state/session_state.md` if needed.
-4. Start sessions through your runtime-native `dotagent-init` bridge, which loads `skills/init/SKILL.md`.
-5. Keep durable system knowledge in `systems/`, not in task artifacts.
-6. Use `specs/` only when design intent needs to be defined or clarified.
-7. Use `tasks/` for plans, reviews, verification notes, and summaries.
+3. Start sessions through your runtime-native `dotagent-init` bridge, which loads `skills/init/SKILL.md`.
+4. Keep durable system knowledge in `systems/`, not in task artifacts.
+5. Use `specs/` only when design intent needs to be defined or clarified.
+6. Use `tasks/` for plans, reviews, verification notes, and summaries.
 
 ## Notes
 

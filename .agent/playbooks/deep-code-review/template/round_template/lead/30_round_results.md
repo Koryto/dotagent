@@ -32,5 +32,5 @@ Use a compact shape in quick rounds.
 
 ## Approval Request
 
-- requested_human_decision:
+- requested_human_decision: approved / another_round
 - notes:
