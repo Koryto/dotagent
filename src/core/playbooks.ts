@@ -7,7 +7,12 @@ import { normalizeRelativeSubpath } from "./paths.js";
 import { BundledAssetsError, DotagentError, PlaybookContractError } from "../utils/errors.js";
 
 export function listBundledPlaybooks(bundledAgentRoot: string): BundledPlaybook[] {
-  return listPlaybooksInAgentRoot(bundledAgentRoot, "Bundled");
+  const playbooks = listPlaybooksInAgentRoot(bundledAgentRoot, "Bundled");
+  for (const playbook of playbooks) {
+    validateBundledPlaybookContract(playbook.rootPath, playbook.name);
+  }
+
+  return playbooks;
 }
 
 export function listInstalledPlaybooks(dotagentRoot: string): BundledPlaybook[] {
@@ -85,6 +90,34 @@ function listPlaybooksInAgentRoot(agentRoot: string, label: string): BundledPlay
     }
 
     throw new BundledAssetsError(`${label} playbooks are unreadable: ${playbooksRoot}`);
+  }
+}
+
+function validateBundledPlaybookContract(playbookRoot: string, expectedName: string): void {
+  const contractPath = path.join(playbookRoot, "playbook.json");
+
+  if (!existsSync(contractPath)) {
+    throw new BundledAssetsError(`Bundled playbook is missing playbook.json: ${contractPath}`);
+  }
+
+  try {
+    const parsed = JSON.parse(readUtf8File(contractPath)) as unknown;
+    const contract = validatePlaybookContract(parsed, contractPath);
+    if (contract.name !== expectedName) {
+      throw new BundledAssetsError(
+        `Bundled playbook contract name mismatch. Expected ${expectedName}, found ${contract.name}: ${contractPath}`
+      );
+    }
+  } catch (error) {
+    if (error instanceof BundledAssetsError) {
+      throw error;
+    }
+
+    if (error instanceof PlaybookContractError) {
+      throw new BundledAssetsError(error.message);
+    }
+
+    throw new BundledAssetsError(`Bundled playbook contract is unreadable or invalid JSON: ${contractPath}`);
   }
 }
 
