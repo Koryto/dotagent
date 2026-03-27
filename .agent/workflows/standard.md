@@ -93,7 +93,7 @@ Agent actions:
 7. Make the review result visible to the user and give the human a chance to inspect the work before continuing.
 8. Release the skill after review.
 
-Gate: user explicit approval. self-review is complete when unresolved findings are fixed or explicitly accepted by the user
+Gate: self-review is complete and the user has explicitly approved continuation
 
 Do not present unreviewed implementation as complete.
 
