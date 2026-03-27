@@ -6,7 +6,7 @@ This file is the entry point for the active review round.
 
 - task_name:
 - round_id:
-- review_mode: full/fix-pass
+- review_mode: standard / quick
 - reviewed_state:
 - prior_reviewed_state:
 - diff_reference:

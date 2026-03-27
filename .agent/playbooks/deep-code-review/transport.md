@@ -63,7 +63,7 @@ Expected structure:
   - entry point for the active round
   - points reviewers and the lead to the full round contract
 
-- `reviewers/reviewer_<name>.md`
+- `reviewers/reviewer_<suffix>.md`
   - one reviewer's findings
   - created or assigned once the roster is known
   - confirms review basis against current file state
