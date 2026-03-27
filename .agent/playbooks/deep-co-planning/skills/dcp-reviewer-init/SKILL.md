@@ -1,16 +1,12 @@
 ---
 name: "dcp-reviewer-init"
 description: "Join Deep Co-Planning as a reviewer for an active planning run."
+invocation-args:
+  suffix: required
+  domain: optional
 ---
 
 # dcp-reviewer-init
-
-## Invocation Contract
-
-```yaml
-suffix: <required>
-domain: <optional>
-```
 
 Do not start this reviewer role implicitly.
 

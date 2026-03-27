@@ -1,13 +1,19 @@
 import path from "node:path";
 import { readdirSync, statSync } from "node:fs";
 
-import { fileExists } from "./files.js";
+import { fileExists, readUtf8File } from "./files.js";
 import { BundledAssetsError } from "../utils/errors.js";
+
+export interface FrameworkSkillInvocationArg {
+  name: string;
+  required: boolean;
+}
 
 export interface BundledFrameworkSkill {
   skillName: string;
   bundledRelativePath: string;
   sourcePath: string;
+  invocationArgs: FrameworkSkillInvocationArg[];
 }
 
 export function listBundledFrameworkSkills(bundledAgentRoot: string): BundledFrameworkSkill[] {
@@ -16,14 +22,15 @@ export function listBundledFrameworkSkills(bundledAgentRoot: string): BundledFra
 
   const skillsRoot = path.join(bundledAgentRoot, "skills");
   if (fileExists(skillsRoot)) {
-    collectSkillDirectories(skillsRoot, (skillName, skillPath) => {
-      assertSkillFileExists(skillPath);
-      pushUniqueSkill(results, seenSkillNames, {
-        skillName,
-        bundledRelativePath: `skills/${skillName}/SKILL.md`,
-        sourcePath: `.agent/skills/${skillName}/SKILL.md`
+      collectSkillDirectories(skillsRoot, (skillName, skillPath) => {
+        assertSkillFileExists(skillPath);
+        pushUniqueSkill(results, seenSkillNames, {
+          skillName,
+          bundledRelativePath: `skills/${skillName}/SKILL.md`,
+          sourcePath: `.agent/skills/${skillName}/SKILL.md`,
+          invocationArgs: readSkillInvocationArgs(skillPath)
+        });
       });
-    });
   }
 
   const playbooksRoot = path.join(bundledAgentRoot, "playbooks");
@@ -43,7 +50,8 @@ export function listBundledFrameworkSkills(bundledAgentRoot: string): BundledFra
         pushUniqueSkill(results, seenSkillNames, {
           skillName,
           bundledRelativePath: `playbooks/${playbookEntry.name}/skills/${skillName}/SKILL.md`,
-          sourcePath: `.agent/playbooks/${playbookEntry.name}/skills/${skillName}/SKILL.md`
+          sourcePath: `.agent/playbooks/${playbookEntry.name}/skills/${skillName}/SKILL.md`,
+          invocationArgs: readSkillInvocationArgs(skillPath)
         });
       });
     }
@@ -98,6 +106,67 @@ function assertSkillFileExists(skillPath: string): void {
 
     throw error;
   }
+}
+
+function readSkillInvocationArgs(skillPath: string): FrameworkSkillInvocationArg[] {
+  const frontmatter = extractFrontmatter(readUtf8File(skillPath));
+  if (!frontmatter) {
+    return [];
+  }
+
+  return parseInvocationArgs(frontmatter, skillPath);
+}
+
+function extractFrontmatter(content: string): string | null {
+  const match = /^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/.exec(content);
+  return match?.[1] ?? null;
+}
+
+function parseInvocationArgs(frontmatter: string, skillPath: string): FrameworkSkillInvocationArg[] {
+  const lines = frontmatter.split(/\r?\n/);
+
+  for (let index = 0; index < lines.length; index += 1) {
+    const headerLine = lines[index];
+    if (!headerLine || headerLine.trim() !== "invocation-args:") {
+      continue;
+    }
+
+    const invocationArgs: FrameworkSkillInvocationArg[] = [];
+    for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
+      const line = lines[cursor];
+      if (line === undefined) {
+        break;
+      }
+
+      if (line.trim().length === 0) {
+        continue;
+      }
+
+      if (!line.startsWith("  ")) {
+        break;
+      }
+
+      const match = /^  ([A-Za-z0-9_-]+): (required|optional)\s*$/.exec(line);
+      if (!match) {
+        throw new BundledAssetsError(`Bundled skill has invalid invocation-args metadata: ${skillPath}`);
+      }
+
+      const name = match[1];
+      const requirement = match[2];
+      if (!name || !requirement) {
+        throw new BundledAssetsError(`Bundled skill has invalid invocation-args metadata: ${skillPath}`);
+      }
+
+      invocationArgs.push({
+        name,
+        required: requirement === "required"
+      });
+    }
+
+    return invocationArgs;
+  }
+
+  return [];
 }
 
 function pushUniqueSkill(

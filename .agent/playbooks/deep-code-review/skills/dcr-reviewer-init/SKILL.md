@@ -1,16 +1,12 @@
 ---
 name: "dcr-reviewer-init"
 description: "Join Deep Code Review as a reviewer for an active review run."
+invocation-args:
+  suffix: required
+  domain: optional
 ---
 
 # dcr-reviewer-init
-
-## Invocation Contract
-
-```yaml
-suffix: <required>
-domain: <optional>
-```
 
 Do not start this reviewer role implicitly.
 

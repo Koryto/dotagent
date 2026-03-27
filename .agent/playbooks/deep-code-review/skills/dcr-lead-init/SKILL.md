@@ -1,15 +1,11 @@
 ---
 name: "dcr-lead-init"
 description: "Start Deep Code Review as the lead for an active review run."
+invocation-args:
+  task_name: required
 ---
 
 # dcr-lead-init
-
-## Invocation Contract
-
-```yaml
-task_name: <required>
-```
 
 Do not start this playbook implicitly.
 

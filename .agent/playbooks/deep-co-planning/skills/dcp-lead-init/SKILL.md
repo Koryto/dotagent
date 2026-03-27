@@ -1,15 +1,11 @@
 ---
 name: "dcp-lead-init"
 description: "Start Deep Co-Planning as the lead for an active planning run."
+invocation-args:
+  task_name: required
 ---
 
 # dcp-lead-init
-
-## Invocation Contract
-
-```yaml
-task_name: <required>
-```
 
 Do not start this playbook implicitly.
 
