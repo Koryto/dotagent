@@ -91,7 +91,7 @@ Reviewers write their own output files only.
    - open questions must be surfaced to the human before the round closes
 
 4. **HLD approval gate**
-   - the human approves the HLD as the baseline for spec derivation
+   - the human marks the HLD round `approved` to use it as the baseline for spec derivation
    - the lead may recommend decomposition if the HLD is too broad, but the human decides whether to proceed
 
 5. **Spec derivation**
@@ -105,7 +105,7 @@ Reviewers write their own output files only.
    - open questions must again be surfaced to the human before the round closes
 
 7. **Spec approval gate**
-   - the human approves the final spec or spec set
+   - the human marks the final spec or spec set `approved`
    - anything unresolved at this point must be recorded as a known unknown, not left as a hidden open question
 
 ## Round Model
@@ -152,12 +152,12 @@ Further rounds are human-gated.
 4. **Human review**
    - the human reviews the round results
    - the lead surfaces open questions explicitly
-   - the human may answer them, redirect scope, request another round, or approve continuation
+   - the human may answer them, redirect scope, request `another_round`, or mark the round `approved`
 
 5. **Next action**
-   - if the current phase is not yet approved, another round may begin
-   - if the HLD is approved, move into spec derivation
-   - if the final specs are approved, the playbook is complete
+   - if the human requests `another_round`, the lead creates the next round and carries forward the required artifacts
+   - if an HLD round is `approved`, move into spec derivation
+   - if a final spec round is `approved`, the playbook is complete
 
 ## Runtime
 
@@ -181,3 +181,4 @@ The concrete runtime template lives under:
 - unresolved items in the final HLD or specs must be recorded as known unknowns
 - the final specs must sharpen the HLD into implementation-driving structure; they must not merely restate it
 - reviewer outputs and lead synthesis should remain readable enough for later task-level implementation planning
+- when the human asks for `another_round`, the lead creates the next round, carries forward the required artifacts, and waits until the new packet is ready before reviewers begin

@@ -87,7 +87,7 @@ Expected structure:
 
 - `60_round_verdict.md`
   - round closeout
-  - human verdict: `merge` or `another_round`
+  - human verdict: `approved` or `another_round`
   - unresolved risks
   - next action
 
@@ -113,3 +113,4 @@ Future round creation remains human-gated.
 - completed rounds should remain readable for later reference
 - reviewers should have explicit access to prior round feedback before starting the next round
 - reviewers stop if the requested next round does not exist; they do not infer it
+- if the human asks for `another_round`, the lead creates the next round and carries forward the required artifacts before reviewers start

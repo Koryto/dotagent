@@ -20,7 +20,7 @@
 
 ## Approval Target
 
-- target: approve_hld / approve_specs / another_round
+- target: approved / another_round
 
 ## Read Order
 

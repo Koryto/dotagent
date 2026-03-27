@@ -54,6 +54,7 @@ Only the lead updates `findings_ledger.md` and maintains the finding-id mapping 
 
 - initialize the first round through the CLI
 - create another round only when the human explicitly asks for `another_round`
+- when `another_round` is requested, create the next round, carry forward the required artifacts, and wait until the new packet is ready before reviewers begin
 - do not pre-create future rounds
 - do not ask reviewers to start until the active round packet is ready
 
@@ -87,4 +88,4 @@ Engage the human when:
 - reviewer submissions are missing and the round may proceed only partially
 - the human-facing round results and execution plan need approval
 - verification changes the expected round outcome
-- the round is ready for a `merge` or `another_round` verdict
+- the round is ready for an `approved` or `another_round` verdict

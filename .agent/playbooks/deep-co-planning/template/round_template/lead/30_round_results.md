@@ -20,4 +20,4 @@ This file is the human-facing synthesis for the active round.
 
 ## Approval Request
 
-- request: approve_hld / approve_specs / another_round
+- request: approved / another_round

@@ -3,7 +3,7 @@
 ## Round Closeout
 
 - round_closed: yes
-- human_verdict: merge/another_round
+- human_verdict: approved/another_round
 
 ## Remaining Risks
 

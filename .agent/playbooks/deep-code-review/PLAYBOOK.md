@@ -27,7 +27,7 @@ Current operating model:
   - chooses reviewer count
   - owns disputed findings
   - defines merge criteria
-  - decides `merge` or `another_round`
+  - decides `approved` or `another_round`
 
 - **Lead**
   - initializes and operates the review with human guidance
@@ -124,7 +124,7 @@ Reviewers must reference existing ids when the round packet or carry-forward art
 
 4. **Human review**
    - the human reviews the round results and execution plan
-   - the human may approve them, reject them, or override disputed lead judgment
+   - the human may mark the round `approved`, request `another_round`, or override disputed lead judgment
 
 5. **Fix and verification**
    - Accepted work is implemented and verified in small enough batches to isolate regressions.
@@ -136,7 +136,7 @@ Reviewers must reference existing ids when the round packet or carry-forward art
 7. **Human verdict**
    - Every finished round is closed.
    - The only human verdicts are:
-     - `merge`
+     - `approved`
      - `another_round`
 
 ## Runtime
@@ -163,3 +163,4 @@ The concrete runtime template lives under:
 - a round may proceed with partial reviewer submissions only if the lead records that fact and the human accepts it
 - verification should be written into artifacts, not left only in chat
 - next-round creation is human-gated, not automatic
+- when the human asks for `another_round`, the lead creates the next round, carries forward the required artifacts, and waits until the new packet is ready before reviewers begin

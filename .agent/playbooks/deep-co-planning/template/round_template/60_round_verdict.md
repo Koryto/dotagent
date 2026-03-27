@@ -8,7 +8,7 @@
 
 ## Human Verdict
 
-- human_verdict: another_round / approve_hld / approve_specs / stop
+- human_verdict: approved / another_round
 
 ## Next Action
 

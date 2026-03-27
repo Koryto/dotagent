@@ -53,6 +53,7 @@ Only the lead updates shared synthesis artifacts.
 
 - initialize the first round through the CLI
 - create another round only when the human explicitly asks for one
+- when `another_round` is requested, create the next round, carry forward the required artifacts, and wait until the new packet is ready before reviewers begin
 - do not pre-create future rounds
 - do not ask reviewers to start until the active round packet is ready
 
@@ -83,6 +84,5 @@ Engage the human when:
 - the HLD needs correction before reviewers start
 - reviewer domain assignment is unclear
 - open questions arise during a round
-- HLD approval is being requested
-- final spec approval is being requested
+- an `approved` verdict is being requested for the HLD or the final specs
 - another round is recommended

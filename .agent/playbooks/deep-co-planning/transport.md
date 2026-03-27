@@ -83,7 +83,7 @@ Expected structure:
 
 - `60_round_verdict.md`
   - round closeout
-  - human verdict
+  - human verdict: `approved` or `another_round`
   - next action
 
 ## CLI Responsibility
@@ -106,3 +106,4 @@ Future round creation remains human-gated.
 - reviewer-facing and human-facing lead outputs serve different audiences and should stay distinct
 - the final spec output may be one spec or a spec set depending on HLD scope
 - completed rounds should remain readable for later task-level planning and implementation
+- if the human asks for `another_round`, the lead creates the next round and carries forward the required artifacts before reviewers start
