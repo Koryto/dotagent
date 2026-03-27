@@ -3,6 +3,12 @@ import type { SupportedRuntime } from "../core/adapters.js";
 export interface FrameworkSkillDescriptor {
   skillName: string;
   sourcePath: string;
+  invocationArgs: readonly FrameworkSkillInvocationArg[];
+}
+
+export interface FrameworkSkillInvocationArg {
+  name: string;
+  required: boolean;
 }
 
 export function renderRuntimeAdapterManifest(
@@ -73,6 +79,19 @@ export function renderRuntimeSkillBridge(
   runtime: SupportedRuntime,
   skill: FrameworkSkillDescriptor
 ): string {
+  const invocationArgLines =
+    skill.invocationArgs.length > 0
+      ? [
+          "Invocation arguments:",
+          "```yaml",
+          ...skill.invocationArgs.map((arg) => `${arg.name}: <${arg.required ? "required" : "optional"}>`),
+          "```",
+          "",
+          "Provide these arguments explicitly when invoking this bridge.",
+          ""
+        ]
+      : [];
+
   const body = [
     `# ${formatRuntimeBridgeName(runtime, skill.skillName)}`,
     "",
@@ -81,6 +100,7 @@ export function renderRuntimeSkillBridge(
     "Load and follow:",
     `- \`${skill.sourcePath}\``,
     "",
+    ...invocationArgLines,
     `This wrapper exists so the skill can be invoked natively in ${runtime}.`,
     "The framework source of truth remains under `.agent/`.",
     ""
@@ -90,7 +110,8 @@ export function renderRuntimeSkillBridge(
     runtime,
     skill.skillName,
     `Invoke the dotagent ${skill.skillName} skill natively from this runtime.`,
-    body
+    body,
+    skill.invocationArgs
   );
 }
 
@@ -120,61 +141,84 @@ function renderRuntimeBridgeDocument(
   runtime: SupportedRuntime,
   name: string,
   description: string,
-  bodyLines: readonly string[]
+  bodyLines: readonly string[],
+  invocationArgs: readonly FrameworkSkillInvocationArg[] = []
 ): string {
-  const frontmatter = renderRuntimeBridgeFrontmatter(runtime, name, description);
+  const frontmatter = renderRuntimeBridgeFrontmatter(runtime, name, description, invocationArgs);
   return [...frontmatter, "", ...bodyLines].join("\n");
 }
 
 function renderRuntimeBridgeFrontmatter(
   runtime: SupportedRuntime,
   name: string,
-  description: string
+  description: string,
+  invocationArgs: readonly FrameworkSkillInvocationArg[]
 ): string[] {
+  const argumentHint = invocationArgs.length > 0 ? formatArgumentHint(invocationArgs) : null;
+
   switch (runtime) {
     case "codex":
-      return [
+      return compactYamlLines([
         "---",
         `name: ${yamlString(`dotagent-${name}`)}`,
         `description: ${yamlString(description)}`,
+        argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
         "metadata:",
         `  short-description: ${yamlString(description)}`,
         "---"
-      ];
+      ]);
     case "claude":
-      return [
+      return compactYamlLines([
         "---",
         `name: ${yamlString(`dotagent:${name}`)}`,
         `description: ${yamlString(description)}`,
+        argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
         "allowed-tools:",
         "  - Read",
         "  - Write",
         "  - Bash",
         "---"
-      ];
+      ]);
     case "opencode":
-      return [
+      return compactYamlLines([
         "---",
         `description: ${yamlString(description)}`,
+        argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
         "tools:",
         "  read: true",
         "  write: true",
         "  bash: true",
         "---"
-      ];
+      ]);
     case "copilot":
-      return [
+      return compactYamlLines([
         "---",
         `name: ${yamlString(`dotagent-${name}`)}`,
         `description: ${yamlString(description)}`,
+        argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
         "allowed-tools: Read, Write, Bash",
         "---"
-      ];
+      ]);
     default:
-      return ["---", `description: ${yamlString(description)}`, "---"];
+      return compactYamlLines([
+        "---",
+        `description: ${yamlString(description)}`,
+        argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
+        "---"
+      ]);
   }
 }
 
 function yamlString(value: string): string {
   return JSON.stringify(value);
+}
+
+function formatArgumentHint(invocationArgs: readonly FrameworkSkillInvocationArg[]): string {
+  return invocationArgs
+    .map((arg) => (arg.required ? `${arg.name}=<value>` : `[${arg.name}=<value>]`))
+    .join(" ");
+}
+
+function compactYamlLines(lines: Array<string | null>): string[] {
+  return lines.filter((line): line is string => line !== null);
 }

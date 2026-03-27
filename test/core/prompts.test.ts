@@ -46,5 +46,5 @@ test("resolvePlaybookTask rejects task names with path separators", async () => 
     logger: createLogger(stdout, stderr)
   };
 
-  await assert.rejects(() => resolvePlaybookTask(context, "the-extreme-cr-rig"), CliUsageError);
+  await assert.rejects(() => resolvePlaybookTask(context, "deep-code-review"), CliUsageError);
 });

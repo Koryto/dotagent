@@ -1,9 +1,0 @@
-{
-  "name": "the-deep-co-planning",
-  "version": "0.1.0",
-  "runtimeRoot": ".dcp",
-  "templateDir": "template",
-  "gitignoreEntry": ".dcp/",
-  "taskScoped": true,
-  "initialRound": "round_001"
-}

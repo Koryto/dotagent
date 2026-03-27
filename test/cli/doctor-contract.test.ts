@@ -33,7 +33,7 @@ test("dotagent doctor reports invalid installed playbook contracts", async () =>
   assert.equal(exitCode, 0);
 
   writeFileSync(
-    path.join(root, ".agent", "playbooks", "the-extreme-cr-rig", "playbook.json"),
+    path.join(root, ".agent", "playbooks", "deep-code-review", "playbook.json"),
     "{ invalid json\n",
     "utf8"
   );
@@ -67,10 +67,10 @@ test("dotagent doctor reports traversal-capable playbook contracts", async () =>
   assert.equal(exitCode, 0);
 
   writeFileSync(
-    path.join(root, ".agent", "playbooks", "the-extreme-cr-rig", "playbook.json"),
+    path.join(root, ".agent", "playbooks", "deep-code-review", "playbook.json"),
     `${JSON.stringify(
       {
-        name: "the-extreme-cr-rig",
+        name: "deep-code-review",
         version: "0.1.0",
         runtimeRoot: "../outside",
         templateDir: "template",
@@ -112,16 +112,16 @@ test("dotagent doctor reports playbook contract name mismatches", async () => {
   assert.equal(exitCode, 0);
 
   writeFileSync(
-    path.join(root, ".agent", "playbooks", "the-extreme-cr-rig", "playbook.json"),
+    path.join(root, ".agent", "playbooks", "deep-code-review", "playbook.json"),
     `${JSON.stringify(
       {
         name: "other-playbook",
         version: "0.1.0",
-        runtimeRoot: ".ecrr",
+        runtimeRoot: ".dcr",
         templateDir: "template",
         taskScoped: true,
         initialRound: "round_001",
-        gitignoreEntry: ".ecrr/"
+        gitignoreEntry: ".dcr/"
       },
       null,
       2

@@ -66,7 +66,7 @@ test("loadInstalledPlaybookContract rejects traversal-capable template paths", (
       {
         name: "the-test-playbook",
         version: "0.1.0",
-        runtimeRoot: ".ecrr",
+        runtimeRoot: ".dcr",
         templateDir: "../outside"
       },
       null,
@@ -95,7 +95,7 @@ test("loadInstalledPlaybookContract rejects traversal-capable contract names", (
       {
         name: "../outside",
         version: "0.1.0",
-        runtimeRoot: ".ecrr",
+        runtimeRoot: ".dcr",
         templateDir: "template"
       },
       null,
@@ -118,9 +118,9 @@ test("loadInstalledPlaybookContract rejects multiline gitignore entries", () => 
       {
         name: "the-test-playbook",
         version: "0.1.0",
-        runtimeRoot: ".ecrr",
+        runtimeRoot: ".dcr",
         templateDir: "template",
-        gitignoreEntry: ".ecrr/\nsecret-dir/"
+        gitignoreEntry: ".dcr/\nsecret-dir/"
       },
       null,
       2
@@ -143,7 +143,7 @@ test("loadInstalledPlaybookContract rejects symlinked installed playbook roots",
       {
         name: "the-test-playbook",
         version: "0.1.0",
-        runtimeRoot: ".ecrr",
+        runtimeRoot: ".dcr",
         templateDir: "template"
       },
       null,
@@ -172,7 +172,7 @@ test("loadInstalledPlaybookContract rejects symlinked .agent ancestors", () => {
       {
         name: "the-test-playbook",
         version: "0.1.0",
-        runtimeRoot: ".ecrr",
+        runtimeRoot: ".dcr",
         templateDir: "template"
       },
       null,

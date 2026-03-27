@@ -1,0 +1,9 @@
+{
+  "name": "deep-code-review",
+  "version": "0.1.0",
+  "runtimeRoot": ".dcr",
+  "templateDir": "template",
+  "gitignoreEntry": ".dcr/",
+  "taskScoped": true,
+  "initialRound": "round_001"
+}
