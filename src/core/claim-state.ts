@@ -96,6 +96,7 @@ export function applyClaimStatePlan(context: CliContext, plan: ClaimStatePlan): 
         throw new DotagentError("Claim-state plan is missing the pickup source path.");
       }
       try {
+        // Rename first so a concurrent claimant cannot move the source away and then have us recreate it.
         renameSync(plan.pickupSourcePath, plan.activeStatePath);
         const reboundContent = bindSessionState(readUtf8File(plan.activeStatePath), plan.sessionId);
         safeWriteUtf8File(context.projectRoot, plan.activeStatePath, reboundContent, "Session pickup rewrite");
