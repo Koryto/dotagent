@@ -24,6 +24,7 @@ The agent must:
 The user must:
 
 - approve the plan before implementation starts
+- explicitly approve the planned branch/worktree and writable boundary before implementation starts
 - explicitly accept unresolved review or verification risk if the task is to proceed anyway
 - redirect the workflow explicitly if they want to skip or change the normal path
 
@@ -46,12 +47,14 @@ Agent actions:
 7. Include:
    - scope
    - affected files or systems
+   - approved branch/worktree for implementation
+   - approved writable boundary for implementation
    - implementation steps
    - risks
    - verification approach
 8. Present the plan clearly to the user.
 
-Gate: user approves the plan
+Gate: user approves the plan, branch/worktree, and writable boundary
 
 Do not enter Implementation until this gate is satisfied.
 
@@ -64,15 +67,20 @@ Agent actions:
 1. Announce entry into Implementation.
 2. Update the active session file to `phase: implementation`.
 3. Reload this workflow before starting if Planning was long or exploratory.
-4. Follow the approved plan.
-5. Record meaningful deviations from plan.
-6. Keep `resume_files` current when the active working set changes materially.
-7. During long scans or broad exploratory work:
+4. Create or bind the approved branch/worktree before making implementation changes.
+5. Follow the approved plan.
+6. Record meaningful deviations from plan.
+7. Keep `resume_files` current when the active working set changes materially.
+8. During long scans or broad exploratory work:
    - reload the active session file
    - reload this workflow
    - confirm the current pass still serves the approved objective
-8. Work in batches when the task is large.
-9. Keep the user informed of meaningful progress and deviations.
+9. Treat the approved writable boundary as a blocking write contract:
+   - if a planned write stays inside the approved boundary, proceed
+   - if a write would touch an unapproved file or area, stop and ask the user for explicit approval before writing
+   - if approval is granted, update the implementation plan or active plan summary to reflect the expanded boundary before continuing
+10. Work in batches when the task is large.
+11. Keep the user informed of meaningful progress and deviations.
 
 Gate: implementation is ready for review
 
@@ -155,11 +163,13 @@ Always:
 - be explicit about unresolved risk
 - keep the active session file accurate enough for handoff and resume
 - assign explicit, non-overlapping file ownership to each sub-agent when working in parallel
+- keep the approved branch/worktree and writable boundary visible in the implementation plan or active plan summary during implementation
 
 Never:
 
 - skip planning when a plan is needed
 - enter implementation without plan approval
+- write outside the approved writable boundary without explicit user approval
 - treat verification as optional when real risk exists
 - present unreviewed code as done
 - auto-promote task knowledge into `project/`
