@@ -150,12 +150,26 @@ function normalizeSessionId(value: string): string {
 }
 
 function bindSessionState(content: string, sessionId: string): string {
+  const lastUpdated = new Date().toISOString().slice(0, 10);
   const normalized = content
-    .replace(/^session_id:\s*.*$/m, `session_id: ${sessionId}`)
+    .replace(
+      "Keep this file small. This is the template for live per-session control files, not a narrative log.",
+      "Keep this file small. This is the control file for one live session, not a narrative log."
+    )
+    .replace(/Live session files belong under:\r?\n\r?\n- `state\/sessions\/state_<session_id>\.md`\r?\n\r?\n/, "")
+    .replace(
+      "Do not treat this template as the active session register.",
+      "Treat this file as the active control file for this session."
+    )
+    .replace(
+      "- Copy this template into `state/sessions/state_<session_id>.md` when creating a new live session file.",
+      "- This live session file was derived from `state/session_state_template.md`."
+    )
     .replace(/^owned_by:\s*.*$/m, `owned_by: ${sessionId}`)
+    .replace(/^last_updated:\s*.*$/m, `last_updated: ${lastUpdated}`)
     .replace(/<session_id>/g, sessionId);
 
-  if (/^session_id:\s*.*$/m.test(normalized) && /^owned_by:\s*.*$/m.test(normalized)) {
+  if (/^owned_by:\s*.*$/m.test(normalized) && /^last_updated:\s*.*$/m.test(normalized)) {
     return normalized;
   }
 
@@ -166,7 +180,7 @@ function bindSessionState(content: string, sessionId: string): string {
   }
 
   const insertAt = markerIndex + marker.length;
-  return `${normalized.slice(0, insertAt)}\nsession_id: ${sessionId}\nowned_by: ${sessionId}${normalized.slice(insertAt)}`;
+  return `${normalized.slice(0, insertAt)}\nowned_by: ${sessionId}\nlast_updated: ${lastUpdated}${normalized.slice(insertAt)}`;
 }
 
 function toProjectRelativePath(projectRoot: string, absolutePath: string): string {

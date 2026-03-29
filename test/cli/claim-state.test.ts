@@ -22,6 +22,7 @@ class MemoryWritable extends Writable {
 
 test("dotagent claim-state creates a new session state from the template", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-claim-state-create-"));
+  const today = new Date().toISOString().slice(0, 10);
   let exitCode = await runCli({
     argv: ["init", "--cwd", root, "--yes"],
     cwd: process.cwd(),
@@ -47,12 +48,18 @@ test("dotagent claim-state creates a new session state from the template", async
   assert.equal(existsSync(targetPath), true);
   assert.match(stdout.buffer, /action: create/);
   assert.match(stdout.buffer, /pickup_status: not-provided/);
-  assert.match(readFileSync(targetPath, "utf8"), /session_id: 019cf1cb-41ad-72d2-943c-b8a83e24641d/);
   assert.match(readFileSync(targetPath, "utf8"), /owned_by: 019cf1cb-41ad-72d2-943c-b8a83e24641d/);
+  assert.match(readFileSync(targetPath, "utf8"), new RegExp(`last_updated: ${today}`));
+  assert.match(readFileSync(targetPath, "utf8"), /This is the control file for one live session/);
+  assert.doesNotMatch(readFileSync(targetPath, "utf8"), /This live session file belongs under:/);
+  assert.doesNotMatch(readFileSync(targetPath, "utf8"), /state\/sessions\/state_019cf1cb-41ad-72d2-943c-b8a83e24641d\.md/);
+  assert.doesNotMatch(readFileSync(targetPath, "utf8"), /template for live per-session control files/);
+  assert.doesNotMatch(readFileSync(targetPath, "utf8"), /Do not treat this template as the active session register/);
 });
 
 test("dotagent claim-state keeps the current session file when it already exists", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-claim-state-existing-"));
+  const today = new Date().toISOString().slice(0, 10);
   let exitCode = await runCli({
     argv: ["init", "--cwd", root, "--yes"],
     cwd: process.cwd(),
@@ -66,12 +73,12 @@ test("dotagent claim-state keeps the current session file when it already exists
   mkdirSync(sessionsRoot, { recursive: true });
   writeFileSync(
     path.join(sessionsRoot, "state_019cf1cb-41ad-72d2-943c-b8a83e24641d.md"),
-    "# Active\n```yaml\nsession_id: old\nowned_by: old\nstatus: IDLE\n```\n",
+    "# Active\n```yaml\nowned_by: old\nstatus: IDLE\n```\n",
     "utf8"
   );
   writeFileSync(
     path.join(sessionsRoot, "state_other.md"),
-    "# Other\n```yaml\nsession_id: other\nowned_by: other\nstatus: IDLE\n```\n",
+    "# Other\n```yaml\nowned_by: other\nstatus: IDLE\n```\n",
     "utf8"
   );
 
@@ -90,13 +97,14 @@ test("dotagent claim-state keeps the current session file when it already exists
   assert.equal(stderr.buffer, "");
   assert.match(stdout.buffer, /action: claim-existing/);
   assert.match(stdout.buffer, /pickup_status: ignored-existing-session/);
-  assert.match(readFileSync(activePath, "utf8"), /session_id: 019cf1cb-41ad-72d2-943c-b8a83e24641d/);
   assert.match(readFileSync(activePath, "utf8"), /owned_by: 019cf1cb-41ad-72d2-943c-b8a83e24641d/);
+  assert.match(readFileSync(activePath, "utf8"), new RegExp(`last_updated: ${today}`));
   assert.equal(existsSync(path.join(sessionsRoot, "state_other.md")), true);
 });
 
 test("dotagent claim-state adopts the requested pickup file when no current session file exists", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-claim-state-pickup-"));
+  const today = new Date().toISOString().slice(0, 10);
   let exitCode = await runCli({
     argv: ["init", "--cwd", root, "--yes"],
     cwd: process.cwd(),
@@ -110,7 +118,7 @@ test("dotagent claim-state adopts the requested pickup file when no current sess
   mkdirSync(sessionsRoot, { recursive: true });
   writeFileSync(
     path.join(sessionsRoot, "state_pickup.md"),
-    "# Pickup\n```yaml\nsession_id: pickup\nowned_by: pickup\nstatus: IN_PROGRESS\n```\n",
+    "# Pickup\n```yaml\nowned_by: pickup\nstatus: IN_PROGRESS\n```\n",
     "utf8"
   );
 
@@ -131,12 +139,13 @@ test("dotagent claim-state adopts the requested pickup file when no current sess
   assert.match(stdout.buffer, /pickup_status: claimed/);
   assert.equal(existsSync(path.join(sessionsRoot, "state_pickup.md")), false);
   assert.equal(existsSync(activePath), true);
-  assert.match(readFileSync(activePath, "utf8"), /session_id: 019cf1cb-41ad-72d2-943c-b8a83e24641d/);
   assert.match(readFileSync(activePath, "utf8"), /owned_by: 019cf1cb-41ad-72d2-943c-b8a83e24641d/);
+  assert.match(readFileSync(activePath, "utf8"), new RegExp(`last_updated: ${today}`));
 });
 
 test("dotagent claim-state falls back to creating a new file when pickup is missing", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-claim-state-missing-pickup-"));
+  const today = new Date().toISOString().slice(0, 10);
   let exitCode = await runCli({
     argv: ["init", "--cwd", root, "--yes"],
     cwd: process.cwd(),
@@ -163,4 +172,5 @@ test("dotagent claim-state falls back to creating a new file when pickup is miss
   assert.match(stdout.buffer, /pickup_status: missing-fallback-created/);
   assert.match(stdout.buffer, /state_missing\.md was not found/);
   assert.equal(existsSync(activePath), true);
+  assert.match(readFileSync(activePath, "utf8"), new RegExp(`last_updated: ${today}`));
 });

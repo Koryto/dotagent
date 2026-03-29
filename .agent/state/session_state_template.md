@@ -12,7 +12,6 @@ Do not treat this template as the active session register.
 ## STATE
 
 ```yaml
-session_id: <session_id>
 owned_by: <session_id>
 status: IDLE
 workflow: standard
