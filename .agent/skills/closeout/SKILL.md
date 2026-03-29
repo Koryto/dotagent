@@ -86,7 +86,7 @@ Do not turn `project_progress.md` into a session diary.
 
 Update:
 
-- `state/session_state.md`
+- the active session file under `state/sessions/`
 
 If the task is complete:
 

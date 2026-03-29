@@ -106,7 +106,8 @@ See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current c
 
 ## Session Model
 
-- `state/session_state.md` tracks whether the current session is idle or in progress
+- `state/session_state_template.md` is the template for live per-session state files
+- `state/sessions/state_<session_id>.md` is the active session file for one runtime session
 - `state/session_log.md` is append-only historical session context
 - `skills/init/SKILL.md` is the framework session entrypoint
 - the CLI owns framework initialization and playbook runtime scaffolding

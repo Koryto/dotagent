@@ -1,18 +1,19 @@
-# Session State
-<!-- SESSION_VERSION: 2.0 | STATUS: template -->
+# Session State Template
+<!-- SESSION_VERSION: 3.0 | STATUS: template -->
 
-Keep this file small. This is the session control register, not a narrative log.
+Keep this file small. This is the template for live per-session control files, not a narrative log.
 
-Update it when:
+Live session files belong under:
 
-- a task starts
-- the active phase changes
-- the session pauses
-- the task closes out
+- `state/sessions/state_<session_id>.md`
+
+Do not treat this template as the active session register.
 
 ## STATE
 
 ```yaml
+session_id: <session_id>
+owned_by: <session_id>
 status: IDLE
 workflow: standard
 phase: none
@@ -29,6 +30,7 @@ blockers: []
 
 ## NOTES
 
+- Copy this template into `state/sessions/state_<session_id>.md` when creating a new live session file.
 - Keep the state block accurate for handoff, resume, and phase visibility.
 - Use `standard` as the default workflow unless the user explicitly selects another one.
 - When a task becomes active:
@@ -53,4 +55,4 @@ blockers: []
   - clear `blockers`
   - clear stale handoff instructions unless a short next-task pointer is genuinely useful
 - `resume_files` should include the implementation plan when one exists, and any spec or system files required to resume safely.
-- Keep task-local detail in task artifacts, not in this file.
+- Keep task-local detail in task artifacts, not in live session files.

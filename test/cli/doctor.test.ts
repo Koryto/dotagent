@@ -143,7 +143,7 @@ test("dotagent doctor reports missing required framework startup files", async (
   });
   assert.equal(exitCode, 0);
 
-  rmSync(path.join(root, ".agent", "state", "session_state.md"));
+  rmSync(path.join(root, ".agent", "state", "session_state_template.md"));
 
   const stdout = new MemoryWritable();
   const stderr = new MemoryWritable();
@@ -158,7 +158,7 @@ test("dotagent doctor reports missing required framework startup files", async (
   assert.equal(exitCode, 1);
   assert.equal(stderr.buffer, "");
   assert.match(stdout.buffer, /manual restoration|Required framework startup file is missing/);
-  assert.match(stdout.buffer, /\.agent\/state\/session_state\.md/);
+  assert.match(stdout.buffer, /\.agent\/state\/session_state_template\.md/);
 });
 
 test("dotagent doctor resolves the project root from nested directories in initialized projects", async () => {
