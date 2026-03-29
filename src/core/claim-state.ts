@@ -30,23 +30,23 @@ export function planClaimState(
   const sessionsRoot = path.join(dotagentRoot, "state", "sessions");
   const templatePath = path.join(dotagentRoot, "state", "session_state_template.md");
   const activeStatePath = path.join(sessionsRoot, toSessionStateFilename(sessionId));
-  const normalizedPickup = typeof stateToPickup === "string" ? normalizeSessionStateFilename(stateToPickup) : undefined;
-  const pickupSourcePath = normalizedPickup ? path.join(sessionsRoot, normalizedPickup) : undefined;
 
   if (fileExists(activeStatePath)) {
+    const pickupProvided = typeof stateToPickup === "string" && stateToPickup.trim().length > 0;
     return {
       projectRoot: context.projectRoot,
       sessionId,
       action: "claim-existing",
-      pickupStatus: normalizedPickup ? "ignored-existing-session" : "not-provided",
+      pickupStatus: pickupProvided ? "ignored-existing-session" : "not-provided",
       activeStatePath,
-      ...(normalizedPickup ? { stateToPickup: normalizedPickup } : {}),
-      ...(pickupSourcePath ? { pickupSourcePath } : {}),
-      message: normalizedPickup
-        ? `Bound to existing session file state_${sessionId}.md. Pickup request ${normalizedPickup} was not applied because this session already owns a state file.`
+      message: pickupProvided
+        ? `Bound to existing session file state_${sessionId}.md. Pickup request was not applied because this session already owns a state file.`
         : `Bound to existing session file state_${sessionId}.md.`
     };
   }
+
+  const normalizedPickup = typeof stateToPickup === "string" ? normalizeSessionStateFilename(stateToPickup) : undefined;
+  const pickupSourcePath = normalizedPickup ? path.join(sessionsRoot, normalizedPickup) : undefined;
 
   if (normalizedPickup && pickupSourcePath && fileExists(pickupSourcePath)) {
     return {
@@ -96,9 +96,9 @@ export function applyClaimStatePlan(context: CliContext, plan: ClaimStatePlan): 
         throw new DotagentError("Claim-state plan is missing the pickup source path.");
       }
       try {
-        const reboundContent = bindSessionState(readUtf8File(plan.pickupSourcePath), plan.sessionId);
-        safeWriteUtf8File(context.projectRoot, plan.pickupSourcePath, reboundContent, "Session pickup rewrite");
         renameSync(plan.pickupSourcePath, plan.activeStatePath);
+        const reboundContent = bindSessionState(readUtf8File(plan.activeStatePath), plan.sessionId);
+        safeWriteUtf8File(context.projectRoot, plan.activeStatePath, reboundContent, "Session pickup rewrite");
       } catch (error) {
         if (isFileMissingError(error)) {
           throw new DotagentError(

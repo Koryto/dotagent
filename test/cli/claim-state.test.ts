@@ -111,6 +111,41 @@ test("dotagent claim-state keeps the current session file when it already exists
   assert.equal(existsSync(path.join(sessionsRoot, "state_other.md")), true);
 });
 
+test("dotagent claim-state keeps the current session file even when the optional pickup argument is malformed", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-claim-state-existing-malformed-pickup-"));
+  const today = new Date().toISOString().slice(0, 10);
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  const sessionsRoot = path.join(root, ".agent", "state", "sessions");
+  mkdirSync(sessionsRoot, { recursive: true });
+  const activePath = path.join(sessionsRoot, "state_019cf1cb-41ad-72d2-943c-b8a83e24641d.md");
+  writeFileSync(activePath, "# Active\n```yaml\nowned_by: old\nstatus: IDLE\n```\n", "utf8");
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["claim-state", "019cf1cb-41ad-72d2-943c-b8a83e24641d", "bad-pickup-name", "--cwd", root],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /action: claim-existing/);
+  assert.match(stdout.buffer, /pickup_status: ignored-existing-session/);
+  assert.match(readFileSync(activePath, "utf8"), /owned_by: 019cf1cb-41ad-72d2-943c-b8a83e24641d/);
+  assert.match(readFileSync(activePath, "utf8"), new RegExp(`last_updated: ${today}`));
+});
+
 test("dotagent claim-state binds an existing session file even when the template is missing", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-claim-state-existing-no-template-"));
   const today = new Date().toISOString().slice(0, 10);
@@ -268,6 +303,7 @@ test("dotagent claim-state fails with a domain-specific error when the pickup fi
   writeFileSync(pickupPath, "# Pickup\n```yaml\nowned_by: pickup\nstatus: IN_PROGRESS\n```\n", "utf8");
   const context = createCliContext(root);
   const plan = planClaimState(context, "019cf1cb-41ad-72d2-943c-b8a83e24641d", "state_pickup.md");
+  writeFileSync(path.join(sessionsRoot, "state_other-claimant.md"), readFileSync(pickupPath, "utf8"), "utf8");
   rmSync(pickupPath);
 
   assert.throws(
