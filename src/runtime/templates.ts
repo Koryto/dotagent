@@ -26,6 +26,7 @@ export function renderRuntimeAdapterManifest(
 
 export function renderRuntimeInitBridge(
   runtime: SupportedRuntime,
+  initSkill: FrameworkSkillDescriptor,
   frameworkSkills: readonly FrameworkSkillDescriptor[],
   bundledPlaybooks: readonly string[]
 ): string {
@@ -67,7 +68,8 @@ export function renderRuntimeInitBridge(
     runtime,
     "init",
     "Start a dotagent session from this runtime using the generated native bridge.",
-    body
+    body,
+    initSkill.invocationArgs
   );
 }
 

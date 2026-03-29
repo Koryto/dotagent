@@ -234,7 +234,7 @@ function planAdapterFiles(
         planGeneratedFile(
           projectRoot,
           initTargetPath,
-          renderRuntimeInitBridge(runtime, bundledSkills, bundledPlaybooks),
+          renderRuntimeInitBridge(runtime, initSkill, bundledSkills, bundledPlaybooks),
           "adapter"
         )
       );

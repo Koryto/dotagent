@@ -245,7 +245,7 @@ function planManagedUpdates(
       seenPaths.add(relativePath);
       const content =
         skill.skillName === "init"
-          ? renderRuntimeInitBridge(runtime, bundledSkills, bundledPlaybooks)
+          ? renderRuntimeInitBridge(runtime, skill, bundledSkills, bundledPlaybooks)
           : renderRuntimeSkillBridge(runtime, skill);
 
       plans.push(
