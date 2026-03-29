@@ -28,11 +28,6 @@ The user must:
 - explicitly accept unresolved review or verification risk if the task is to proceed anyway
 - redirect the workflow explicitly if they want to skip or change the normal path
 
-Default convention:
-
-- use `.worktrees/<session_id>` as the default implementation worktree location
-- use a different worktree path only when the user explicitly approves that deviation
-
 ## Phase 1: Planning
 
 Goal: clarify scope and produce an approved implementation path.
@@ -52,7 +47,7 @@ Agent actions:
 7. Include:
    - scope
    - affected files or systems
-   - approved branch/worktree for implementation; default worktree location: `.worktrees/<session_id>`
+   - approved branch/worktree for implementation; default worktree location is `.worktrees/<session_id>` unless the user explicitly approves a different path
    - approved writable boundary for implementation
    - implementation steps
    - risks
