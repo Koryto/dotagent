@@ -7,7 +7,7 @@ import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills } fro
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
 import { readFrameworkRef } from "./framework.js";
-import { renderRuntimeAdapterManifest, renderRuntimeInitBridge, renderRuntimeSkillBridge } from "../runtime/templates.js";
+import { buildRuntimeInitBridgeExtraBody, renderRuntimeAdapterManifest, renderRuntimeSkillBridge } from "../runtime/templates.js";
 import type { CliContext } from "../models/command.js";
 import type { SupportedRuntime } from "./adapters.js";
 import type { DotagentManifest, FileOwnershipRecord } from "../models/manifest.js";
@@ -245,7 +245,10 @@ function planManagedUpdates(
       seenPaths.add(relativePath);
       const content =
         skill.skillName === "init"
-          ? renderRuntimeInitBridge(runtime, bundledSkills, bundledPlaybooks)
+          ? renderRuntimeSkillBridge(runtime, skill, {
+              extraBodyLines: buildRuntimeInitBridgeExtraBody(runtime, bundledSkills, bundledPlaybooks),
+              extraTools: ["Git"]
+            })
           : renderRuntimeSkillBridge(runtime, skill);
 
       plans.push(
