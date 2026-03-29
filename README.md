@@ -25,8 +25,8 @@ Then start agent work through your runtime's native `dotagent-init` wrapper.
 
 Examples:
 
-- Codex: `$dotagent-init`
-- Claude Code: `/dotagent:init`
+- Codex: `$dotagent-init session_id=<runtime_session_id>`
+- Claude Code: `/dotagent:init session_id=<runtime_session_id>`
 
 ## Why This Exists
 
