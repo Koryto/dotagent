@@ -210,7 +210,7 @@ function parseArgv(argv: string[]): ParsedCommand {
       return { kind: "init", flags };
     case "claim-state": {
       if (!subcommand) {
-        throw new CliUsageError("Missing session id for `dotagent claim-state <session_id> [state_<session_id>.md]`.");
+        throw new CliUsageError("Missing session id for `dotagent claim-state <session_id> [state_<other_session_id>.md]`.");
       }
       return {
         kind: "claim-state",
@@ -271,7 +271,7 @@ function renderHelp(): string {
     "  dotagent --version",
     "  dotagent version",
     "  dotagent init [--cwd <path>] [--runtimes <list>] [--dry-run] [--verbose] [--yes]",
-    "  dotagent claim-state <session_id> [state_<session_id>.md] [--cwd <path>] [--dry-run] [--verbose]",
+    "  dotagent claim-state <session_id> [state_<other_session_id>.md] [--cwd <path>] [--dry-run] [--verbose]",
     "  dotagent update [--cwd <path>] [--dry-run] [--verbose] [--yes]",
     "  dotagent doctor [--cwd <path>]",
     "  dotagent playbook list [--cwd <path>]",

@@ -18,15 +18,11 @@ Load the framework in this exact order.
 
 ### HOT
 
-Load these files at session start. They define the session control plane.
+After `dotagent claim-state` resolves the active session file, keep these files hot. They define the session control plane.
 
 1. `.agent/state/sessions/state_<session_id>.md`
 2. `.agent/project/PROJECT.md`
 3. `.agent/workflows/{workflow}.md`
-
-If the active session file does not exist yet, derive it from:
-
-- `.agent/state/session_state_template.md`
 
 `{workflow}` comes from the active session file. If no workflow is specified, use `standard`.
 
@@ -65,10 +61,10 @@ Do not cold-load entire namespaces preemptively. Load only the files needed for 
    - or whether pickup was ignored or missing
 4. Resolve the active session file at `.agent/state/sessions/state_<session_id>.md`.
 5. Read the active session file.
-6. If `status == IDLE`, prepare for a new task.
-7. If `status == IN_PROGRESS`, resume from `handoff_instructions` and `resume_files`.
-8. Read `.agent/project/PROJECT.md`.
-9. Read `.agent/workflows/{workflow}.md`.
+6. Read `.agent/project/PROJECT.md`.
+7. Read `.agent/workflows/{workflow}.md`.
+8. If `status == IDLE`, prepare for a new task.
+9. If `status == IN_PROGRESS`, resume from `handoff_instructions` and `resume_files`.
 10. Read `.agent/project/project_progress.md`, then release it from active context unless it remains immediately useful.
 11. If resuming, load the files listed in `resume_files`.
 12. If resuming, load task artifacts under `.agent/tasks/` that match the active task.
