@@ -126,6 +126,15 @@ Log only high-signal resumable context:
 
 Do not dump narrative chronology into the session log.
 
+## Worktree Wrap-Up
+
+If the task used a dedicated worktree:
+
+- ask whether the changes were already merged or pushed to origin
+- only if the user confirms they are done with the branch state, ask whether they want to remove the worktree
+
+Do not suggest removing a worktree before confirming the user is done with its changes.
+
 ## Output Contract
 
 Before leaving Summary, confirm the status of:
@@ -135,6 +144,7 @@ Before leaving Summary, confirm the status of:
 - project progress
 - session state
 - session log
+- worktree wrap-up, when applicable
 
 If an item was intentionally skipped, say so explicitly.
 

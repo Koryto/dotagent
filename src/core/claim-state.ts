@@ -33,10 +33,6 @@ export function planClaimState(
   const normalizedPickup = typeof stateToPickup === "string" ? normalizeSessionStateFilename(stateToPickup) : undefined;
   const pickupSourcePath = normalizedPickup ? path.join(sessionsRoot, normalizedPickup) : undefined;
 
-  if (!fileExists(templatePath)) {
-    throw new DotagentError("Session state template is missing: .agent/state/session_state_template.md");
-  }
-
   if (fileExists(activeStatePath)) {
     return {
       projectRoot: context.projectRoot,
@@ -63,6 +59,10 @@ export function planClaimState(
       ...(pickupSourcePath ? { pickupSourcePath } : {}),
       message: `Claimed ${normalizedPickup} and rebound it to state_${sessionId}.md.`
     };
+  }
+
+  if (!fileExists(templatePath)) {
+    throw new DotagentError("Session state template is missing: .agent/state/session_state_template.md");
   }
 
   return {
@@ -95,9 +95,19 @@ export function applyClaimStatePlan(context: CliContext, plan: ClaimStatePlan): 
       if (!plan.pickupSourcePath) {
         throw new DotagentError("Claim-state plan is missing the pickup source path.");
       }
-      const reboundContent = bindSessionState(readUtf8File(plan.pickupSourcePath), plan.sessionId);
-      safeWriteUtf8File(context.projectRoot, plan.pickupSourcePath, reboundContent, "Session pickup rewrite");
-      renameSync(plan.pickupSourcePath, plan.activeStatePath);
+      try {
+        const reboundContent = bindSessionState(readUtf8File(plan.pickupSourcePath), plan.sessionId);
+        safeWriteUtf8File(context.projectRoot, plan.pickupSourcePath, reboundContent, "Session pickup rewrite");
+        renameSync(plan.pickupSourcePath, plan.activeStatePath);
+      } catch (error) {
+        if (isFileMissingError(error)) {
+          throw new DotagentError(
+            `Pickup session file ${path.basename(plan.pickupSourcePath)} is no longer available. Another session likely claimed it first.`
+          );
+        }
+
+        throw error;
+      }
       return plan;
     }
     case "create": {
@@ -152,17 +162,18 @@ function normalizeSessionId(value: string): string {
 function bindSessionState(content: string, sessionId: string): string {
   const lastUpdated = new Date().toISOString().slice(0, 10);
   const normalized = content
+    .replace("# Session State Template", "# Session State")
+    .replace("<!-- SESSION_VERSION: 3.0 | STATUS: template -->", "<!-- SESSION_VERSION: 3.0 | STATUS: active -->")
     .replace(
-      "Keep this file small. This is the template for live per-session control files, not a narrative log.",
-      "Keep this file small. This is the control file for one live session, not a narrative log."
+      /<!-- TEMPLATE_HEADER_START -->[\s\S]*?<!-- TEMPLATE_HEADER_END -->/,
+      [
+        "Keep this file small. This is the control file for one live session, not a narrative log.",
+        "",
+        "Treat this file as the active control file for this session."
+      ].join("\n")
     )
-    .replace(/Live session files belong under:\r?\n\r?\n- `state\/sessions\/state_<session_id>\.md`\r?\n\r?\n/, "")
     .replace(
-      "Do not treat this template as the active session register.",
-      "Treat this file as the active control file for this session."
-    )
-    .replace(
-      "- Copy this template into `state/sessions/state_<session_id>.md` when creating a new live session file.",
+      /<!-- TEMPLATE_NOTES_START -->[\s\S]*?<!-- TEMPLATE_NOTES_END -->/,
       "- This live session file was derived from `state/session_state_template.md`."
     )
     .replace(/^owned_by:\s*.*$/m, `owned_by: ${sessionId}`)
@@ -189,4 +200,8 @@ function toProjectRelativePath(projectRoot: string, absolutePath: string): strin
 
 function assertNever(value: never): never {
   throw new DotagentError(`Unhandled claim-state action: ${JSON.stringify(value)}`);
+}
+
+function isFileMissingError(error: unknown): error is NodeJS.ErrnoException {
+  return error instanceof Error && "code" in error && error.code === "ENOENT";
 }

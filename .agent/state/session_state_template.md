@@ -1,6 +1,7 @@
 # Session State Template
 <!-- SESSION_VERSION: 3.0 | STATUS: template -->
 
+<!-- TEMPLATE_HEADER_START -->
 Keep this file small. This is the template for live per-session control files, not a narrative log.
 
 Live session files belong under:
@@ -8,6 +9,7 @@ Live session files belong under:
 - `state/sessions/state_<session_id>.md`
 
 Do not treat this template as the active session register.
+<!-- TEMPLATE_HEADER_END -->
 
 ## STATE
 
@@ -29,7 +31,9 @@ blockers: []
 
 ## NOTES
 
+<!-- TEMPLATE_NOTES_START -->
 - Copy this template into `state/sessions/state_<session_id>.md` when creating a new live session file.
+<!-- TEMPLATE_NOTES_END -->
 - Keep the state block accurate for handoff, resume, and phase visibility.
 - Use `standard` as the default workflow unless the user explicitly selects another one.
 - When a task becomes active:

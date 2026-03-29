@@ -69,6 +69,30 @@ test("dotagent archive-sessions moves only matching old live session files into 
   assert.equal(existsSync(freshLive), true);
 });
 
+test("dotagent archive-sessions reports zero matches without moving fresh files", async () => {
+  const root = mkdtemp("dotagent-cli-archive-sessions-no-match-");
+  await initFramework(root);
+  const freshLive = path.join(root, ".agent", "state", "sessions", "state_fresh.md");
+  writeFileSync(freshLive, "# fresh\n", "utf8");
+  setFileAgeDays(freshLive, 1);
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  const exitCode = await runCli({
+    argv: ["archive-sessions", "7", "--cwd", root],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /matches: 0/);
+  assert.equal(existsSync(freshLive), true);
+  assert.equal(existsSync(path.join(root, ".agent", "state", "sessions", "archive", "state_fresh.md")), false);
+});
+
 test("dotagent cleanup-sessions deletes matching old session files from live and archive", async () => {
   const root = mkdtemp("dotagent-cli-cleanup-sessions-apply-");
   await initFramework(root);
@@ -93,6 +117,33 @@ test("dotagent cleanup-sessions deletes matching old session files from live and
   assert.equal(exitCode, 0);
   assert.equal(existsSync(oldLive), false);
   assert.equal(existsSync(oldArchive), false);
+  assert.equal(existsSync(freshArchive), true);
+});
+
+test("dotagent cleanup-sessions reports zero matches without deleting fresh files", async () => {
+  const root = mkdtemp("dotagent-cli-cleanup-sessions-no-match-");
+  await initFramework(root);
+  const freshLive = path.join(root, ".agent", "state", "sessions", "state_fresh-live.md");
+  const freshArchive = path.join(root, ".agent", "state", "sessions", "archive", "state_fresh-archive.md");
+  writeFileSync(freshLive, "# fresh live\n", "utf8");
+  writeFileSync(freshArchive, "# fresh archive\n", "utf8");
+  setFileAgeDays(freshLive, 1);
+  setFileAgeDays(freshArchive, 1);
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  const exitCode = await runCli({
+    argv: ["cleanup-sessions", "7", "--cwd", root],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 0);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /matches: 0/);
+  assert.equal(existsSync(freshLive), true);
   assert.equal(existsSync(freshArchive), true);
 });
 
