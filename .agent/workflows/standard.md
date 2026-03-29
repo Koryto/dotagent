@@ -18,7 +18,7 @@ The agent must:
 
 - announce the active phase when entering it
 - make the current gate visible to the user
-- update `state/session_state.md` at task start, phase transitions, pause, and closeout
+- update the active session state file under `state/sessions/` at task start, phase transitions, pause, and closeout
 - reload this workflow before phase transitions and after long exploratory work
 
 The user must:
@@ -34,7 +34,7 @@ Goal: clarify scope and produce an approved implementation path.
 Agent actions:
 
 1. Announce entry into Planning.
-2. Update `session_state.md` for an active task in `workflow: standard`, `phase: planning`.
+2. Update the active session state file for an active task in `workflow: standard`, `phase: planning`.
 3. Read the task and clarify scope.
 4. If design intent is missing or unclear:
    - clarify with the user
@@ -62,13 +62,13 @@ Goal: execute the approved plan without drifting off workflow.
 Agent actions:
 
 1. Announce entry into Implementation.
-2. Update `session_state.md` to `phase: implementation`.
+2. Update the active session state file to `phase: implementation`.
 3. Reload this workflow before starting if Planning was long or exploratory.
 4. Follow the approved plan.
 5. Record meaningful deviations from plan.
 6. Keep `resume_files` current when the active working set changes materially.
 7. During long scans or broad exploratory work:
-   - reload `session_state.md`
+   - reload the active session state file
    - reload this workflow
    - confirm the current pass still serves the approved objective
 8. Work in batches when the task is large.
@@ -85,7 +85,7 @@ Goal: perform mandatory self-review before presenting completion.
 Agent actions:
 
 1. Announce entry into Review.
-2. Update `session_state.md` to `phase: review`.
+2. Update the active session state file to `phase: review`.
 3. Load the `code-review` skill on demand.
 4. Review the changes.
 5. Write `tasks/{task_name}/review.md` for substantial tasks.
@@ -104,7 +104,7 @@ Goal: verify behavior through execution or clearly state remaining risk.
 Agent actions:
 
 1. Announce entry into Verification.
-2. Update `session_state.md` to `phase: verification`.
+2. Update the active session state file to `phase: verification`.
 3. Choose the verification path.
 4. Ask the user only if the correct verification path is unclear.
 5. Run verification with permission when required.
@@ -126,7 +126,7 @@ Goal: close the task cleanly and leave the framework resumable.
 Agent actions:
 
 1. Announce entry into Summary.
-2. Update `session_state.md` to `phase: summary`.
+2. Update the active session state file to `phase: summary`.
 3. Load the `closeout` skill on demand.
 4. Execute the closeout process.
 5. Release the skill after summary.
@@ -135,7 +135,7 @@ Gate: closeout is complete
 
 ## Reload Rules
 
-Reload `state/session_state.md` and this workflow:
+Reload the active session state file and this workflow:
 
 - before every phase transition
 - after long exploratory work
@@ -153,7 +153,7 @@ Always:
 - perform review before calling work done
 - distinguish review from verification
 - be explicit about unresolved risk
-- keep `session_state.md` accurate enough for handoff and resume
+- keep the active session state file accurate enough for handoff and resume
 - assign explicit, non-overlapping file ownership to each sub-agent when working in parallel
 
 Never:

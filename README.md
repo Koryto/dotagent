@@ -25,8 +25,8 @@ Then start agent work through your runtime's native `dotagent-init` wrapper.
 
 Examples:
 
-- Codex: `$dotagent-init`
-- Claude Code: `/dotagent:init`
+- Codex: `$dotagent-init session_id=<runtime_session_id>`
+- Claude Code: `/dotagent:init session_id=<runtime_session_id>`
 
 ## Why This Exists
 
@@ -106,7 +106,8 @@ See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current c
 
 ## Session Model
 
-- `state/session_state.md` tracks whether the current session is idle or in progress
+- `state/session_state_template.md` defines the per-session state shape
+- `state/sessions/state_<session_id>.md` is the live session file for one active runtime session
 - `state/session_log.md` is append-only historical session context
 - `skills/init/SKILL.md` is the framework session entrypoint
 - the CLI owns framework initialization and playbook runtime scaffolding
@@ -115,7 +116,7 @@ See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current c
 
 1. Initialize the framework with `dotagent init`.
 2. Fill in `project/PROJECT.md`.
-3. Start sessions through your runtime-native `dotagent-init` bridge, which loads `skills/init/SKILL.md`.
+3. Start sessions through your runtime-native `dotagent-init` bridge with an explicit `session_id`, which loads `skills/init/SKILL.md`.
 4. Keep durable system knowledge in `systems/`, not in task artifacts.
 5. Use `specs/` only when design intent needs to be defined or clarified.
 6. Use `tasks/` for plans, reviews, verification notes, and summaries.

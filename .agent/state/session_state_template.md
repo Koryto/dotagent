@@ -1,9 +1,21 @@
-# Session State
-<!-- SESSION_VERSION: 2.0 | STATUS: template -->
+# Session State Template
+<!-- SESSION_VERSION: 3.0 | STATUS: template -->
 
-Keep this file small. This is the session control register, not a narrative log.
+This file defines the template for live per-session state files.
 
-Update it when:
+Do not treat this file as the active state of the project.
+
+Live session files belong under:
+
+- `state/sessions/state_<session_id>.md`
+
+## Purpose
+
+Keep each session file small.
+
+It is a session control register, not a narrative log.
+
+Update the live session file when:
 
 - a task starts
 - the active phase changes
@@ -13,6 +25,8 @@ Update it when:
 ## STATE
 
 ```yaml
+session_id: <session_id>
+owned_by: <session_id>
 status: IDLE
 workflow: standard
 phase: none

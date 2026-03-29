@@ -29,6 +29,7 @@ export function renderRuntimeInitBridge(
   frameworkSkills: readonly FrameworkSkillDescriptor[],
   bundledPlaybooks: readonly string[]
 ): string {
+  const initInvocationArgs = frameworkSkills.find((entry) => entry.skillName === "init")?.invocationArgs ?? [];
   const skillInvocationLines =
     frameworkSkills.length > 0
       ? frameworkSkills.map((entry) => `- ${formatRuntimeInvocation(runtime, entry.skillName)}`)
@@ -67,7 +68,8 @@ export function renderRuntimeInitBridge(
     runtime,
     "init",
     "Start a dotagent session from this runtime using the generated native bridge.",
-    body
+    body,
+    initInvocationArgs
   );
 }
 
