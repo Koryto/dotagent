@@ -41,11 +41,13 @@ export interface DoctorReport {
 const REQUIRED_FRAMEWORK_PATHS = [
   "workflows",
   "skills",
-  "playbooks"
+  "playbooks",
+  "state/sessions",
+  "state/sessions/archive"
 ] as const;
 
 const REQUIRED_STARTUP_FILES = [
-  "state/session_state.md",
+  "state/session_state_template.md",
   "project/PROJECT.md",
   "project/project_progress.md"
 ] as const;

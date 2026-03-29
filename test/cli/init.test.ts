@@ -79,6 +79,10 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.equal(exitCode, 0);
   assert.equal(stderr.buffer, "");
   assert.equal(existsSync(path.join(root, ".agent", "skills", "init", "SKILL.md")), true);
+  assert.equal(existsSync(path.join(root, ".agent", "state", "session_state_template.md")), true);
+  assert.equal(existsSync(path.join(root, ".agent", "state", "sessions", "README.md")), true);
+  assert.equal(existsSync(path.join(root, ".agent", "state", "sessions", "archive", "README.md")), true);
+  assert.equal(existsSync(path.join(root, ".agent", "state", "session_state.md")), false);
   assert.equal(existsSync(path.join(root, ".codex", "dotagent.json")), true);
   assert.equal(existsSync(path.join(root, ".claude", "dotagent.json")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md")), true);
@@ -87,6 +91,14 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-dcp-lead-init", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".codex", "skills", "dotagent-dcr-reviewer-init", "SKILL.md")), true);
   assert.match(readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"), /^---\r?\nname: "dotagent-init"\r?\ndescription: "/);
+  assert.match(
+    readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"),
+    /description: "Start a dotagent session from this runtime using the generated native bridge\."\r?\nargument-hint: "session_id=<value> \[state_to_pickup=<value>\]"/
+  );
+  assert.match(
+    readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"),
+    /dotagent archive-sessions <days>[\s\S]*dotagent cleanup-sessions <days>/
+  );
   assert.match(
     readFileSync(path.join(root, ".codex", "skills", "dotagent-dcp-lead-init", "SKILL.md"), "utf8"),
     /description: "Invoke the dotagent dcp-lead-init skill natively from this runtime\."\r?\nargument-hint: "task_name=<value>"/
@@ -100,7 +112,15 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "code-review.md")), true);
   assert.equal(existsSync(path.join(root, ".claude", "commands", "dotagent", "dcp-lead-init.md")), true);
   assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /^---\r?\nname: "dotagent:init"\r?\ndescription: "/);
-  assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /allowed-tools:\r?\n  - Read\r?\n  - Write\r?\n  - Bash\r?\n  - Grep\r?\n  - Glob/);
+  assert.match(
+    readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"),
+    /description: "Start a dotagent session from this runtime using the generated native bridge\."\r?\nargument-hint: "session_id=<value> \[state_to_pickup=<value>\]"/
+  );
+  assert.match(
+    readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"),
+    /dotagent archive-sessions <days>[\s\S]*dotagent cleanup-sessions <days>/
+  );
+  assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /allowed-tools:\r?\n  - Read\r?\n  - Write\r?\n  - Bash\r?\n  - Grep\r?\n  - Glob\r?\n  - Git/);
   assert.match(
     readFileSync(path.join(root, ".claude", "commands", "dotagent", "dcp-lead-init.md"), "utf8"),
     /description: "Invoke the dotagent dcp-lead-init skill natively from this runtime\."\r?\nargument-hint: "task_name=<value>"/
@@ -136,7 +156,7 @@ test("dotagent init installs the copilot adapter under .github", async () => {
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-code-review", "SKILL.md")), true);
   assert.equal(existsSync(path.join(root, ".github", "skills", "dotagent-dcp-reviewer-init", "SKILL.md")), true);
   assert.match(readFileSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md"), "utf8"), /^---\r?\nname: "dotagent-init"\r?\ndescription: "/);
-  assert.match(readFileSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md"), "utf8"), /allowed-tools: Read, Write, Bash, Grep, Glob/);
+  assert.match(readFileSync(path.join(root, ".github", "skills", "dotagent-init", "SKILL.md"), "utf8"), /allowed-tools: Read, Write, Bash, Grep, Glob, Git/);
   assert.match(
     readFileSync(path.join(root, ".github", "skills", "dotagent-dcp-reviewer-init", "SKILL.md"), "utf8"),
     /description: "Invoke the dotagent dcp-reviewer-init skill natively from this runtime\."\r?\nargument-hint: "task_name=<value> suffix=<value> \[domain=<value>\]"/
@@ -173,7 +193,7 @@ test("dotagent init installs opencode runtime commands", async () => {
   assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-code-review.md")), true);
   assert.equal(existsSync(path.join(root, ".opencode", "commands", "dotagent-dcr-lead-init.md")), true);
   assert.match(readFileSync(path.join(root, ".opencode", "commands", "dotagent-init.md"), "utf8"), /^---\r?\ndescription: /);
-  assert.match(readFileSync(path.join(root, ".opencode", "commands", "dotagent-init.md"), "utf8"), /tools:\r?\n  read: true\r?\n  write: true\r?\n  bash: true\r?\n  grep: true\r?\n  glob: true/);
+  assert.match(readFileSync(path.join(root, ".opencode", "commands", "dotagent-init.md"), "utf8"), /tools:\r?\n  read: true\r?\n  write: true\r?\n  bash: true\r?\n  grep: true\r?\n  glob: true\r?\n  git: true/);
   assert.match(
     readFileSync(path.join(root, ".opencode", "commands", "dotagent-dcr-lead-init.md"), "utf8"),
     /description: "Invoke the dotagent dcr-lead-init skill natively from this runtime\."\r?\nargument-hint: "task_name=<value>"/

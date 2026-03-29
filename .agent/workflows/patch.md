@@ -20,7 +20,7 @@ The agent must:
 
 - announce the active phase when entering it
 - make the current gate visible to the user
-- update `state/session_state.md` at task start, phase transitions, pause, and closeout
+- update the active session file under `state/sessions/` at task start, phase transitions, pause, and closeout
 - switch to `standard` if scope, risk, or uncertainty grows beyond a lightweight patch
 
 The user must:
@@ -35,7 +35,7 @@ Goal: confirm that `patch` is appropriate and define the change.
 Agent actions:
 
 1. Announce entry into Scope.
-2. Update `session_state.md` for an active task in `workflow: patch`, `phase: scope`.
+2. Update the active session file for an active task in `workflow: patch`, `phase: scope`.
 3. Confirm the task is still a good fit for `patch`.
 4. Give a concise inline plan in chat:
    - intended change
@@ -53,7 +53,7 @@ Goal: implement the smallest justified change.
 Agent actions:
 
 1. Announce entry into Patch.
-2. Update `session_state.md` to `phase: patch`.
+2. Update the active session file to `phase: patch`.
 3. Make the minimal change that solves the task cleanly.
 4. Avoid speculative cleanup unless it is directly justified by the patch.
 5. Keep `resume_files` current if the task pauses or the active working set changes materially.
@@ -68,7 +68,7 @@ Goal: perform a lightweight review and verification pass proportional to the pat
 Agent actions:
 
 1. Announce entry into Sanity.
-2. Update `session_state.md` to `phase: sanity`.
+2. Update the active session file to `phase: sanity`.
 3. Review the patch at a lightweight level:
    - obvious correctness
    - obvious regression risk
@@ -90,7 +90,7 @@ Goal: close the patch without unnecessary artifact overhead.
 Agent actions:
 
 1. Announce entry into Summary.
-2. Update `session_state.md` to `phase: summary`.
+2. Update the active session file to `phase: summary`.
 3. Summarize in chat:
    - what changed
    - what was verified
@@ -102,7 +102,7 @@ Gate: patch closeout is complete
 
 ## Reload Rules
 
-Reload `state/session_state.md` and the active workflow:
+Reload the active session file under `state/sessions/` and the active workflow:
 
 - before every phase transition
 - after broad exploratory work

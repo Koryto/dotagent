@@ -25,8 +25,8 @@ Then start agent work through your runtime's native `dotagent-init` wrapper.
 
 Examples:
 
-- Codex: `$dotagent-init`
-- Claude Code: `/dotagent:init`
+- Codex: `$dotagent-init session_id=<runtime_session_id>`
+- Claude Code: `/dotagent:init session_id=<runtime_session_id>`
 
 ## Why This Exists
 
@@ -103,13 +103,6 @@ Current bundled playbooks:
 - `deep-code-review` - run a structured multi-agent review loop for large or high-risk changes
 
 See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current conventions.
-
-## Session Model
-
-- `state/session_state.md` tracks whether the current session is idle or in progress
-- `state/session_log.md` is append-only historical session context
-- `skills/init/SKILL.md` is the framework session entrypoint
-- the CLI owns framework initialization and playbook runtime scaffolding
 
 ## How To Use
 

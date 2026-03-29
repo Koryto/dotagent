@@ -1,6 +1,9 @@
 import path from "node:path";
 import type { Readable, Writable } from "node:stream";
 
+import { handleArchiveSessions } from "./commands/archive-sessions.js";
+import { handleClaimState } from "./commands/claim-state.js";
+import { handleCleanupSessions } from "./commands/cleanup-sessions.js";
 import { handleDoctor } from "./commands/doctor.js";
 import { handleInit } from "./commands/init.js";
 import { handlePlaybookInit } from "./commands/playbook/init.js";
@@ -207,6 +210,37 @@ function parseArgv(argv: string[]): ParsedCommand {
       return { kind: "version", flags };
     case "init":
       return { kind: "init", flags };
+    case "claim-state": {
+      if (!subcommand) {
+        throw new CliUsageError("Missing session id for `dotagent claim-state <session_id> [state_<other_session_id>.md]`.");
+      }
+      return {
+        kind: "claim-state",
+        flags,
+        sessionId: subcommand,
+        ...(maybeArg ? { stateToPickup: maybeArg } : {})
+      };
+    }
+    case "archive-sessions": {
+      if (!subcommand) {
+        throw new CliUsageError("Missing day count for `dotagent archive-sessions <days>`.");
+      }
+      return {
+        kind: "archive-sessions",
+        flags,
+        days: parseSessionMaintenanceDays(subcommand, "archive-sessions")
+      };
+    }
+    case "cleanup-sessions": {
+      if (!subcommand) {
+        throw new CliUsageError("Missing day count for `dotagent cleanup-sessions <days>`.");
+      }
+      return {
+        kind: "cleanup-sessions",
+        flags,
+        days: parseSessionMaintenanceDays(subcommand, "cleanup-sessions")
+      };
+    }
     case "update":
       return { kind: "update", flags };
     case "doctor":
@@ -236,6 +270,12 @@ async function dispatch(command: CliCommand, context: CliContext): Promise<numbe
   switch (command.kind) {
     case "init":
       return handleInit(context);
+    case "claim-state":
+      return handleClaimState(command, context);
+    case "archive-sessions":
+      return handleArchiveSessions(command, context);
+    case "cleanup-sessions":
+      return handleCleanupSessions(command, context);
     case "update":
       return handleUpdate(context);
     case "doctor":
@@ -257,6 +297,9 @@ function renderHelp(): string {
     "  dotagent --version",
     "  dotagent version",
     "  dotagent init [--cwd <path>] [--runtimes <list>] [--dry-run] [--verbose] [--yes]",
+    "  dotagent claim-state <session_id> [state_<other_session_id>.md] [--cwd <path>] [--dry-run] [--verbose]",
+    "  dotagent archive-sessions <days> [--cwd <path>] [--dry-run] [--verbose]",
+    "  dotagent cleanup-sessions <days> [--cwd <path>] [--dry-run] [--verbose]",
     "  dotagent update [--cwd <path>] [--dry-run] [--verbose] [--yes]",
     "  dotagent doctor [--cwd <path>]",
     "  dotagent playbook list [--cwd <path>]",
@@ -310,6 +353,14 @@ function normalizeCommandPlaybookName(value: string): string {
   } catch {
     throw new CliUsageError(`Invalid playbook name: ${value}.`);
   }
+}
+
+function parseSessionMaintenanceDays(value: string, commandName: string): number {
+  if (!/^\d+$/.test(value)) {
+    throw new CliUsageError(`Invalid day count for \`dotagent ${commandName} <days>\`: ${value}.`);
+  }
+
+  return Number.parseInt(value, 10);
 }
 
 function normalizeError(error: unknown): DotagentError {

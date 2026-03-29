@@ -7,6 +7,11 @@ export interface FrameworkSkillDescriptor {
   invocationArgs: readonly FrameworkSkillInvocationArg[];
 }
 
+interface RuntimeSkillBridgeOptions {
+  extraBodyLines?: readonly string[];
+  extraTools?: readonly string[];
+}
+
 export function renderRuntimeAdapterManifest(
   runtime: SupportedRuntime,
   frameworkRef: string,
@@ -24,11 +29,11 @@ export function renderRuntimeAdapterManifest(
   )}\n`;
 }
 
-export function renderRuntimeInitBridge(
+export function buildRuntimeInitBridgeExtraBody(
   runtime: SupportedRuntime,
   frameworkSkills: readonly FrameworkSkillDescriptor[],
   bundledPlaybooks: readonly string[]
-): string {
+): string[] {
   const skillInvocationLines =
     frameworkSkills.length > 0
       ? frameworkSkills.map((entry) => `- ${formatRuntimeInvocation(runtime, entry.skillName)}`)
@@ -36,9 +41,7 @@ export function renderRuntimeInitBridge(
   const playbookLines =
     bundledPlaybooks.length > 0 ? bundledPlaybooks.map((entry) => `- ${entry}`) : ["- none"];
 
-  const body = [
-    `# ${formatRuntimeBridgeName(runtime, "init")}`,
-    "",
+  return [
     "Use this runtime bridge to start working with the dotagent framework in this project.",
     "",
     "Load and follow:",
@@ -52,6 +55,9 @@ export function renderRuntimeInitBridge(
     "",
     "Supported CLI commands:",
     "- `dotagent init`",
+    "- `dotagent claim-state <session_id> [state_<other_session_id>.md]`",
+    "- `dotagent archive-sessions <days>`",
+    "- `dotagent cleanup-sessions <days>`",
     "- `dotagent doctor`",
     "- `dotagent update`",
     "- `dotagent playbook list`",
@@ -62,18 +68,12 @@ export function renderRuntimeInitBridge(
     "These runtime files are generated bridges for native invocation only.",
     ""
   ];
-
-  return renderRuntimeBridgeDocument(
-    runtime,
-    "init",
-    "Start a dotagent session from this runtime using the generated native bridge.",
-    body
-  );
 }
 
 export function renderRuntimeSkillBridge(
   runtime: SupportedRuntime,
-  skill: FrameworkSkillDescriptor
+  skill: FrameworkSkillDescriptor,
+  options: RuntimeSkillBridgeOptions = {}
 ): string {
   const invocationArgLines =
     skill.invocationArgs.length > 0
@@ -91,23 +91,28 @@ export function renderRuntimeSkillBridge(
   const body = [
     `# ${formatRuntimeBridgeName(runtime, skill.skillName)}`,
     "",
-    "Generated bridge for a dotagent framework skill.",
-    "",
-    "Load and follow:",
-    `- \`${skill.sourcePath}\``,
-    "",
-    ...invocationArgLines,
-    `This wrapper exists so the skill can be invoked natively in ${runtime}.`,
-    "The framework source of truth remains under `.agent/`.",
-    ""
+    ...(options.extraBodyLines ?? [
+      "Generated bridge for a dotagent framework skill.",
+      "",
+      "Load and follow:",
+      `- \`${skill.sourcePath}\``,
+      "",
+      ...invocationArgLines,
+      `This wrapper exists so the skill can be invoked natively in ${runtime}.`,
+      "The framework source of truth remains under `.agent/`.",
+      ""
+    ])
   ];
 
   return renderRuntimeBridgeDocument(
     runtime,
     skill.skillName,
-    `Invoke the dotagent ${skill.skillName} skill natively from this runtime.`,
+    skill.skillName === "init"
+      ? "Start a dotagent session from this runtime using the generated native bridge."
+      : `Invoke the dotagent ${skill.skillName} skill natively from this runtime.`,
     body,
-    skill.invocationArgs
+    skill.invocationArgs,
+    options.extraTools
   );
 }
 
@@ -138,9 +143,10 @@ function renderRuntimeBridgeDocument(
   name: string,
   description: string,
   bodyLines: readonly string[],
-  invocationArgs: readonly FrameworkSkillInvocationArg[] = []
+  invocationArgs: readonly FrameworkSkillInvocationArg[] = [],
+  extraTools: readonly string[] = []
 ): string {
-  const frontmatter = renderRuntimeBridgeFrontmatter(runtime, name, description, invocationArgs);
+  const frontmatter = renderRuntimeBridgeFrontmatter(runtime, name, description, invocationArgs, extraTools);
   return [...frontmatter, "", ...bodyLines].join("\n");
 }
 
@@ -148,9 +154,11 @@ function renderRuntimeBridgeFrontmatter(
   runtime: SupportedRuntime,
   name: string,
   description: string,
-  invocationArgs: readonly FrameworkSkillInvocationArg[]
+  invocationArgs: readonly FrameworkSkillInvocationArg[],
+  extraTools: readonly string[]
 ): string[] {
   const argumentHint = invocationArgs.length > 0 ? formatArgumentHint(invocationArgs) : null;
+  const toolLines = buildToolLines(extraTools);
 
   switch (runtime) {
     case "codex":
@@ -170,11 +178,7 @@ function renderRuntimeBridgeFrontmatter(
         `description: ${yamlString(description)}`,
         argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
         "allowed-tools:",
-        "  - Read",
-        "  - Write",
-        "  - Bash",
-        "  - Grep",
-        "  - Glob",
+        ...toolLines.claude,
         "---"
       ]);
     case "opencode":
@@ -183,11 +187,7 @@ function renderRuntimeBridgeFrontmatter(
         `description: ${yamlString(description)}`,
         argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
         "tools:",
-        "  read: true",
-        "  write: true",
-        "  bash: true",
-        "  grep: true",
-        "  glob: true",
+        ...toolLines.opencode,
         "---"
       ]);
     case "copilot":
@@ -196,7 +196,7 @@ function renderRuntimeBridgeFrontmatter(
         `name: ${yamlString(`dotagent-${name}`)}`,
         `description: ${yamlString(description)}`,
         argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
-        "allowed-tools: Read, Write, Bash, Grep, Glob",
+        `allowed-tools: ${toolLines.copilot.join(", ")}`,
         "---"
       ]);
     default:
@@ -217,6 +217,16 @@ function formatArgumentHint(invocationArgs: readonly FrameworkSkillInvocationArg
   return invocationArgs
     .map((arg) => (arg.required ? `${arg.name}=<value>` : `[${arg.name}=<value>]`))
     .join(" ");
+}
+
+function buildToolLines(extraTools: readonly string[]): { claude: string[]; opencode: string[]; copilot: string[] } {
+  const normalizedTools = [...new Set(["Read", "Write", "Bash", "Grep", "Glob", ...extraTools])];
+
+  return {
+    claude: normalizedTools.map((tool) => `  - ${tool}`),
+    opencode: normalizedTools.map((tool) => `  ${tool.toLowerCase()}: true`),
+    copilot: normalizedTools
+  };
 }
 
 function compactYamlLines(lines: Array<string | null>): string[] {

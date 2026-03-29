@@ -22,4 +22,9 @@ Example:
 - `combat_ability/ip.md`
 - `combat_ability/pr_summary.md`
 
+When an implementation plan exists under the `standard` workflow, record:
+
+- approved branch/worktree for implementation
+- approved writable boundary for implementation
+
 Do not treat task files as durable system truth.
