@@ -7,6 +7,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  renameSync,
   unlinkSync,
   writeFileSync
 } from "node:fs";
@@ -98,6 +99,13 @@ export function safeRemoveFileIfExists(projectRoot: string, filePath: string, la
       throw error;
     }
   }
+}
+
+export function safeRenameFile(projectRoot: string, fromPath: string, toPath: string, label: string): void {
+  assertSafeProjectTarget(projectRoot, fromPath, label);
+  assertSafeProjectTarget(projectRoot, toPath, label);
+  ensureParentDirectory(toPath);
+  renameSync(fromPath, toPath);
 }
 
 export function requireGeneratedUtf8Content(

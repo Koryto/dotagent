@@ -56,6 +56,8 @@ export function buildRuntimeInitBridgeExtraBody(
     "Supported CLI commands:",
     "- `dotagent init`",
     "- `dotagent claim-state <session_id> [state_<other_session_id>.md]`",
+    "- `dotagent archive-sessions <days>`",
+    "- `dotagent cleanup-sessions <days>`",
     "- `dotagent doctor`",
     "- `dotagent update`",
     "- `dotagent playbook list`",

@@ -16,3 +16,5 @@ Rules:
 - the active file is derived from `state/session_state_template.md`
 - session IDs are used as-is; do not alias or normalize them
 - archive and cleanup are CLI responsibilities, not agent responsibilities
+- use `dotagent archive-sessions <days>` to move old session files into `archive/`
+- use `dotagent cleanup-sessions <days>` to permanently delete old session files by age

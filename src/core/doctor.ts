@@ -42,7 +42,8 @@ const REQUIRED_FRAMEWORK_PATHS = [
   "workflows",
   "skills",
   "playbooks",
-  "state/sessions"
+  "state/sessions",
+  "state/sessions/archive"
 ] as const;
 
 const REQUIRED_STARTUP_FILES = [

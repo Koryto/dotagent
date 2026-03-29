@@ -96,6 +96,10 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
     /description: "Start a dotagent session from this runtime using the generated native bridge\."\r?\nargument-hint: "session_id=<value> \[state_to_pickup=<value>\]"/
   );
   assert.match(
+    readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"),
+    /dotagent archive-sessions <days>[\s\S]*dotagent cleanup-sessions <days>/
+  );
+  assert.match(
     readFileSync(path.join(root, ".codex", "skills", "dotagent-dcp-lead-init", "SKILL.md"), "utf8"),
     /description: "Invoke the dotagent dcp-lead-init skill natively from this runtime\."\r?\nargument-hint: "task_name=<value>"/
   );
@@ -111,6 +115,10 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.match(
     readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"),
     /description: "Start a dotagent session from this runtime using the generated native bridge\."\r?\nargument-hint: "session_id=<value> \[state_to_pickup=<value>\]"/
+  );
+  assert.match(
+    readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"),
+    /dotagent archive-sessions <days>[\s\S]*dotagent cleanup-sessions <days>/
   );
   assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /allowed-tools:\r?\n  - Read\r?\n  - Write\r?\n  - Bash\r?\n  - Grep\r?\n  - Glob\r?\n  - Git/);
   assert.match(

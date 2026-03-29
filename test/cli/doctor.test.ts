@@ -161,6 +161,36 @@ test("dotagent doctor reports missing required framework startup files", async (
   assert.match(stdout.buffer, /\.agent\/state\/session_state_template\.md/);
 });
 
+test("dotagent doctor reports missing required session archive directory", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-doctor-missing-archive-dir-"));
+
+  let exitCode = await runCli({
+    argv: ["init", "--cwd", root, "--yes"],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout: new MemoryWritable(),
+    stderr: new MemoryWritable()
+  });
+  assert.equal(exitCode, 0);
+
+  rmSync(path.join(root, ".agent", "state", "sessions", "archive"), { recursive: true, force: true });
+
+  const stdout = new MemoryWritable();
+  const stderr = new MemoryWritable();
+  exitCode = await runCli({
+    argv: ["doctor", "--cwd", root],
+    cwd: process.cwd(),
+    stdin: Readable.from([]),
+    stdout,
+    stderr
+  });
+
+  assert.equal(exitCode, 1);
+  assert.equal(stderr.buffer, "");
+  assert.match(stdout.buffer, /Required framework path is missing/);
+  assert.match(stdout.buffer, /\.agent\/state\/sessions\/archive/);
+});
+
 test("dotagent doctor resolves the project root from nested directories in initialized projects", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-doctor-nested-root-"));
   const nested = path.join(root, "src", "nested");

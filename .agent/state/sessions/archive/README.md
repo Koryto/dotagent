@@ -8,3 +8,5 @@ Archived files keep the same naming convention:
 
 Agents should not archive or delete session files manually unless the user explicitly asks.
 Archive and cleanup are CLI responsibilities.
+Use `dotagent archive-sessions <days>` to populate this directory.
+Use `dotagent cleanup-sessions <days>` to delete old archived session files.

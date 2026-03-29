@@ -34,6 +34,18 @@ export interface ClaimStateCommand {
   stateToPickup?: string;
 }
 
+export interface ArchiveSessionsCommand {
+  kind: "archive-sessions";
+  flags: CommandFlags;
+  days: number;
+}
+
+export interface CleanupSessionsCommand {
+  kind: "cleanup-sessions";
+  flags: CommandFlags;
+  days: number;
+}
+
 export interface UpdateCommand {
   kind: "update";
   flags: CommandFlags;
@@ -60,6 +72,8 @@ export type ParsedCommand =
   | VersionCommand
   | InitCommand
   | ClaimStateCommand
+  | ArchiveSessionsCommand
+  | CleanupSessionsCommand
   | UpdateCommand
   | DoctorCommand
   | PlaybookListCommand
