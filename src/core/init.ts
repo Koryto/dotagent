@@ -235,7 +235,8 @@ function planAdapterFiles(
           projectRoot,
           initTargetPath,
           renderRuntimeSkillBridge(runtime, initSkill, {
-            extraBodyLines: buildRuntimeInitBridgeExtraBody(runtime, bundledSkills, bundledPlaybooks)
+            extraBodyLines: buildRuntimeInitBridgeExtraBody(runtime, bundledSkills, bundledPlaybooks),
+            extraTools: ["Git"]
           }),
           "adapter"
         )

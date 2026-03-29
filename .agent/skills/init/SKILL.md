@@ -56,9 +56,14 @@ Do not cold-load entire namespaces preemptively. Load only the files needed for 
 ## Initialization Sequence
 
 1. Require `session_id` at runtime entry. If it is missing, ask the user immediately.
-2. Resolve the active session file at `.agent/state/sessions/state_<session_id>.md`.
-3. If `state_to_pickup` was supplied, treat it as the intended session file to adopt. Do not guess pickup targets implicitly.
-4. If the active session file does not exist yet, use `.agent/state/session_state_template.md` as the source template for creating it with framework assistance.
+2. Run:
+   - `dotagent claim-state <session_id>`
+   - or `dotagent claim-state <session_id> <state_to_pickup>`
+3. Communicate the CLI result clearly to the user:
+   - whether the current session bound to its own state file
+   - whether a pickup file was claimed
+   - or whether pickup was ignored or missing
+4. Resolve the active session file at `.agent/state/sessions/state_<session_id>.md`.
 5. Read the active session file.
 6. If `status == IDLE`, prepare for a new task.
 7. If `status == IN_PROGRESS`, resume from `handoff_instructions` and `resume_files`.
@@ -86,6 +91,7 @@ Always:
 
 - use this skill as the source of truth for session startup
 - require `session_id` before loading live session state
+- use `dotagent claim-state` as the operational source of truth for session file creation and pickup
 - read the active session file under `state/sessions/` before any planning or implementation
 - reload the hot set if heavy scanning pushes it out of active context
 - keep the user on the active workflow unless the user explicitly changes it
@@ -98,3 +104,4 @@ Never:
 - hot-load `tasks/`, `skills/`, `playbooks/`, `specs/`, or `systems/` without a task-driven reason
 - treat task-local notes as durable project or system truth
 - continue without an explicit session id from the user, or map one session id to another implicitly
+- create, adopt, or rename live session files through ad hoc filesystem edits when the CLI can do it deterministically

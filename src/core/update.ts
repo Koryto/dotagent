@@ -246,7 +246,8 @@ function planManagedUpdates(
       const content =
         skill.skillName === "init"
           ? renderRuntimeSkillBridge(runtime, skill, {
-              extraBodyLines: buildRuntimeInitBridgeExtraBody(runtime, bundledSkills, bundledPlaybooks)
+              extraBodyLines: buildRuntimeInitBridgeExtraBody(runtime, bundledSkills, bundledPlaybooks),
+              extraTools: ["Git"]
             })
           : renderRuntimeSkillBridge(runtime, skill);
 

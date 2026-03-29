@@ -9,6 +9,7 @@ export interface FrameworkSkillDescriptor {
 
 interface RuntimeSkillBridgeOptions {
   extraBodyLines?: readonly string[];
+  extraTools?: readonly string[];
 }
 
 export function renderRuntimeAdapterManifest(
@@ -54,6 +55,7 @@ export function buildRuntimeInitBridgeExtraBody(
     "",
     "Supported CLI commands:",
     "- `dotagent init`",
+    "- `dotagent claim-state <session_id> [state_<session_id>.md]`",
     "- `dotagent doctor`",
     "- `dotagent update`",
     "- `dotagent playbook list`",
@@ -107,7 +109,8 @@ export function renderRuntimeSkillBridge(
       ? "Start a dotagent session from this runtime using the generated native bridge."
       : `Invoke the dotagent ${skill.skillName} skill natively from this runtime.`,
     body,
-    skill.invocationArgs
+    skill.invocationArgs,
+    options.extraTools
   );
 }
 
@@ -138,9 +141,10 @@ function renderRuntimeBridgeDocument(
   name: string,
   description: string,
   bodyLines: readonly string[],
-  invocationArgs: readonly FrameworkSkillInvocationArg[] = []
+  invocationArgs: readonly FrameworkSkillInvocationArg[] = [],
+  extraTools: readonly string[] = []
 ): string {
-  const frontmatter = renderRuntimeBridgeFrontmatter(runtime, name, description, invocationArgs);
+  const frontmatter = renderRuntimeBridgeFrontmatter(runtime, name, description, invocationArgs, extraTools);
   return [...frontmatter, "", ...bodyLines].join("\n");
 }
 
@@ -148,9 +152,11 @@ function renderRuntimeBridgeFrontmatter(
   runtime: SupportedRuntime,
   name: string,
   description: string,
-  invocationArgs: readonly FrameworkSkillInvocationArg[]
+  invocationArgs: readonly FrameworkSkillInvocationArg[],
+  extraTools: readonly string[]
 ): string[] {
   const argumentHint = invocationArgs.length > 0 ? formatArgumentHint(invocationArgs) : null;
+  const toolLines = buildToolLines(extraTools);
 
   switch (runtime) {
     case "codex":
@@ -170,11 +176,7 @@ function renderRuntimeBridgeFrontmatter(
         `description: ${yamlString(description)}`,
         argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
         "allowed-tools:",
-        "  - Read",
-        "  - Write",
-        "  - Bash",
-        "  - Grep",
-        "  - Glob",
+        ...toolLines.claude,
         "---"
       ]);
     case "opencode":
@@ -183,11 +185,7 @@ function renderRuntimeBridgeFrontmatter(
         `description: ${yamlString(description)}`,
         argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
         "tools:",
-        "  read: true",
-        "  write: true",
-        "  bash: true",
-        "  grep: true",
-        "  glob: true",
+        ...toolLines.opencode,
         "---"
       ]);
     case "copilot":
@@ -196,7 +194,7 @@ function renderRuntimeBridgeFrontmatter(
         `name: ${yamlString(`dotagent-${name}`)}`,
         `description: ${yamlString(description)}`,
         argumentHint ? `argument-hint: ${yamlString(argumentHint)}` : null,
-        "allowed-tools: Read, Write, Bash, Grep, Glob",
+        `allowed-tools: ${toolLines.copilot.join(", ")}`,
         "---"
       ]);
     default:
@@ -217,6 +215,16 @@ function formatArgumentHint(invocationArgs: readonly FrameworkSkillInvocationArg
   return invocationArgs
     .map((arg) => (arg.required ? `${arg.name}=<value>` : `[${arg.name}=<value>]`))
     .join(" ");
+}
+
+function buildToolLines(extraTools: readonly string[]): { claude: string[]; opencode: string[]; copilot: string[] } {
+  const normalizedTools = [...new Set(["Read", "Write", "Bash", "Grep", "Glob", ...extraTools])];
+
+  return {
+    claude: normalizedTools.map((tool) => `  - ${tool}`),
+    opencode: normalizedTools.map((tool) => `  ${tool.toLowerCase()}: true`),
+    copilot: normalizedTools
+  };
 }
 
 function compactYamlLines(lines: Array<string | null>): string[] {

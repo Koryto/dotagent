@@ -27,6 +27,13 @@ export interface InitCommand {
   flags: CommandFlags;
 }
 
+export interface ClaimStateCommand {
+  kind: "claim-state";
+  flags: CommandFlags;
+  sessionId: string;
+  stateToPickup?: string;
+}
+
 export interface UpdateCommand {
   kind: "update";
   flags: CommandFlags;
@@ -52,6 +59,7 @@ export type ParsedCommand =
   | HelpCommand
   | VersionCommand
   | InitCommand
+  | ClaimStateCommand
   | UpdateCommand
   | DoctorCommand
   | PlaybookListCommand
