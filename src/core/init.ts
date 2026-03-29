@@ -6,7 +6,7 @@ import { collectFilePaths, fileExists, filesAreEqual, hashBuffer, hashUtf8, read
 import { assertBundledFrameworkSkillsAvailable, listBundledFrameworkSkills, type BundledFrameworkSkill } from "./framework-skills.js";
 import { createInitialManifest, loadManifest, saveManifest } from "./manifest.js";
 import { listBundledPlaybooks } from "./playbooks.js";
-import { renderRuntimeAdapterManifest, renderRuntimeInitBridge, renderRuntimeSkillBridge } from "../runtime/templates.js";
+import { buildRuntimeInitBridgeExtraBody, renderRuntimeAdapterManifest, renderRuntimeSkillBridge } from "../runtime/templates.js";
 import type { CliContext } from "../models/command.js";
 import type { DotagentManifest, FileOwnershipRecord, InstalledAdapterRecord } from "../models/manifest.js";
 
@@ -234,7 +234,9 @@ function planAdapterFiles(
         planGeneratedFile(
           projectRoot,
           initTargetPath,
-          renderRuntimeInitBridge(runtime, initSkill, bundledSkills, bundledPlaybooks),
+          renderRuntimeSkillBridge(runtime, initSkill, {
+            extraBodyLines: buildRuntimeInitBridgeExtraBody(runtime, bundledSkills, bundledPlaybooks)
+          }),
           "adapter"
         )
       );

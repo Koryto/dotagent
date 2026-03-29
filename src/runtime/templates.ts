@@ -7,6 +7,10 @@ export interface FrameworkSkillDescriptor {
   invocationArgs: readonly FrameworkSkillInvocationArg[];
 }
 
+interface RuntimeSkillBridgeOptions {
+  extraBodyLines?: readonly string[];
+}
+
 export function renderRuntimeAdapterManifest(
   runtime: SupportedRuntime,
   frameworkRef: string,
@@ -24,12 +28,11 @@ export function renderRuntimeAdapterManifest(
   )}\n`;
 }
 
-export function renderRuntimeInitBridge(
+export function buildRuntimeInitBridgeExtraBody(
   runtime: SupportedRuntime,
-  initSkill: FrameworkSkillDescriptor,
   frameworkSkills: readonly FrameworkSkillDescriptor[],
   bundledPlaybooks: readonly string[]
-): string {
+): string[] {
   const skillInvocationLines =
     frameworkSkills.length > 0
       ? frameworkSkills.map((entry) => `- ${formatRuntimeInvocation(runtime, entry.skillName)}`)
@@ -37,9 +40,7 @@ export function renderRuntimeInitBridge(
   const playbookLines =
     bundledPlaybooks.length > 0 ? bundledPlaybooks.map((entry) => `- ${entry}`) : ["- none"];
 
-  const body = [
-    `# ${formatRuntimeBridgeName(runtime, "init")}`,
-    "",
+  return [
     "Use this runtime bridge to start working with the dotagent framework in this project.",
     "",
     "Load and follow:",
@@ -63,19 +64,12 @@ export function renderRuntimeInitBridge(
     "These runtime files are generated bridges for native invocation only.",
     ""
   ];
-
-  return renderRuntimeBridgeDocument(
-    runtime,
-    "init",
-    "Start a dotagent session from this runtime using the generated native bridge.",
-    body,
-    initSkill.invocationArgs
-  );
 }
 
 export function renderRuntimeSkillBridge(
   runtime: SupportedRuntime,
-  skill: FrameworkSkillDescriptor
+  skill: FrameworkSkillDescriptor,
+  options: RuntimeSkillBridgeOptions = {}
 ): string {
   const invocationArgLines =
     skill.invocationArgs.length > 0
@@ -93,21 +87,25 @@ export function renderRuntimeSkillBridge(
   const body = [
     `# ${formatRuntimeBridgeName(runtime, skill.skillName)}`,
     "",
-    "Generated bridge for a dotagent framework skill.",
-    "",
-    "Load and follow:",
-    `- \`${skill.sourcePath}\``,
-    "",
-    ...invocationArgLines,
-    `This wrapper exists so the skill can be invoked natively in ${runtime}.`,
-    "The framework source of truth remains under `.agent/`.",
-    ""
+    ...(options.extraBodyLines ?? [
+      "Generated bridge for a dotagent framework skill.",
+      "",
+      "Load and follow:",
+      `- \`${skill.sourcePath}\``,
+      "",
+      ...invocationArgLines,
+      `This wrapper exists so the skill can be invoked natively in ${runtime}.`,
+      "The framework source of truth remains under `.agent/`.",
+      ""
+    ])
   ];
 
   return renderRuntimeBridgeDocument(
     runtime,
     skill.skillName,
-    `Invoke the dotagent ${skill.skillName} skill natively from this runtime.`,
+    skill.skillName === "init"
+      ? "Start a dotagent session from this runtime using the generated native bridge."
+      : `Invoke the dotagent ${skill.skillName} skill natively from this runtime.`,
     body,
     skill.invocationArgs
   );
