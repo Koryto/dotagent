@@ -16,5 +16,3 @@ Rules:
 - the active file is derived from `state/session_state_template.md`
 - session IDs are used as-is; do not alias or normalize them
 - archive and cleanup are CLI responsibilities, not agent responsibilities
-
-Old single-file session control is no longer the active model.

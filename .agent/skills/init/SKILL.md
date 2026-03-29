@@ -97,3 +97,4 @@ Never:
 - invent a different load order
 - hot-load `tasks/`, `skills/`, `playbooks/`, `specs/`, or `systems/` without a task-driven reason
 - treat task-local notes as durable project or system truth
+- continue without an explicit session id from the user, or map one session id to another implicitly
