@@ -6,7 +6,6 @@ It is opinionated on purpose. The goal is not unrestricted autonomous coding. Th
 
 [![npm version](https://img.shields.io/npm/v/%40koryto%2Fdotagent)](https://www.npmjs.com/package/@koryto/dotagent)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20.20.1-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Tests](https://img.shields.io/github/actions/workflow/status/Koryto/dotagent/pull-request.yml?branch=master&label=tests)](https://github.com/Koryto/dotagent/actions/workflows/pull-request.yml)
 [![License](https://img.shields.io/npm/l/%40koryto%2Fdotagent)](./LICENSE)
 
 ## Quickstart
