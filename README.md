@@ -4,6 +4,10 @@
 
 It is opinionated on purpose. The goal is not unrestricted autonomous coding. The goal is to keep serious codebases understandable, resumable, and reviewable while using agents aggressively.
 
+[![npm version](https://img.shields.io/npm/v/%40koryto%2Fdotagent)](https://www.npmjs.com/package/@koryto/dotagent)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20.20.1-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![License](https://img.shields.io/npm/l/%40koryto%2Fdotagent)](./LICENSE)
+
 ## Quickstart
 
 Install the published CLI:
@@ -89,9 +93,17 @@ Lightweight workflow for small, low-risk fixes:
 
 Use `standard` by default when the workflow is unspecified.
 
-## Skills
+## Multi-Agent
 
-Skills are loaded on demand, not kept in hot context by default.
+`dotagent` now supports parallel top-level agent work against the same project.
+
+The multi-agent model stays human-governed:
+
+- each runtime session claims its own session state file under `state/sessions/`
+- `dotagent claim-state` provides deterministic session claim/create behavior
+- implementation work must use an approved branch/worktree and an approved writable boundary
+- the default implementation worktree location is `.worktrees/<session_id>` unless the user explicitly approves a different path
+- stale session files can be archived or cleaned up with dedicated CLI commands
 
 ## Playbooks
 
@@ -103,18 +115,3 @@ Current bundled playbooks:
 - `deep-code-review` - run a structured multi-agent review loop for large or high-risk changes
 
 See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current conventions.
-
-## How To Use
-
-1. Initialize the framework with `dotagent init`.
-2. Fill in `project/PROJECT.md`.
-3. Start sessions through your runtime-native `dotagent-init` bridge, which loads `skills/init/SKILL.md`.
-4. Keep durable system knowledge in `systems/`, not in task artifacts.
-5. Use `specs/` only when design intent needs to be defined or clarified.
-6. Use `tasks/` for plans, reviews, verification notes, and summaries.
-
-## Notes
-
-- The framework is not enforced by code alone. It is a working contract between the user and the agent.
-- Projects are free to extend or shrink it.
-- If a team removes important files, the framework does not break mechanically. It becomes less effective.
