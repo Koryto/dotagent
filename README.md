@@ -10,31 +10,53 @@ It is opinionated on purpose. The goal is not unrestricted autonomous coding. Th
 
 ## Quickstart
 
-Install the published CLI:
+Install:
 
 ```bash
 npm install -g @koryto/dotagent
 ```
 
-Initialize the framework in your project.
+Initialize:
 
-Select the runtimes you actually want to support before copying the command:
+Choose only the runtimes you actually use.
+
+Supported runtimes: `codex`, `claude`, `opencode`, `copilot`
 
 ```bash
-dotagent init --runtimes <codex,claude,opencode,copilot>
+dotagent init --runtimes codex,claude
 dotagent doctor
 ```
 
-Then start agent work through your runtime's native `dotagent-init` wrapper.
+Start a session:
 
-The `session_id` is the active runtime session id. In Codex and Claude Code, get it from the runtime status command and pass it explicitly when starting `dotagent`.
+Fetch the `session_id` from your runtime status command.
 
-Examples:
+In Codex:
 
-- Codex: `$dotagent-init session_id=<runtime_session_id>`
-- Claude Code: `/dotagent:init session_id=<runtime_session_id>`
+```text
+/status
+$dotagent-init session_id=<id_from_status>
+```
 
-On first setup, the agent will point out missing project context such as `.agent/project/PROJECT.md`. Fill that file with the project identity, rules, and conventions before expecting deep project-aware work.
+In Claude Code:
+
+```text
+/status
+/dotagent:init session_id=<id_from_status>
+```
+
+### First Setup
+
+The first runtime session will usually point out that `.agent/project/PROJECT.md` still needs project-specific context.
+
+Fill it before expecting deep project-aware work. It should capture:
+
+- what the project is
+- important commands and workflows
+- coding and review conventions
+- project-specific constraints the agent should respect
+
+Keep it concise. The goal is stable project context, not a full wiki.
 
 ## Why This Exists
 
