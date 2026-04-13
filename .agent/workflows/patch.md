@@ -1,5 +1,5 @@
 # Patch Workflow
-<!-- WORKFLOW_VERSION: 1.0 | STATUS: draft | TYPE: lightweight -->
+<!-- WORKFLOW_VERSION: 1.0 | STATUS: active | TYPE: lightweight -->
 
 ## Purpose
 

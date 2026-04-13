@@ -1,5 +1,5 @@
 # Standard Workflow
-<!-- WORKFLOW_VERSION: 2.0 | STATUS: draft | TYPE: implementation -->
+<!-- WORKFLOW_VERSION: 2.0 | STATUS: active | TYPE: implementation -->
 
 ## Purpose
 

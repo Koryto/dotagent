@@ -1,5 +1,5 @@
 # Deep Code Review
-<!-- VERSION: 0.4 | STATUS: experimental -->
+<!-- VERSION: 1.0 | STATUS: active -->
 
 ## Purpose
 
