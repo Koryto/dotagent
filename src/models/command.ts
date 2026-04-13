@@ -30,7 +30,7 @@ export interface InitCommand {
 export interface ClaimStateCommand {
   kind: "claim-state";
   flags: CommandFlags;
-  sessionId: string;
+  sessionId?: string;
   stateToPickup?: string;
 }
 

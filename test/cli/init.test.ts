@@ -93,7 +93,7 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.match(readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"), /^---\r?\nname: "dotagent-init"\r?\ndescription: "/);
   assert.match(
     readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"),
-    /description: "Start a dotagent session from this runtime using the generated native bridge\."\r?\nargument-hint: "session_id=<value> \[state_to_pickup=<value>\]"/
+    /description: "Start a dotagent session from this runtime using the generated native bridge\."\r?\nargument-hint: "\[session_id=<value>\] \[state_to_pickup=<value>\]"/
   );
   assert.match(
     readFileSync(path.join(root, ".codex", "skills", "dotagent-init", "SKILL.md"), "utf8"),
@@ -114,7 +114,7 @@ test("dotagent init scaffolds the framework, adapters, gitignore, and manifest",
   assert.match(readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"), /^---\r?\nname: "dotagent:init"\r?\ndescription: "/);
   assert.match(
     readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"),
-    /description: "Start a dotagent session from this runtime using the generated native bridge\."\r?\nargument-hint: "session_id=<value> \[state_to_pickup=<value>\]"/
+    /description: "Start a dotagent session from this runtime using the generated native bridge\."\r?\nargument-hint: "\[session_id=<value>\] \[state_to_pickup=<value>\]"/
   );
   assert.match(
     readFileSync(path.join(root, ".claude", "commands", "dotagent", "init.md"), "utf8"),

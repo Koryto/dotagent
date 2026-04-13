@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(env)",
+      "Bash(npm root:*)",
+      "Bash(npm list:*)",
+      "Bash(/c/Users/Mykor/.local/bin/claude --help)",
+      "WebSearch"
+    ]
+  }
+}

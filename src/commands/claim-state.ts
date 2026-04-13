@@ -1,9 +1,11 @@
 import type { ClaimStateCommand, CliContext } from "../models/command.js";
 import { applyClaimStatePlan, planClaimState, renderClaimStatePlan } from "../core/claim-state.js";
+import { resolveRuntimeSessionId } from "../core/runtime-session.js";
 
 export async function handleClaimState(command: ClaimStateCommand, context: CliContext): Promise<number> {
-  const plan = planClaimState(context, command.sessionId, command.stateToPickup);
-  context.logger.info(renderClaimStatePlan(plan));
+  const sessionResolution = resolveRuntimeSessionId(command.sessionId, context.projectRoot);
+  const plan = planClaimState(context, sessionResolution.sessionId, command.stateToPickup);
+  context.logger.info(renderClaimStatePlan(plan, { sessionIdSource: sessionResolution.source }));
 
   if (context.flags.dryRun) {
     return 0;

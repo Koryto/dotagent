@@ -2,7 +2,7 @@
 name: "init"
 description: "Initialize a dotagent working session from within a runtime. Use as the native runtime entrypoint when the project is already initialized and the agent needs to start from the framework correctly."
 invocation-args:
-  session_id: required
+  session_id: optional
   state_to_pickup: optional
 ---
 
@@ -51,10 +51,11 @@ Do not cold-load entire namespaces preemptively. Load only the files needed for 
 
 ## Initialization Sequence
 
-1. Require `session_id` at runtime entry. If it is missing, ask the user immediately.
-2. Run:
-   - `dotagent claim-state <session_id>`
-   - or `dotagent claim-state <session_id> <state_to_pickup>`
+1. Run `dotagent claim-state` to resolve the active session file.
+   - use `dotagent claim-state <session_id>` when the user provided an explicit session id
+   - use `dotagent claim-state <session_id> <state_to_pickup>` when the user provided both values
+   - use `dotagent claim-state <state_to_pickup>` when the user provided only a pickup file
+2. If auto-detection fails, ask the user for the runtime session id and retry with `dotagent claim-state <session_id>`.
 3. Communicate the CLI result clearly to the user:
    - whether the current session bound to its own state file
    - whether a pickup file was claimed
@@ -86,7 +87,7 @@ Do not cold-load entire namespaces preemptively. Load only the files needed for 
 Always:
 
 - use this skill as the source of truth for session startup
-- require `session_id` before loading live session state
+- require a CLI-resolved session id before loading live session state
 - use `dotagent claim-state` as the operational source of truth for session file creation and pickup
 - read the active session file under `state/sessions/` before any planning or implementation
 - reload the hot set if heavy scanning pushes it out of active context
@@ -99,5 +100,5 @@ Never:
 - invent a different load order
 - hot-load `tasks/`, `skills/`, `playbooks/`, `specs/`, or `systems/` without a task-driven reason
 - treat task-local notes as durable project or system truth
-- continue without an explicit session id from the user, or map one session id to another implicitly
+- continue without a CLI-resolved session id, or map one session id to another implicitly
 - create, adopt, or rename live session files through ad hoc filesystem edits when the CLI can do it deterministically

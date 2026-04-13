@@ -66,6 +66,91 @@ test("dotagent claim-state creates a new session state from the template", async
   assert.doesNotMatch(readFileSync(targetPath, "utf8"), /Do not treat this template as the active session register/);
 });
 
+test("dotagent claim-state auto-detects the Codex session id when no session id is provided", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-claim-state-auto-codex-"));
+  const previousThreadId = process.env.CODEX_THREAD_ID;
+  process.env.CODEX_THREAD_ID = "auto-codex-session";
+
+  try {
+    let exitCode = await runCli({
+      argv: ["init", "--cwd", root, "--yes"],
+      cwd: process.cwd(),
+      stdin: Readable.from([]),
+      stdout: new MemoryWritable(),
+      stderr: new MemoryWritable()
+    });
+    assert.equal(exitCode, 0);
+
+    const stdout = new MemoryWritable();
+    const stderr = new MemoryWritable();
+    exitCode = await runCli({
+      argv: ["claim-state", "--cwd", root],
+      cwd: process.cwd(),
+      stdin: Readable.from([]),
+      stdout,
+      stderr
+    });
+
+    const targetPath = path.join(root, ".agent", "state", "sessions", "state_auto-codex-session.md");
+    assert.equal(exitCode, 0);
+    assert.equal(stderr.buffer, "");
+    assert.equal(existsSync(targetPath), true);
+    assert.match(stdout.buffer, /session_id: auto-codex-session/);
+    assert.match(stdout.buffer, /session_id_source: codex-env/);
+  } finally {
+    if (typeof previousThreadId === "string") {
+      process.env.CODEX_THREAD_ID = previousThreadId;
+    } else {
+      delete process.env.CODEX_THREAD_ID;
+    }
+  }
+});
+
+test("dotagent claim-state treats state file as pickup when it is the only positional argument", async () => {
+  const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-claim-state-auto-pickup-"));
+  const previousThreadId = process.env.CODEX_THREAD_ID;
+  process.env.CODEX_THREAD_ID = "auto-pickup-session";
+
+  try {
+    let exitCode = await runCli({
+      argv: ["init", "--cwd", root, "--yes"],
+      cwd: process.cwd(),
+      stdin: Readable.from([]),
+      stdout: new MemoryWritable(),
+      stderr: new MemoryWritable()
+    });
+    assert.equal(exitCode, 0);
+
+    const sessionsRoot = path.join(root, ".agent", "state", "sessions");
+    mkdirSync(sessionsRoot, { recursive: true });
+    writeFileSync(path.join(sessionsRoot, "state_pickup.md"), "# Pickup\n```yaml\nowned_by: pickup\nstatus: IDLE\n```\n", "utf8");
+
+    const stdout = new MemoryWritable();
+    const stderr = new MemoryWritable();
+    exitCode = await runCli({
+      argv: ["claim-state", "state_pickup.md", "--cwd", root],
+      cwd: process.cwd(),
+      stdin: Readable.from([]),
+      stdout,
+      stderr
+    });
+
+    const targetPath = path.join(sessionsRoot, "state_auto-pickup-session.md");
+    assert.equal(exitCode, 0);
+    assert.equal(stderr.buffer, "");
+    assert.equal(existsSync(path.join(sessionsRoot, "state_pickup.md")), false);
+    assert.equal(existsSync(targetPath), true);
+    assert.match(stdout.buffer, /action: claim-pickup/);
+    assert.match(stdout.buffer, /state_to_pickup: state_pickup\.md/);
+  } finally {
+    if (typeof previousThreadId === "string") {
+      process.env.CODEX_THREAD_ID = previousThreadId;
+    } else {
+      delete process.env.CODEX_THREAD_ID;
+    }
+  }
+});
+
 test("dotagent claim-state keeps the current session file when it already exists", async () => {
   const root = mkdtempSync(path.join(os.tmpdir(), "dotagent-cli-claim-state-existing-"));
   const today = new Date().toISOString().slice(0, 10);

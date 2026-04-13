@@ -29,19 +29,31 @@ dotagent doctor
 
 Start a session:
 
-Fetch the `session_id` from your runtime status command.
-
 In Codex:
 
 ```text
 /status
-$dotagent-init session_id=<id_from_status>
+$dotagent-init
 ```
 
 In Claude Code:
 
 ```text
 /status
+/dotagent:init
+```
+
+`dotagent` will try to detect the runtime session id automatically. If auto-detection fails, pass the id from the runtime status command explicitly:
+
+Codex:
+
+```text
+$dotagent-init session_id=<id_from_status>
+```
+
+Claude Code:
+
+```text
 /dotagent:init session_id=<id_from_status>
 ```
 

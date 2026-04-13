@@ -4,7 +4,8 @@ import path from "node:path";
 import { ensureProjectDirectory, fileExists, readUtf8File, safeWriteUtf8File } from "./files.js";
 import { resolveDotagentRoot } from "./paths.js";
 import type { CliContext } from "../models/command.js";
-import { CliUsageError, DotagentError } from "../utils/errors.js";
+import { normalizeSessionId, normalizeSessionStateFilename, toSessionStateFilename } from "./session-identifiers.js";
+import { DotagentError } from "../utils/errors.js";
 
 export type ClaimStateAction = "claim-existing" | "claim-pickup" | "create";
 export type PickupStatus = "not-provided" | "ignored-existing-session" | "claimed" | "missing-fallback-created";
@@ -124,40 +125,19 @@ export function applyClaimStatePlan(context: CliContext, plan: ClaimStatePlan): 
   }
 }
 
-export function renderClaimStatePlan(plan: ClaimStatePlan): string {
+export function renderClaimStatePlan(plan: ClaimStatePlan, options: { sessionIdSource?: string } = {}): string {
   return [
     "dotagent claim-state",
     "",
     `project_root: ${plan.projectRoot}`,
     `session_id: ${plan.sessionId}`,
+    ...(options.sessionIdSource ? [`session_id_source: ${options.sessionIdSource}`] : []),
     `state_to_pickup: ${plan.stateToPickup ?? "(none)"}`,
     `action: ${plan.action}`,
     `pickup_status: ${plan.pickupStatus}`,
     `active_state: ${toProjectRelativePath(plan.projectRoot, plan.activeStatePath)}`,
     `message: ${plan.message}`
   ].join("\n");
-}
-
-export function toSessionStateFilename(sessionId: string): string {
-  return `state_${normalizeSessionId(sessionId)}.md`;
-}
-
-function normalizeSessionStateFilename(value: string): string {
-  const trimmed = value.trim();
-  if (!/^state_[A-Za-z0-9-]+\.md$/.test(trimmed)) {
-    throw new CliUsageError(`Invalid state file name: ${value}. Expected state_<session_id>.md.`);
-  }
-
-  return trimmed;
-}
-
-function normalizeSessionId(value: string): string {
-  const trimmed = value.trim();
-  if (!/^[A-Za-z0-9-]+$/.test(trimmed)) {
-    throw new CliUsageError(`Invalid session id: ${value}.`);
-  }
-
-  return trimmed;
 }
 
 function bindSessionState(content: string, sessionId: string): string {

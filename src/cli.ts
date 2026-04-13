@@ -13,6 +13,7 @@ import { detectProjectState, resolveExistingProjectRoot, resolveProjectRoot } fr
 import { normalizePlaybookIdentifier } from "./core/playbooks.js";
 import { resolveBundledAgentRoot, resolvePackageRoot } from "./core/paths.js";
 import { readUtf8File } from "./core/files.js";
+import { looksLikeSessionStateFilename } from "./core/session-identifiers.js";
 import type { CliCommand, CliContext, CommandFlags, ParsedCommand } from "./models/command.js";
 import { CliUsageError, DotagentError, NotImplementedCliError, toExitCode } from "./utils/errors.js";
 import { createLogger } from "./utils/logger.js";
@@ -204,21 +205,21 @@ function parseArgv(argv: string[]): ParsedCommand {
     };
   }
 
-  const [command, subcommand, maybeArg] = positionals;
+  const [command, subcommand, maybeArg, ...extraPositionals] = positionals;
   switch (command) {
     case "version":
       return { kind: "version", flags };
     case "init":
       return { kind: "init", flags };
     case "claim-state": {
-      if (!subcommand) {
-        throw new CliUsageError("Missing session id for `dotagent claim-state <session_id> [state_<other_session_id>.md]`.");
+      if (extraPositionals.length > 0) {
+        throw new CliUsageError("Too many arguments for `dotagent claim-state [session_id|auto] [state_<other_session_id>.md]`.");
       }
+      const parsedClaimStateArgs = parseClaimStateArgs(subcommand, maybeArg);
       return {
         kind: "claim-state",
         flags,
-        sessionId: subcommand,
-        ...(maybeArg ? { stateToPickup: maybeArg } : {})
+        ...parsedClaimStateArgs
       };
     }
     case "archive-sessions": {
@@ -297,7 +298,7 @@ function renderHelp(): string {
     "  dotagent --version",
     "  dotagent version",
     "  dotagent init [--cwd <path>] [--runtimes <list>] [--dry-run] [--verbose] [--yes]",
-    "  dotagent claim-state <session_id> [state_<other_session_id>.md] [--cwd <path>] [--dry-run] [--verbose]",
+    "  dotagent claim-state [session_id|auto] [state_<other_session_id>.md] [--cwd <path>] [--dry-run] [--verbose]",
     "  dotagent archive-sessions <days> [--cwd <path>] [--dry-run] [--verbose]",
     "  dotagent cleanup-sessions <days> [--cwd <path>] [--dry-run] [--verbose]",
     "  dotagent update [--cwd <path>] [--dry-run] [--verbose] [--yes]",
@@ -305,6 +306,32 @@ function renderHelp(): string {
     "  dotagent playbook list [--cwd <path>]",
     "  dotagent playbook init <name> [--cwd <path>] [--task <name>] [--dry-run] [--verbose] [--yes]"
   ].join("\n");
+}
+
+function parseClaimStateArgs(
+  firstArg: string | undefined,
+  secondArg: string | undefined
+): { sessionId?: string; stateToPickup?: string } {
+  if (!firstArg) {
+    return {};
+  }
+
+  if (!secondArg && looksLikeSessionStateFilename(firstArg)) {
+    return {
+      stateToPickup: firstArg
+    };
+  }
+
+  if (secondArg && looksLikeSessionStateFilename(firstArg)) {
+    throw new CliUsageError(
+      "Ambiguous claim-state arguments. If the first argument is a pickup file, do not pass another positional argument."
+    );
+  }
+
+  return {
+    sessionId: firstArg,
+    ...(secondArg ? { stateToPickup: secondArg } : {})
+  };
 }
 
 function mergeRuntimes(existing: string[] | undefined, value: string): string[] {
