@@ -1,6 +1,6 @@
 {
   "name": "deep-co-planning",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "runtimeRoot": ".dcp",
   "templateDir": "template",
   "gitignoreEntry": ".dcp/",
