@@ -2,19 +2,29 @@
 
 `specs/` stores intended design.
 
-Use this namespace for:
+Use this namespace when the project needs a durable statement of what should be true before implementation proceeds.
 
-- architecture documents
-- HLDs
-- RFCs
+Good specs describe:
+
+- target architecture
 - design intent
-- future-state behavior that needs to be defined before implementation
+- behavior that is not implemented yet
+- accepted constraints and tradeoffs
+- interfaces or boundaries that future code should follow
 
-Do not use this namespace as a dump for current implementation details unless those details are part of the intended architecture contract.
+Do not use `specs/` for:
 
-Suggested examples:
+- current implementation notes
+- task-local plans
+- review findings
+- temporary exploration notes
 
-- `specs/architecture/combat.md`
-- `specs/feature_x/hld.md`
-- `specs/networking/rfc_prediction_boundaries.md`
+Those belong in `systems/` or `tasks/` depending on whether they describe durable reality or task-local work.
 
+Useful patterns:
+
+- `specs/architecture/<system>.md`
+- `specs/<feature>/hld.md`
+- `specs/<feature>/contract.md`
+
+When implementation diverges from a spec, either update the spec intentionally or capture the implemented reality under `systems/`. Do not let both drift silently.

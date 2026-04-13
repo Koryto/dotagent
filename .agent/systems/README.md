@@ -2,19 +2,25 @@
 
 `systems/` stores implemented reality.
 
-Use this namespace for stable system knowledge such as:
+Use this namespace for durable knowledge about how the project currently works.
+
+Good system notes capture:
 
 - current ownership boundaries
-- runtime flow summaries
-- key entry points
-- known constraints in the implementation
-- important file locations
-- known debt that materially affects future work
+- runtime flows
+- important entry points
+- integration points
+- operational constraints
+- known debt that affects future work
+- file locations that are hard to rediscover
 
-Update this namespace after task completion when a meaningful implemented system changed.
+Do not use `systems/` for:
 
-Suggested examples:
+- future design intent
+- speculative plans
+- one-task implementation notes
+- raw session logs
 
-- `systems/combat.md`
-- `systems/authentication.md`
+Those belong in `specs/`, `tasks/`, or `state/`.
 
+Update `systems/` during closeout when a task changes durable project behavior. Keep entries concise enough that future agents can use them quickly.
