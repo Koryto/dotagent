@@ -27,10 +27,14 @@ dotagent doctor
 
 Then start agent work through your runtime's native `dotagent-init` wrapper.
 
+The `session_id` is the active runtime session id. In Codex and Claude Code, get it from the runtime status command and pass it explicitly when starting `dotagent`.
+
 Examples:
 
 - Codex: `$dotagent-init session_id=<runtime_session_id>`
 - Claude Code: `/dotagent:init session_id=<runtime_session_id>`
+
+On first setup, the agent will point out missing project context such as `.agent/project/PROJECT.md`. Fill that file with the project identity, rules, and conventions before expecting deep project-aware work.
 
 ## Why This Exists
 
@@ -42,25 +46,23 @@ This framework optimizes for:
 - durable project memory
 - resumable multi-session work
 - architecture awareness
+- harness structure for serious agent execution
 - production-grade review discipline
 
 Agents can write code quickly, but humans still need to own the system. If the structure around the agent is weak, the codebase degrades faster than it did under normal human-paced development.
 
 ## Core Model
 
-The framework standardizes project knowledge into four primary namespaces:
+The framework standardizes project work into namespaced markdown contracts:
 
-- `project/` - project constitution and standing rules
-- `specs/` - intended design and architecture
-- `systems/` - implemented reality
-- `tasks/` - task-local working memory
-
-Supporting namespaces:
-
-- `state/` - current session state and session history
-- `workflows/` - gated execution workflows
-- `skills/` - on-demand procedural guidance
-- `playbooks/` - optional multi-file operational packages
+- [`project/`](./.agent/project/README.md) - project constitution and standing rules
+- [`specs/`](./.agent/specs/README.md) - intended design and architecture
+- [`systems/`](./.agent/systems/README.md) - implemented reality
+- [`tasks/`](./.agent/tasks/README.md) - task-local working memory
+- [`state/`](./.agent/state/README.md) - current session state and session history
+- [`workflows/`](./.agent/workflows/README.md) - gated execution workflows
+- [`skills/`](./.agent/skills/README.md) - on-demand procedural guidance
+- [`playbooks/`](./.agent/playbooks/README.md) - optional multi-file operational packages
 
 ## Philosophy
 
@@ -93,6 +95,8 @@ Lightweight workflow for small, low-risk fixes:
 
 Use `standard` by default when the workflow is unspecified.
 
+For implementation work, `standard` also requires an approved branch/worktree and approved writable boundary before code changes begin.
+
 ## Multi-Agent
 
 `dotagent` now supports parallel top-level agent work against the same project.
@@ -102,16 +106,19 @@ The multi-agent model stays human-governed:
 - each runtime session claims its own session state file under `state/sessions/`
 - `dotagent claim-state` provides deterministic session claim/create behavior
 - implementation work must use an approved branch/worktree and an approved writable boundary
-- the default implementation worktree location is `.worktrees/<session_id>` unless the user explicitly approves a different path
+- the default implementation worktree location is `.worktrees/<repo_name>_<session_id>` unless the user explicitly approves a different path
 - stale session files can be archived or cleaned up with dedicated CLI commands
 
 ## Playbooks
 
 `playbooks/` is an optional namespace for operational packages that are too large, stateful, or role-dependent to fit cleanly into a single skill.
 
-Current bundled playbooks:
+Use a playbook when the work needs multiple roles, rounds, durable packet files, or more structure than a normal workflow can provide.
 
-- `deep-co-planning` - turn a human-led HLD into one or more implementation-driving specs through structured reviewer pressure
-- `deep-code-review` - run a structured multi-agent review loop for large or high-risk changes
+## Project Direction
 
-See [.agent/playbooks/README.md](./.agent/playbooks/README.md) for the current conventions.
+Current development is focused on:
+
+- team-shared framework assets and collaboration patterns
+- verification contracts for real project environments
+- continued hardening through personal and enterprise usage
