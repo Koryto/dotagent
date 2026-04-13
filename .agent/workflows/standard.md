@@ -1,5 +1,5 @@
 # Standard Workflow
-<!-- WORKFLOW_VERSION: 2.0 | STATUS: draft | TYPE: implementation -->
+<!-- WORKFLOW_VERSION: 2.0 | STATUS: active | TYPE: implementation -->
 
 ## Purpose
 
@@ -47,7 +47,7 @@ Agent actions:
 7. Include:
    - scope
    - affected files or systems
-   - approved branch/worktree for implementation; default worktree location is `.worktrees/<session_id>` unless the user explicitly approves a different path
+   - approved branch/worktree for implementation; default worktree location is `.worktrees/<repo_name>_<session_id>` unless the user explicitly approves a different path
    - approved writable boundary for implementation
    - implementation steps
    - risks

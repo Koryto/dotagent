@@ -1,5 +1,5 @@
 # Filesystem Runtime
-<!-- VERSION: 0.2 | STATUS: experimental -->
+<!-- VERSION: 1.0 | STATUS: active -->
 
 ## Purpose
 
