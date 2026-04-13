@@ -1,6 +1,6 @@
 {
   "name": "deep-code-review",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "runtimeRoot": ".dcr",
   "templateDir": "template",
   "gitignoreEntry": ".dcr/",
