@@ -8,6 +8,24 @@ It is opinionated on purpose. The goal is not unrestricted autonomous coding. Th
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20.20.1-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![License](https://img.shields.io/npm/l/%40koryto%2Fdotagent)](./LICENSE)
 
+## Disclaimer Regarding Dotagent's Status
+
+`dotagent` is stable and in maintenance mode.
+
+I came to this project to build disciplined agent-assisted development tools before many of these workflows and capabilities were available natively in coding runtimes such as Codex, Claude Code, and others.
+
+Since then, runtime support for parallel agents, deep review, session management, and agent workspaces has caught up with the curve.
+
+I will keep this framework available and maintained for existing users who like its opinionated namespace model, workflow gates, and runtime-portable project memory.
+
+**New users should first evaluate the native capabilities of their preferred runtime before adopting the dotagent framework.**
+
+Future development will focus on compatibility, documentation, and small fixes rather than major new features.
+
+I truly enjoyed developing and using this framework. If you were here with me on this journey, I hope it helped shape your own work during these exciting, chaotic times for us coders.
+
+My
+
 ## Quickstart
 
 Install:
@@ -136,11 +154,3 @@ The multi-agent model stays human-governed:
 `playbooks/` is an optional namespace for operational packages that are too large, stateful, or role-dependent to fit cleanly into a single skill.
 
 Use a playbook when the work needs multiple roles, rounds, durable packet files, or more structure than a normal workflow can provide.
-
-## Project Direction
-
-Current development is focused on:
-
-- team-shared framework assets and collaboration patterns
-- verification contracts for real project environments
-- continued hardening through personal and enterprise usage
